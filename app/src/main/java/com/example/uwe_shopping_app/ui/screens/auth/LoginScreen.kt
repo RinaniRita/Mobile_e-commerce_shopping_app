@@ -1,4 +1,4 @@
-package com.example.uwe_shopping_app.ui.auth
+package com.example.uwe_shopping_app.ui.screens.auth
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -13,8 +13,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.uwe_shopping_app.R
-import com.example.uwe_shopping_app.ui.auth.SocialButton
-import com.example.uwe_shopping_app.ui.auth.UnderlinedTextField
 import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
 
 import androidx.compose.ui.tooling.preview.Preview
