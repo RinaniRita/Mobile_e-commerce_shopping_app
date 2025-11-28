@@ -1,4 +1,4 @@
-package com.example.uwe_shopping_app.ui.auth
+package com.example.uwe_shopping_app.ui.screens.auth
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
