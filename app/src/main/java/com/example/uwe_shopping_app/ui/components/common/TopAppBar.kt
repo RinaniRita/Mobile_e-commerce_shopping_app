@@ -19,6 +19,7 @@ fun TopAppBar(
     onMenuClick: () -> Unit = {},
     onNotificationClick: () -> Unit = {},
     hasNotifications: Boolean = true,
+    title: String = "SiuStore",
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -44,7 +45,7 @@ fun TopAppBar(
 
             // App name in center
             Text(
-                text = "SiuStore",
+                text = title,
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold
                 ),

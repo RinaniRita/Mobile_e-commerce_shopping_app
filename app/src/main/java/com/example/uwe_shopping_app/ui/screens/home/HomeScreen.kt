@@ -6,9 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,6 +29,7 @@ import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = HomeViewModel(),
+    currentRoute: String = "home",
     onNavigate: (String) -> Unit = {}
 ) {
     val uiState = viewModel.uiState
@@ -44,7 +43,7 @@ fun HomeScreen(
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            TopAppBar()
+            TopAppBar(title = "SiuStore")
 
             Box(
                 modifier = Modifier
@@ -56,6 +55,7 @@ fun HomeScreen(
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState())
                 ) {
+                    // Normal home content
                     Spacer(modifier = Modifier.height(8.dp))
 
                     CategoryChipsRow()
@@ -91,7 +91,7 @@ fun HomeScreen(
             }
 
             BottomNavigationBar(
-                currentRoute = "home",
+                currentRoute = currentRoute,
                 onItemClick = onNavigate,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -101,7 +101,7 @@ fun HomeScreen(
 }
 
 @Composable
-private fun CategoryChipsRow() {
+fun CategoryChipsRow() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
