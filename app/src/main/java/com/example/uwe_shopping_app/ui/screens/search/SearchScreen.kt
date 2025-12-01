@@ -34,11 +34,13 @@ import com.example.uwe_shopping_app.ui.components.common.TopAppBar
 import com.example.uwe_shopping_app.ui.components.product.ProductGrid
 import com.example.uwe_shopping_app.ui.screens.home.CategoryChipsRow
 import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
+import androidx.navigation.NavHostController
 
 @Composable
 fun SearchScreen(
     viewModel: SearchViewModel = SearchViewModel(),
-    currentRoute: String = "search",
+    navController: NavHostController,
+    currentRoute: String,
     onNavigate: (String) -> Unit = {}
 ) {
     val uiState = viewModel.uiState
@@ -121,10 +123,8 @@ fun SearchScreen(
             }
 
             BottomNavigationBar(
+                navController = navController,
                 currentRoute = currentRoute,
-                onItemClick = onNavigate,
-                modifier = Modifier
-                    .fillMaxWidth()
             )
         }
     }
@@ -335,11 +335,11 @@ private fun CategoryCard(
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun SearchScreenPreview() {
-    Uwe_shopping_appTheme {
-        SearchScreen()
-    }
-}
+//@Preview(showBackground = true, showSystemUi = true)
+//@Composable
+//fun SearchScreenPreview() {
+//    Uwe_shopping_appTheme {
+//        SearchScreen()
+//    }
+//}
 

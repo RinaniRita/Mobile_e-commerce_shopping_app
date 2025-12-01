@@ -22,21 +22,23 @@ import androidx.compose.ui.unit.sp
 import com.example.uwe_shopping_app.R
 import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavHostController
 import com.example.uwe_shopping_app.ui.components.common.BottomNavigationBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     onEditClick: () -> Unit = {},
-    currentRoute: String = "profile",
+    navController: NavHostController,
+    currentRoute: String,
     onNavigate: (String) -> Unit = {}
 ) {
 
     Scaffold(
         bottomBar = {
             BottomNavigationBar(
+                navController = navController,
                 currentRoute = currentRoute,
-                onItemClick = onNavigate
             )
         }
     ) { innerPadding ->
@@ -147,10 +149,10 @@ fun ProfileScreen(
 // --------------------------------------------------------------------------------------------
 // PREVIEW
 // --------------------------------------------------------------------------------------------
-@Preview(showBackground = true, widthDp = 375, heightDp = 800)
-@Composable
-fun ProfileScreenPreview() {
-    Uwe_shopping_appTheme {
-        ProfileScreen()
-    }
-}
+//@Preview(showBackground = true, widthDp = 375, heightDp = 800)
+//@Composable
+//fun ProfileScreenPreview() {
+//    Uwe_shopping_appTheme {
+//        ProfileScreen()
+//    }
+//}

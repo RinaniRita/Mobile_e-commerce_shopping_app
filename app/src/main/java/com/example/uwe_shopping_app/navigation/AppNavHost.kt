@@ -66,25 +66,73 @@ fun AppNavHost(navController: NavHostController, app: Application) {
 
         // =========== Home ===========
         composable("home") {
+            val currentRoute = navController.currentBackStackEntry?.destination?.route ?: "home"
+
             HomeScreen(
+                navController = navController,
+                currentRoute = currentRoute,
                 onNavigate = { route ->
-                    if (route == "profile") {
-                        if (isLoggedIn) {
-                            navController.navigate("profile")
-                        } else {
-                            navController.navigate("login")
-                        }
-                    } else {
-                        navController.navigate(route)
+                    navController.navigate(route) {
+                        launchSingleTop = true
+                        restoreState = true
+                        popUpTo("home") { saveState = true }
                     }
                 }
             )
         }
 
-        //  ========== Search ============
-        composable("search") { SearchScreen() }
 
-        // =========== Profile ===========
-        composable("profile") { ProfileScreen() }
+        //  ========== Search ============
+        composable("search") {
+            val currentRoute = navController.currentBackStackEntry?.destination?.route ?: "search"
+
+            SearchScreen(
+                navController = navController,
+                currentRoute = currentRoute,
+                onNavigate = { route ->
+                    navController.navigate(route) {
+                        launchSingleTop = true
+                        restoreState = true
+                        popUpTo("home") { saveState = true }
+                    }
+                }
+            )
+        }
+
+        //  ========== Cart ============
+        composable("cart") {
+            val currentRoute = navController.currentBackStackEntry?.destination?.route ?: "cart"
+
+            CartScreen(
+                navController = navController,
+                currentRoute = currentRoute,
+                onNavigate = { route ->
+                    navController.navigate(route) {
+                        launchSingleTop = true
+                        restoreState = true
+                        popUpTo("home") { saveState = true }
+                    }
+                }
+            )
+        }
+
+
+        //  ========== Profile ============
+        composable("profile") {
+            val currentRoute = navController.currentBackStackEntry?.destination?.route ?: "profile"
+
+            ProfileScreen(
+                navController = navController,
+                currentRoute = currentRoute,
+                onNavigate = { route ->
+                    navController.navigate(route) {
+                        launchSingleTop = true
+                        restoreState = true
+                        popUpTo("home") { saveState = true }
+                    }
+                }
+            )
+        }
+
     }
 }
