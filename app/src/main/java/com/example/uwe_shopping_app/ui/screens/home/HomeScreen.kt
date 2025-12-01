@@ -92,9 +92,12 @@ fun HomeScreen(
 
             BottomNavigationBar(
                 currentRoute = "home",
-                onItemClick = onNavigate,
+                onItemClick = { route ->
+                    onNavigate(route)
+                },
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxWidth(),
+
             )
         }
     }
