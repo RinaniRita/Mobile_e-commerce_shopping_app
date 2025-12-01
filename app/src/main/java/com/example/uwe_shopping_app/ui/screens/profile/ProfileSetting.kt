@@ -74,7 +74,7 @@ fun UnderlinedField(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen() {
+fun ProfileSetting() {
 
     Scaffold(
         topBar = {
@@ -224,8 +224,8 @@ fun ProfileScreen() {
 // --------------------------------------------------------------------------------------------
 @Preview(showBackground = true, widthDp = 375, heightDp = 800)
 @Composable
-fun ProfileScreenPreview() {
+fun ProfileSettingview() {
     Uwe_shopping_appTheme {
-        ProfileScreen()
+        ProfileSetting()
     }
 }
