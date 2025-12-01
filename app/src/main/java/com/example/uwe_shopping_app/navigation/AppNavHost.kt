@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import com.example.uwe_shopping_app.data.local.session.SessionManager
 import com.example.uwe_shopping_app.ui.screens.onboarding.WelcomeScreen
 import com.example.uwe_shopping_app.ui.screens.home.HomeScreen
+import com.example.uwe_shopping_app.ui.screens.search.SearchScreen
 import com.example.uwe_shopping_app.ui.screens.cart.CartScreen
 import com.example.uwe_shopping_app.ui.screens.profile.ProfileScreen
 import com.example.uwe_shopping_app.ui.screens.auth.LoginScreen
@@ -79,6 +80,9 @@ fun AppNavHost(navController: NavHostController, app: Application) {
                 }
             )
         }
+
+        //  ========== Search ============
+        composable("search") { SearchScreen() }
 
         // =========== Profile ===========
         composable("profile") { ProfileScreen() }

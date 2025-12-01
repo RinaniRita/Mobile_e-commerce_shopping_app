@@ -101,7 +101,7 @@ fun HomeScreen(
 }
 
 @Composable
-private fun CategoryChipsRow() {
+public fun CategoryChipsRow() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
