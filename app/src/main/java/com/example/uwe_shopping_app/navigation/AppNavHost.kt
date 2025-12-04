@@ -3,8 +3,10 @@ package com.example.uwe_shopping_app.navigation
 import android.app.Application
 import androidx.compose.runtime.*
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.example.uwe_shopping_app.data.local.session.SessionManager
 import com.example.uwe_shopping_app.ui.screens.onboarding.WelcomeScreen
 import com.example.uwe_shopping_app.ui.screens.home.HomeScreen
@@ -13,6 +15,7 @@ import com.example.uwe_shopping_app.ui.screens.cart.CartScreen
 import com.example.uwe_shopping_app.ui.screens.profile.ProfileScreen
 import com.example.uwe_shopping_app.ui.screens.auth.LoginScreen
 import com.example.uwe_shopping_app.ui.screens.auth.SignUpScreen
+import com.example.uwe_shopping_app.ui.screens.resultSearch.ResultSearchScreen
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
@@ -82,7 +85,35 @@ fun AppNavHost(navController: NavHostController, app: Application) {
         }
 
         //  ========== Search ============
-        composable("search") { SearchScreen() }
+        composable("search") {
+            SearchScreen(
+                onNavigate = { route ->
+                    navController.navigate(route)
+                },
+                onNavigateToResults = { query ->
+                    val encodedQuery = java.net.URLEncoder.encode(query, "UTF-8")
+                    navController.navigate("resultSearch/$encodedQuery")
+                }
+            )
+        }
+
+        composable(
+            route = "resultSearch/{query}",
+            arguments = listOf(
+                navArgument("query") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val encodedQuery = backStackEntry.arguments?.getString("query").orEmpty()
+            val query = java.net.URLDecoder.decode(encodedQuery, "UTF-8")
+
+            ResultSearchScreen(
+                query = query,
+                onNavigate = { route ->
+                    navController.navigate(route)
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
 
         // =========== Profile ===========
         composable("profile") { ProfileScreen() }
