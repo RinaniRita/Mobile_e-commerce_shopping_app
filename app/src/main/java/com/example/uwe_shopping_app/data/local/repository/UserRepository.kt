@@ -19,4 +19,4 @@ class UserRepository {
     suspend fun loginUser(email: String, password: String): Boolean {
         return userDao.login(email, password) != null
     }
-}
+}   
