@@ -15,7 +15,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,18 +31,48 @@ import androidx.compose.ui.unit.sp
 import com.example.uwe_shopping_app.R
 import com.example.uwe_shopping_app.ui.components.common.BottomNavigationBar
 import com.example.uwe_shopping_app.ui.components.common.TopAppBar
-import com.example.uwe_shopping_app.ui.components.product.ProductGrid
+import com.example.uwe_shopping_app.ui.components.product.VerticalProductGrid
+import com.example.uwe_shopping_app.domain.model.Product
 import com.example.uwe_shopping_app.ui.screens.home.CategoryChipsRow
 import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
 
 @Composable
 fun SearchScreen(
-    viewModel: SearchViewModel = SearchViewModel(),
     currentRoute: String = "search",
     onNavigate: (String) -> Unit = {}
 ) {
-    val uiState = viewModel.uiState
+    var searchQuery by remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
+
+    // Frontend-only mock results: typing "shirt" will reveal example products
+    val searchResults = remember(searchQuery) {
+        if (searchQuery.equals("shirt", ignoreCase = true)) {
+            listOf(
+                Product(
+                    id = "shirt_1",
+                    name = "Cotton Casual Shirt",
+                    price = 32.00
+                ),
+                Product(
+                    id = "shirt_2",
+                    name = "Linen Oversized Shirt",
+                    price = 48.00
+                ),
+                Product(
+                    id = "shirt_3",
+                    name = "Striped Summer Shirt",
+                    price = 39.00
+                ),
+                Product(
+                    id = "shirt_4",
+                    name = "Classic White Shirt",
+                    price = 29.00
+                )
+            )
+        } else {
+            emptyList()
+        }
+    }
 
     Surface(
         modifier = Modifier
@@ -57,12 +87,12 @@ fun SearchScreen(
 
             // Search Bar Section
             SearchBar(
-                searchQuery = uiState.searchQuery,
+                searchQuery = searchQuery,
                 onSearchQueryChange = { query ->
-                    viewModel.updateSearchQuery(query)
+                    searchQuery = query
                 },
                 onClearSearch = {
-                    viewModel.clearSearch()
+                    searchQuery = ""
                     keyboardController?.hide()
                 }
             )
@@ -71,52 +101,51 @@ fun SearchScreen(
                 modifier = Modifier
                     .weight(1f)
             ) {
-                // Main scrollable content
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    if (uiState.searchQuery.isBlank()) {
+                if (searchQuery.isBlank()) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                    ) {
                         // Show category chips when no search query
                         Spacer(modifier = Modifier.height(8.dp))
                         CategoryChipsRow()
                         Spacer(modifier = Modifier.height(16.dp))
-                        
+
                         // Show category/collection cards
                         CategoryCardsSection()
-                    } else {
-                        // Show search results
-                        Spacer(modifier = Modifier.height(8.dp))
-                        
-                        if (uiState.searchResults.isEmpty()) {
-                            // No results found
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(32.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "No products found",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = Color(0xFF9E9E9E)
-                                )
-                            }
-                        } else {
+                        Spacer(modifier = Modifier.height(80.dp))
+                    }
+                } else {
+                    if (searchResults.isEmpty()) {
+                        // No results found
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
                             Text(
-                                text = "Search Results (${uiState.searchResults.size})",
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    fontWeight = FontWeight.Bold
-                                ),
-                                color = Color.Black,
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                                text = "No products found",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = Color(0xFF9E9E9E)
                             )
-                            ProductGrid(products = uiState.searchResults)
+                        }
+                    } else {
+                        Column(
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            SearchResultsHeader(
+                                resultsCount = searchResults.size,
+                                query = searchQuery
+                            )
+                            VerticalProductGrid(
+                                products = searchResults,
+                                modifier = Modifier.weight(1f)
+                            )
                         }
                     }
-                    
-                    Spacer(modifier = Modifier.height(80.dp))
                 }
             }
 
@@ -208,6 +237,67 @@ private fun SearchBar(
                     contentDescription = "Filter",
                     tint = Color.Black,
                     modifier = Modifier.size(24.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SearchResultsHeader(
+    resultsCount: Int,
+    query: String,
+    onFilterClick: () -> Unit = {}
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column {
+            Text(
+                text = if (query.isNotBlank()) "Results for \"$query\"" else "Results",
+                style = MaterialTheme.typography.bodySmall,
+                color = Color(0xFF9E9E9E)
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = "Found $resultsCount ${if (resultsCount == 1) "item" else "items"}",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold
+                ),
+                color = Color.Black
+            )
+        }
+
+        Surface(
+            onClick = onFilterClick,
+            shape = RoundedCornerShape(24.dp),
+            color = Color.White,
+            shadowElevation = 0.dp,
+            border = ButtonDefaults.outlinedButtonBorder
+        ) {
+            Row(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.MoreVert,
+                    contentDescription = "Filter",
+                    tint = Color.Black,
+                    modifier = Modifier.size(18.dp)
+                )
+                Text(
+                    text = "Filter",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 14.sp
+                    ),
+                    color = Color.Black
                 )
             }
         }
