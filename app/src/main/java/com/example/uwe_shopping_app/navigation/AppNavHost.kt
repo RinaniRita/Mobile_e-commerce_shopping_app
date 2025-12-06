@@ -16,6 +16,7 @@ import com.example.uwe_shopping_app.ui.screens.profile.ProfileScreen
 import com.example.uwe_shopping_app.ui.screens.auth.LoginScreen
 import com.example.uwe_shopping_app.ui.screens.auth.SignUpScreen
 import com.example.uwe_shopping_app.ui.screens.resultSearch.ResultSearchScreen
+import com.example.uwe_shopping_app.ui.screens.product.ProductScreen
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
@@ -117,5 +118,19 @@ fun AppNavHost(navController: NavHostController, app: Application) {
 
         // =========== Profile ===========
         composable("profile") { ProfileScreen() }
+
+        // =========== Product Detail ===========
+        composable(
+            route = "product/{productId}",
+            arguments = listOf(
+                navArgument("productId") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val productId = backStackEntry.arguments?.getString("productId") ?: ""
+            ProductScreen(
+                productId = productId,
+                onBack = { navController.popBackStack() }
+            )
+        }
     }
 }
