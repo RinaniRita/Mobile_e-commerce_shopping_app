@@ -36,6 +36,7 @@ import com.example.uwe_shopping_app.ui.components.common.TopAppBar
 import com.example.uwe_shopping_app.ui.screens.home.CategoryChipsRow
 import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 
 @Composable
 fun SearchScreen(
@@ -72,7 +73,9 @@ fun SearchScreen(
                 onSearch = {
                     if (searchQuery.isNotBlank()) {
                         keyboardController?.hide()
-                        onNavigateToResults(searchQuery)
+                        navController.navigate("resultSearch/$searchQuery") {
+                            launchSingleTop = true
+                        }
                     }
                 }
             )
@@ -308,11 +311,15 @@ private fun CategoryCard(
     }
 }
 
-//@Preview(showBackground = true, showSystemUi = true)
-//@Composable
-//fun SearchScreenPreview() {
-//    Uwe_shopping_appTheme {
-//        SearchScreen()
-//    }
-//}
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun SearchScreenPreview() {
+    Uwe_shopping_appTheme {
+        val navController = rememberNavController()
+        SearchScreen(
+            navController = navController,
+            currentRoute = "search"
+        )
+    }
+}
 

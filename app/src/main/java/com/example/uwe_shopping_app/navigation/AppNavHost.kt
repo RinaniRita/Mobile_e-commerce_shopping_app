@@ -103,6 +103,35 @@ fun AppNavHost(navController: NavHostController, app: Application) {
             )
         }
 
+        //  ========== Result Search ============
+        composable(
+            route = "resultSearch/{query}",
+            arguments = listOf(
+                navArgument("query") {
+                    type = NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+            val query = backStackEntry.arguments?.getString("query") ?: ""
+            val currentRoute = navController.currentBackStackEntry?.destination?.route ?: "search"
+
+            ResultSearchScreen(
+                query = query,
+                navController = navController,
+                currentRoute = currentRoute,
+                onNavigate = { route ->
+                    navController.navigate(route) {
+                        launchSingleTop = true
+                        restoreState = true
+                        popUpTo("home") { saveState = true }
+                    }
+                },
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
         //  ========== Cart ============
         composable("cart") {
             val currentRoute = navController.currentBackStackEntry?.destination?.route ?: "cart"

@@ -4,7 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -21,6 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import com.example.uwe_shopping_app.ui.components.common.BottomNavigationBar
 import com.example.uwe_shopping_app.ui.components.product.VerticalProductGrid
 import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
@@ -28,6 +29,7 @@ import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
 @Composable
 fun ResultSearchScreen(
     query: String,
+    navController: NavHostController? = null,
     currentRoute: String = "search",
     onNavigate: (String) -> Unit = {},
     onBack: () -> Unit = {},
@@ -64,7 +66,7 @@ fun ResultSearchScreen(
                 ) {
                     IconButton(onClick = onBack) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
                             tint = Color.Black
                         )
@@ -111,12 +113,12 @@ fun ResultSearchScreen(
                 }
             }
 
-            BottomNavigationBar(
-                currentRoute = currentRoute,
-                onItemClick = onNavigate,
-                modifier = Modifier
-                    .fillMaxWidth()
-            )
+            navController?.let {
+                BottomNavigationBar(
+                    navController = it,
+                    currentRoute = currentRoute
+                )
+            }
         }
     }
 }
@@ -155,7 +157,7 @@ private fun SearchResultsHeader(
             shape = RoundedCornerShape(24.dp),
             color = Color.White,
             shadowElevation = 0.dp,
-            border = ButtonDefaults.outlinedButtonBorder
+            border = ButtonDefaults.outlinedButtonBorder(enabled = true)
         ) {
             Row(
                 modifier = Modifier
