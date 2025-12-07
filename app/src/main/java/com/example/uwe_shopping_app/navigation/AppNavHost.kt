@@ -70,67 +70,73 @@ fun AppNavHost(navController: NavHostController, app: Application) {
 
         // =========== Home ===========
         composable("home") {
+            val currentRoute = navController.currentBackStackEntry?.destination?.route ?: "home"
+
             HomeScreen(
+                navController = navController,
+                currentRoute = currentRoute,
                 onNavigate = { route ->
-                    if (route == "profile") {
-                        if (isLoggedIn) {
-                            navController.navigate("profile")
-                        } else {
-                            navController.navigate("login")
-                        }
-                    } else {
-                        navController.navigate(route)
+                    navController.navigate(route) {
+                        launchSingleTop = true
+                        restoreState = true
+                        popUpTo("home") { saveState = true }
                     }
                 }
             )
         }
 
+
         //  ========== Search ============
         composable("search") {
+            val currentRoute = navController.currentBackStackEntry?.destination?.route ?: "search"
+
             SearchScreen(
+                navController = navController,
+                currentRoute = currentRoute,
                 onNavigate = { route ->
-                    navController.navigate(route)
-                },
-                onNavigateToResults = { query ->
-                    val encodedQuery = java.net.URLEncoder.encode(query, "UTF-8")
-                    navController.navigate("resultSearch/$encodedQuery")
+                    navController.navigate(route) {
+                        launchSingleTop = true
+                        restoreState = true
+                        popUpTo("home") { saveState = true }
+                    }
                 }
             )
         }
 
-        composable(
-            route = "resultSearch/{query}",
-            arguments = listOf(
-                navArgument("query") { type = NavType.StringType }
-            )
-        ) { backStackEntry ->
-            val encodedQuery = backStackEntry.arguments?.getString("query").orEmpty()
-            val query = java.net.URLDecoder.decode(encodedQuery, "UTF-8")
+        //  ========== Cart ============
+        composable("cart") {
+            val currentRoute = navController.currentBackStackEntry?.destination?.route ?: "cart"
 
-            ResultSearchScreen(
-                query = query,
+            CartScreen(
+                navController = navController,
+                currentRoute = currentRoute,
                 onNavigate = { route ->
-                    navController.navigate(route)
-                },
-                onBack = { navController.popBackStack() }
+                    navController.navigate(route) {
+                        launchSingleTop = true
+                        restoreState = true
+                        popUpTo("home") { saveState = true }
+                    }
+                }
             )
         }
 
-        // =========== Profile ===========
-        composable("profile") { ProfileScreen() }
 
-        // =========== Product Detail ===========
-        composable(
-            route = "product/{productId}",
-            arguments = listOf(
-                navArgument("productId") { type = NavType.StringType }
-            )
-        ) { backStackEntry ->
-            val productId = backStackEntry.arguments?.getString("productId") ?: ""
-            ProductScreen(
-                productId = productId,
-                onBack = { navController.popBackStack() }
+        //  ========== Profile ============
+        composable("profile") {
+            val currentRoute = navController.currentBackStackEntry?.destination?.route ?: "profile"
+
+            ProfileScreen(
+                navController = navController,
+                currentRoute = currentRoute,
+                onNavigate = { route ->
+                    navController.navigate(route) {
+                        launchSingleTop = true
+                        restoreState = true
+                        popUpTo("home") { saveState = true }
+                    }
+                }
             )
         }
+
     }
 }

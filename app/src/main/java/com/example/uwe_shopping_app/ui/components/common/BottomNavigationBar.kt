@@ -12,43 +12,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
+import androidx.navigation.NavController
 
 sealed class BottomNavItem(
     val route: String,
     val title: String,
     val icon: ImageVector
 ) {
-    object Home : BottomNavItem(
-        route = "home",
-        title = "Home",
-        icon = Icons.Outlined.Home
-    )
-
-    object Search : BottomNavItem(
-        route = "search",
-        title = "Search",
-        icon = Icons.Outlined.Search
-    )
-
-    object Cart : BottomNavItem(
-        route = "cart",
-        title = "Cart",
-        icon = Icons.Outlined.ShoppingCart
-    )
-
-    object Profile : BottomNavItem(
-        route = "profile",
-        title = "Profile",
-        icon = Icons.Outlined.Person
-    )
+    object Home : BottomNavItem("home", "Home", Icons.Outlined.Home)
+    object Search : BottomNavItem("search", "Search", Icons.Outlined.Search)
+    object Cart : BottomNavItem("cart", "Cart", Icons.Outlined.ShoppingCart)
+    object Profile : BottomNavItem("profile", "Profile", Icons.Outlined.Person)
 }
 
 @Composable
 fun BottomNavigationBar(
-    currentRoute: String,
-    onItemClick: (String) -> Unit,
-    modifier: Modifier = Modifier
+    navController: NavController,
+    currentRoute: String
 ) {
     val items = listOf(
         BottomNavItem.Home,
@@ -58,7 +38,7 @@ fun BottomNavigationBar(
     )
 
     Surface(
-        modifier = modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
         color = Color.White,
         shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
         shadowElevation = 8.dp
@@ -72,16 +52,27 @@ fun BottomNavigationBar(
         ) {
             items.forEach { item ->
                 val isSelected = currentRoute == item.route
-                
+
                 IconButton(
-                    onClick = { onItemClick(item.route) },
+                    onClick = {
+                        if (item.route != currentRoute) {
+                            navController.navigate(item.route) {
+                                launchSingleTop = true
+                                restoreState = true
+
+                                popUpTo("home") {
+                                    saveState = true
+                                }
+                            }
+                        }
+                    },
                     modifier = Modifier.weight(1f)
                 ) {
                     Icon(
                         imageVector = item.icon,
                         contentDescription = item.title,
-                        modifier = Modifier.size(24.dp),
-                        tint = if (isSelected) Color.Black else Color(0xFF9E9E9E) // Light grey for unselected
+                        tint = if (isSelected) Color.Black else Color(0xFF9E9E9E),
+                        modifier = Modifier.size(24.dp)
                     )
                 }
             }
@@ -89,50 +80,3 @@ fun BottomNavigationBar(
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun BottomNavigationBarPreview() {
-    Uwe_shopping_appTheme {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.BottomCenter
-        ) {
-            BottomNavigationBar(
-                currentRoute = "home",
-                onItemClick = {}
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun BottomNavigationBarSearchSelectedPreview() {
-    Uwe_shopping_appTheme {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.BottomCenter
-        ) {
-            BottomNavigationBar(
-                currentRoute = "search",
-                onItemClick = {}
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun BottomNavigationBarCartSelectedPreview() {
-    Uwe_shopping_appTheme {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.BottomCenter
-        ) {
-            BottomNavigationBar(
-                currentRoute = "cart",
-                onItemClick = {}
-            )
-        }
-    }
-}

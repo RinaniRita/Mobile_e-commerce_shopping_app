@@ -27,10 +27,14 @@ import com.example.uwe_shopping_app.ui.components.common.BottomNavigationBar
 import com.example.uwe_shopping_app.ui.components.common.TopAppBar
 import com.example.uwe_shopping_app.ui.components.product.ProductGrid
 import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
+import androidx.navigation.NavHostController
+
 
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = HomeViewModel(),
+    navController: NavHostController,
+    currentRoute: String,
     onNavigate: (String) -> Unit = {}
 ) {
     val uiState = viewModel.uiState
@@ -91,10 +95,8 @@ fun HomeScreen(
             }
 
             BottomNavigationBar(
-                currentRoute = "home",
-                onItemClick = onNavigate,
-                modifier = Modifier
-                    .fillMaxWidth()
+                navController = navController,
+                currentRoute = currentRoute,
             )
         }
     }
@@ -265,10 +267,10 @@ private fun HighlightCard(
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun HomeScreenPreview() {
-    Uwe_shopping_appTheme {
-        HomeScreen()
-    }
-}
+//@Preview(showBackground = true, showSystemUi = true)
+//@Composable
+//fun HomeScreenPreview() {
+//    Uwe_shopping_appTheme {
+//        HomeScreen()
+//    }
+//}
