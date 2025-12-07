@@ -10,6 +10,8 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -22,15 +24,18 @@ import androidx.compose.ui.unit.sp
 import com.example.uwe_shopping_app.R
 import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.uwe_shopping_app.ui.components.common.BottomNavigationBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
-    onEditClick: () -> Unit = {},
+    onEditClick: () -> Unit = {},                    // Nhấn bánh răng sẽ gọi cái này
     currentRoute: String = "profile",
     onNavigate: (String) -> Unit = {}
 ) {
+    val viewModel: ProfileViewModel = viewModel()
+    val user by viewModel.user.collectAsState()
 
     Scaffold(
         bottomBar = {
@@ -40,57 +45,43 @@ fun ProfileScreen(
             )
         }
     ) { innerPadding ->
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp)
         ) {
-
             Spacer(Modifier.height(16.dp))
-
             // ---------------- HEADER WITH AVATAR, NAME, EMAIL, SETTINGS ICON ----------------
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Avatar with pink background
-                Box(
+                Image(
+                    painter = painterResource(id = R.drawable.ic_profile_placeholder),
+                    contentDescription = "Avatar",
                     modifier = Modifier
                         .size(60.dp)
-                        .background(Color(0xFFFFC0CB), CircleShape)
                         .clip(CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_profile_placeholder),
-                        contentDescription = "Avatar",
-                        modifier = Modifier.size(60.dp),
-                        contentScale = ContentScale.Crop
-                    )
-                }
-
+                    contentScale = ContentScale.Crop
+                )
                 Spacer(Modifier.width(16.dp))
-
-                // Name and Email
+                // Name and Email từ ViewModel
                 Column {
                     Text(
-                        text = "Sunie Pham",
+                        text = user?.name.orEmpty(),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF222222)
                     )
                     Text(
-                        text = "sunieux@gmail.com",
+                        text = user?.email.orEmpty(),
                         fontSize = 14.sp,
                         color = Color(0xFF808080)
                     )
                 }
-
                 Spacer(Modifier.weight(1f))
-
-                // Settings icon (gear)
+                // Biểu tượng bánh răng → chuyển sang ProfileSetting
                 IconButton(onClick = onEditClick) {
                     Icon(
                         imageVector = Icons.Default.Settings,
@@ -99,9 +90,7 @@ fun ProfileScreen(
                     )
                 }
             }
-
             Spacer(Modifier.height(32.dp))
-
             // ---------------- MENU ITEMS ----------------
             val menuItems = listOf(
                 "Address" to Icons.Default.LocationOn,
@@ -111,12 +100,16 @@ fun ProfileScreen(
                 "Rate this app" to Icons.Outlined.StarBorder,
                 "Log out" to Icons.Default.ExitToApp
             )
-
             menuItems.forEach { (text, icon) ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { /* Handle click */ }
+                        .clickable {
+                            if (text == "Log out") {
+                                viewModel.logout()
+                                onNavigate("login")
+                            }
+                        }
                         .padding(vertical = 16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -144,9 +137,6 @@ fun ProfileScreen(
     }
 }
 
-// --------------------------------------------------------------------------------------------
-// PREVIEW
-// --------------------------------------------------------------------------------------------
 @Preview(showBackground = true, widthDp = 375, heightDp = 800)
 @Composable
 fun ProfileScreenPreview() {

@@ -1,6 +1,10 @@
 package com.example.uwe_shopping_app.data.local.database
 
+
+
+import android.content.Context
 import androidx.room.Database
+import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.uwe_shopping_app.data.local.dao.CartDao
 import com.example.uwe_shopping_app.data.local.dao.CartItemDao
@@ -35,4 +39,24 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun orderItemDao(): OrderItemDao
     abstract fun cartDao(): CartDao
     abstract fun cartItemDao(): CartItemDao
+
+    companion object {
+        @Volatile
+        private var INSTANCE: AppDatabase? = null
+
+        fun getInstance(context: Context): AppDatabase {
+            return INSTANCE ?: synchronized(this) {
+                val instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    AppDatabase::class.java,
+                    "uwe_shopping_db"
+                )
+                    .fallbackToDestructiveMigration()   //
+                    .build()
+
+                INSTANCE = instance
+                instance
+            }
+        }
+    }
 }

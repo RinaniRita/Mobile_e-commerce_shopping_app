@@ -75,6 +75,8 @@ fun SignUpScreen(
                 CoroutineScope(Dispatchers.Main).launch {
                     val success = repo.registerUser(name, email, password)
                     if (success) {
+                        // FIX: Thêm logic lưu email của người dùng
+                        session.setUserEmail(email)
                         session.setLoggedIn(true)
                         onSignUpSuccess()
                     } else {
