@@ -17,10 +17,12 @@ import com.example.uwe_shopping_app.ui.components.order.OrderCard
 import com.example.uwe_shopping_app.ui.components.order.OrderItem
 import com.example.uwe_shopping_app.ui.components.order.OrderStatus
 import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
+import androidx.navigation.NavHostController
 
 @Composable
 fun CartScreen(
-    currentRoute: String = "cart",
+    navController: NavHostController,
+    currentRoute: String,
     onNavigate: (String) -> Unit = {}
 ) {
     var selectedTab by remember { mutableStateOf(OrderStatus.PENDING) }
@@ -42,8 +44,8 @@ fun CartScreen(
         },
         bottomBar = {
             BottomNavigationBar(
+                navController = navController,
                 currentRoute = currentRoute,
-                onItemClick = onNavigate
             )
         }
     ) { padding ->
@@ -88,50 +90,50 @@ fun CartScreen(
 
 // ================= Screen Previews ===================
 
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun CartScreenPreview() {
-    Uwe_shopping_appTheme {
-        CartScreen()
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun CartScreenDeliveredPreview() {
-    Uwe_shopping_appTheme {
-        var status by remember { mutableStateOf(OrderStatus.DELIVERED) }
-
-        // Manually set delivered tab for preview
-        Column {
-            Text("Delivered", Modifier.padding(16.dp), fontWeight = FontWeight.Bold)
-
-            LazyColumn {
-                items(
-                    listOf(
-                        OrderItem("1514", "IK987362534", 2, 110.0, "13/05/2021", OrderStatus.DELIVERED),
-                        OrderItem("1679", "IK3873218890", 3, 450.0, "12/05/2021", OrderStatus.DELIVERED)
-                    )
-                ) {
-                    OrderCard(order = it, onDetailsClick = {})
-                }
-            }
-        }
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun CartScreenCancelledPreview() {
-    Uwe_shopping_appTheme {
-        LazyColumn {
-            items(
-                listOf(
-                    OrderItem("1200", "IK11112222", 1, 50.0, "09/05/2021", OrderStatus.CANCELLED)
-                )
-            ) {
-                OrderCard(order = it, onDetailsClick = {})
-            }
-        }
-    }
-}
+//@Preview(showBackground = true, showSystemUi = true)
+//@Composable
+//fun CartScreenPreview() {
+//    Uwe_shopping_appTheme {
+//        CartScreen()
+//    }
+//}
+//
+//@Preview(showBackground = true, showSystemUi = true)
+//@Composable
+//fun CartScreenDeliveredPreview() {
+//    Uwe_shopping_appTheme {
+//        var status by remember { mutableStateOf(OrderStatus.DELIVERED) }
+//
+//        // Manually set delivered tab for preview
+//        Column {
+//            Text("Delivered", Modifier.padding(16.dp), fontWeight = FontWeight.Bold)
+//
+//            LazyColumn {
+//                items(
+//                    listOf(
+//                        OrderItem("1514", "IK987362534", 2, 110.0, "13/05/2021", OrderStatus.DELIVERED),
+//                        OrderItem("1679", "IK3873218890", 3, 450.0, "12/05/2021", OrderStatus.DELIVERED)
+//                    )
+//                ) {
+//                    OrderCard(order = it, onDetailsClick = {})
+//                }
+//            }
+//        }
+//    }
+//}
+//
+//@Preview(showBackground = true, showSystemUi = true)
+//@Composable
+//fun CartScreenCancelledPreview() {
+//    Uwe_shopping_appTheme {
+//        LazyColumn {
+//            items(
+//                listOf(
+//                    OrderItem("1200", "IK11112222", 1, 50.0, "09/05/2021", OrderStatus.CANCELLED)
+//                )
+//            ) {
+//                OrderCard(order = it, onDetailsClick = {})
+//            }
+//        }
+//    }
+//}

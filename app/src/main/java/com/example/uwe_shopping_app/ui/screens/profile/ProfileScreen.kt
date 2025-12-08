@@ -1,11 +1,13 @@
 package com.example.uwe_shopping_app.ui.screens.profile
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -21,6 +23,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.uwe_shopping_app.R
 import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
 import androidx.compose.ui.tooling.preview.Preview
@@ -30,7 +35,7 @@ import com.example.uwe_shopping_app.ui.components.common.BottomNavigationBar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
-    onEditClick: () -> Unit = {},                    // Nhấn bánh răng sẽ gọi cái này
+    navController: NavController,
     currentRoute: String = "profile",
     onNavigate: (String) -> Unit = {}
 ) {
@@ -40,8 +45,8 @@ fun ProfileScreen(
     Scaffold(
         bottomBar = {
             BottomNavigationBar(
+                navController = navController,
                 currentRoute = currentRoute,
-                onItemClick = onNavigate
             )
         }
     ) { innerPadding ->
@@ -82,7 +87,10 @@ fun ProfileScreen(
                 }
                 Spacer(Modifier.weight(1f))
                 // Biểu tượng bánh răng → chuyển sang ProfileSetting
-                IconButton(onClick = onEditClick) {
+
+                IconButton(onClick = {
+                    onNavigate("profile_setting")
+                }) {
                     Icon(
                         imageVector = Icons.Default.Settings,
                         contentDescription = "Edit Profile",
@@ -98,7 +106,7 @@ fun ProfileScreen(
                 "Voucher" to Icons.Default.LocalOffer,
                 "My Wishlist" to Icons.Outlined.FavoriteBorder,
                 "Rate this app" to Icons.Outlined.StarBorder,
-                "Log out" to Icons.Default.ExitToApp
+                "Log out" to Icons.AutoMirrored.Filled.ExitToApp
             )
             menuItems.forEach { (text, icon) ->
                 Row(
@@ -127,7 +135,8 @@ fun ProfileScreen(
                     )
                     Spacer(Modifier.weight(1f))
                     Icon(
-                        imageVector = Icons.Default.KeyboardArrowRight,
+                        // SỬA: Dùng AutoMirrored
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                         contentDescription = null,
                         tint = Color(0xFF222222)
                     )
@@ -141,6 +150,9 @@ fun ProfileScreen(
 @Composable
 fun ProfileScreenPreview() {
     Uwe_shopping_appTheme {
-        ProfileScreen()
+        ProfileScreen(
+            navController = rememberNavController(),
+            onNavigate = {}
+        )
     }
 }

@@ -1,7 +1,12 @@
 package com.example.uwe_shopping_app.navigation
 
 import android.app.Application
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -20,89 +25,134 @@ import kotlinx.coroutines.flow.collectLatest
 fun AppNavHost(navController: NavHostController, app: Application) {
 
     val session = remember { SessionManager(app) }
-    var isLoggedIn by remember { mutableStateOf(false) }
+
+    var isLoggedIn by remember { mutableStateOf<Boolean?>(null) }
 
     LaunchedEffect(Unit) {
         session.isLoggedIn.collectLatest { isLoggedIn = it }
     }
 
-    NavHost(
-        navController = navController,
-        startDestination = if (isLoggedIn) "home" else "welcome"
-    ) {
-
-        // =========== Onboarding ===========
-        composable("welcome") {
-            WelcomeScreen(
-                onGetStarted = {
-                    navController.navigate("login") {
-                        popUpTo("welcome") { inclusive = true }
-                    }
-                }
-            )
+    if (isLoggedIn == null) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
         }
+    } else {
+        NavHost(
+            navController = navController,
+            startDestination = if (isLoggedIn == true) "home" else "welcome"
+        ) {
 
-        // =========== Auth ===========
-        composable("login") {
-            LoginScreen(
-                onLoginSuccess = {
-                    navController.navigate("home") {
-                        popUpTo("login") { inclusive = true }
-                    }
-                },
-                onNavigateToSignUp = { navController.navigate("signup") }
-            )
-        }
-
-        composable("signup") {
-            SignUpScreen(
-                onSignUpSuccess = {
-                    navController.navigate("home") {
-                        popUpTo("signup") { inclusive = true }
-                    }
-                },
-                onNavigateToLogin = { navController.navigate("login") }
-            )
-        }
-
-        // =========== Home ===========
-        composable("home") {
-            HomeScreen(
-                onNavigate = { route ->
-                    if (route == "profile") {
-                        if (isLoggedIn) {
-                            navController.navigate("profile")
-                        } else {
-                            navController.navigate("login")
+            // =========== Onboarding ===========
+            composable("welcome") {
+                WelcomeScreen(
+                    onGetStarted = {
+                        navController.navigate("login") {
+                            popUpTo("welcome") { inclusive = true }
                         }
-                    } else {
-                        navController.navigate(route)
                     }
-                }
-            )
-        }
+                )
+            }
 
-        //  ========== Search ============
-        composable("search") { SearchScreen() }
+            // =========== Auth ===========
+            composable("login") {
+                LoginScreen(
+                    onLoginSuccess = {
+                        navController.navigate("home") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    },
+                    onNavigateToSignUp = { navController.navigate("signup") }
+                )
+            }
 
-// =========== Profile ===========
-        composable("profile") {
-            ProfileScreen(
-                onEditClick = {
-                    navController.navigate("profile_setting")
-                },
-                currentRoute = "profile",
-                onNavigate = { route ->
-                    navController.navigate(route)
-                }
-            )
-        }
+            composable("signup") {
+                SignUpScreen(
+                    onSignUpSuccess = {
+                        navController.navigate("home") {
+                            popUpTo("signup") { inclusive = true }
+                        }
+                    },
+                    onNavigateToLogin = { navController.navigate("login") }
+                )
+            }
 
-        // =========== Profile Setting (MỚI) ===========
-        composable("profile_setting") {
-            ProfileSetting(
-                onBack = { navController.popBackStack() }
-            )
+            // =========== Home ===========
+            composable("home") {
+                val currentRoute = navController.currentBackStackEntry?.destination?.route ?: "home"
+
+                HomeScreen(
+                    navController = navController,
+                    currentRoute = currentRoute,
+                    onNavigate = { route ->
+                        navController.navigate(route) {
+                            launchSingleTop = true
+                            restoreState = true
+                            popUpTo("home") { saveState = true }
+                        }
+                    }
+                )
+            }
+
+            //  ========== Search ============
+            composable("search") {
+                val currentRoute = navController.currentBackStackEntry?.destination?.route ?: "search"
+
+                SearchScreen(
+                    navController = navController,
+                    currentRoute = currentRoute,
+                    onNavigate = { route ->
+                        navController.navigate(route) {
+                            launchSingleTop = true
+                            restoreState = true
+                            popUpTo("home") { saveState = true }
+                        }
+                    }
+                )
+            }
+
+            //  ========== Cart ============
+            composable("cart") {
+                val currentRoute = navController.currentBackStackEntry?.destination?.route ?: "cart"
+
+                CartScreen(
+                    navController = navController,
+                    currentRoute = currentRoute,
+                    onNavigate = { route ->
+                        navController.navigate(route) {
+                            launchSingleTop = true
+                            restoreState = true
+                            popUpTo("home") { saveState = true }
+                        }
+                    }
+                )
+            }
+
+            //  ========== Profile ============
+            composable("profile") {
+                val currentRoute = navController.currentBackStackEntry?.destination?.route ?: "profile"
+
+                ProfileScreen(
+                    navController = navController,
+                    currentRoute = currentRoute,
+                    onNavigate = { route ->
+                        navController.navigate(route) {
+                            launchSingleTop = true
+                            restoreState = true
+                            popUpTo("home") { saveState = true }
+                        }
+                    }
+                )
+            }
+
+            // =========== Profile Setting ===========
+            composable("profile_setting") {
+                ProfileSetting(
+                    onBack = { navController.popBackStack() }
+                )
+            }
         }
     }
 }
