@@ -10,6 +10,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -22,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import com.example.uwe_shopping_app.R
 import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 // --------------------------------------------------------------------------------------------
 // UNDERLINED TEXT FIELD
@@ -35,16 +38,13 @@ fun UnderlinedField(
     modifier: Modifier = Modifier
 ) {
     Column(modifier.fillMaxWidth()) {
-
         Text(
             text = label,
             fontSize = 13.sp,
             color = Color(0xFFB4B1C2),
             fontWeight = FontWeight.Medium
         )
-
         Spacer(Modifier.height(4.dp))
-
         TextField(
             value = value,
             onValueChange = onValueChange,
@@ -62,7 +62,6 @@ fun UnderlinedField(
                 color = Color(0xFF222222)
             )
         )
-
         Divider(
             color = Color(0xFFE5E5E5),
             thickness = 1.dp,
@@ -71,10 +70,26 @@ fun UnderlinedField(
     }
 }
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileSetting() {
+fun ProfileSetting(onBack: () -> Unit = {}) {
+    val viewModel: ProfileViewModel = viewModel()
+    val user by viewModel.user.collectAsState()
+
+    // States for fields, initialized from the user data.
+    var name by remember { mutableStateOf(user?.name.orEmpty()) }
+    var email by remember { mutableStateOf(user?.email.orEmpty()) }
+    var gender by remember { mutableStateOf("Female") }
+    var phone by remember { mutableStateOf(user?.phone.orEmpty()) }
+
+    // Update states when user data is loaded/updated
+    LaunchedEffect(user) {
+        user?.let {
+            name = it.name
+            email = it.email
+            phone = it.phone.orEmpty()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -88,7 +103,7 @@ fun ProfileSetting() {
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { }) {
+                    IconButton(onClick = onBack ) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_back),
                             contentDescription = "Back",
@@ -102,7 +117,6 @@ fun ProfileSetting() {
             )
         }
     ) { innerPadding ->
-
         LazyColumn(
             modifier = Modifier
                 .padding(innerPadding)
@@ -110,17 +124,13 @@ fun ProfileSetting() {
                 .padding(horizontal = 28.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
             item { Spacer(Modifier.height(20.dp)) }
-
             // ---------------- AVATAR ----------------
             item {
                 Box(
                     modifier = Modifier.size(150.dp),
                     contentAlignment = Alignment.BottomEnd
                 ) {
-
-                    // Avatar KHÔNG nền hồng
                     Image(
                         painter = painterResource(id = R.drawable.ic_profile_placeholder),
                         contentDescription = "Avatar",
@@ -129,9 +139,7 @@ fun ProfileSetting() {
                             .clip(CircleShape),
                         contentScale = ContentScale.Crop
                     )
-
-
-                    // Nút camera đẹp như Figma
+                    // Figma-style camera button
                     Box(
                         modifier = Modifier
                             .offset(x = (-6).dp, y = (-6).dp)
@@ -150,40 +158,30 @@ fun ProfileSetting() {
                         )
                     }
                 }
-
                 Spacer(Modifier.height(32.dp))
             }
-
             // ---------------- FIRST + LAST NAME ----------------
             item {
-                var firstName by remember { mutableStateOf("Sunie") }
-                var lastName by remember { mutableStateOf("Pham") }
-
                 Row(
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
-                    UnderlinedField("First Name", firstName, { firstName = it }, Modifier.weight(1f))
-                    UnderlinedField("Last Name", lastName, { lastName = it }, Modifier.weight(1f))
+                    UnderlinedField(
+                        label = "Name",
+                        value = name,
+                        onValueChange = { name = it },
+                        modifier = Modifier.weight(1f)
+                    )
                 }
-
                 Spacer(Modifier.height(20.dp))
             }
-
             // ---------------- EMAIL ----------------
             item {
-                var email by remember { mutableStateOf("sunieux@gmail.com") }
-
                 UnderlinedField("Email", email, { email = it })
-
                 Spacer(Modifier.height(20.dp))
             }
-
             // ---------------- GENDER + PHONE ----------------
             item {
-                var gender by remember { mutableStateOf("Female") }
-                var phone by remember { mutableStateOf("(+1) 23456789") }
-
                 Row(
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(24.dp)
@@ -191,14 +189,28 @@ fun ProfileSetting() {
                     UnderlinedField("Gender", gender, { gender = it }, Modifier.weight(1f))
                     UnderlinedField("Phone", phone, { phone = it }, Modifier.weight(1f))
                 }
-
                 Spacer(Modifier.height(50.dp))
             }
-
             // ---------------- SAVE BUTTON ----------------
             item {
                 Button(
-                    onClick = { },
+                    onClick = {
+                        // Basic validation
+                        if (name.isNotBlank() && email.isNotBlank()) {
+                            // Ensure the user object exists before copying and updating
+                            user?.let { currentUser ->
+                                val updatedUser = currentUser.copy(
+                                    name = name,
+                                    email = email,
+                                    phone = phone
+                                )
+                                // Call the update function in the ViewModel
+                                viewModel.updateUser(updatedUser)
+                            }
+                        } else {
+                            // Can add a Toast or Snackbar error message here
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(55.dp),
@@ -210,14 +222,11 @@ fun ProfileSetting() {
                 ) {
                     Text("Save change", fontSize = 16.sp)
                 }
-
                 Spacer(Modifier.height(40.dp))
             }
         }
     }
 }
-
-
 
 // --------------------------------------------------------------------------------------------
 // PREVIEW

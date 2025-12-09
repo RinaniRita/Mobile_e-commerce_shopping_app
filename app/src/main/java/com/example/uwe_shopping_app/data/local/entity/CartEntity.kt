@@ -3,12 +3,9 @@ package com.example.uwe_shopping_app.data.local.entity
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "users")
-data class UserEntity(
+@Entity(tableName = "carts")
+data class CartEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val name: String,
-    val email: String,
-    val password: String,  // hashed in real apps
-    val phone: String? = null,
+    val userId: Int,
     val createdAt: Long = System.currentTimeMillis()
 )

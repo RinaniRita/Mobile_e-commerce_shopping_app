@@ -84,13 +84,13 @@ fun SearchScreen(
                         Spacer(modifier = Modifier.height(8.dp))
                         CategoryChipsRow()
                         Spacer(modifier = Modifier.height(16.dp))
-                        
+
                         // Show category/collection cards
                         CategoryCardsSection()
                     } else {
                         // Show search results
                         Spacer(modifier = Modifier.height(8.dp))
-                        
+
                         if (uiState.searchResults.isEmpty()) {
                             // No results found
                             Box(
@@ -117,7 +117,7 @@ fun SearchScreen(
                             ProductGrid(products = uiState.searchResults)
                         }
                     }
-                    
+
                     Spacer(modifier = Modifier.height(80.dp))
                 }
             }
