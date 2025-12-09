@@ -10,10 +10,13 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
+import androidx.navigation.NavType
 import com.example.uwe_shopping_app.data.local.session.SessionManager
 import com.example.uwe_shopping_app.ui.screens.onboarding.WelcomeScreen
 import com.example.uwe_shopping_app.ui.screens.home.HomeScreen
 import com.example.uwe_shopping_app.ui.screens.search.SearchScreen
+import com.example.uwe_shopping_app.ui.screens.resultSearch.ResultSearchScreen
 import com.example.uwe_shopping_app.ui.screens.cart.CartScreen
 import com.example.uwe_shopping_app.ui.screens.profile.ProfileScreen
 import com.example.uwe_shopping_app.ui.screens.profile.ProfileSetting
@@ -112,6 +115,36 @@ fun AppNavHost(navController: NavHostController, app: Application) {
                     }
                 )
             }
+
+            //  ========== Result Search ============
+            composable(
+                route = "resultSearch/{query}",
+                arguments = listOf(
+                    navArgument("query") {
+                        type = NavType.StringType
+                    }
+                )
+            ) { backStackEntry ->
+                val query = backStackEntry.arguments?.getString("query") ?: ""
+                val currentRoute = navController.currentBackStackEntry?.destination?.route ?: "search"
+
+                ResultSearchScreen(
+                    query = query,
+                    navController = navController,
+                    currentRoute = currentRoute,
+                    onNavigate = { route ->
+                        navController.navigate(route) {
+                            launchSingleTop = true
+                            restoreState = true
+                            popUpTo("home") { saveState = true }
+                        }
+                    },
+                    onBack = {
+                        navController.popBackStack()
+                    }
+                )
+            }
+
 
             //  ========== Cart ============
             composable("cart") {
