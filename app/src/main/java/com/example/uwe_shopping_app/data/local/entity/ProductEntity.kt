@@ -9,7 +9,8 @@ data class ProductEntity(
     val name: String,
     val description: String,
     val price: Double,
-    val imageUrl: String,
+    // String -> Int
+    val imageResId: Int,
     val stock: Int,
     val category: String,
     val createdAt: Long = System.currentTimeMillis()

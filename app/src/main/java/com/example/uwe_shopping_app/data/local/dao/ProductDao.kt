@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
+import androidx.room.OnConflictStrategy
 import com.example.uwe_shopping_app.data.local.entity.ProductEntity
 
 @Dao
@@ -39,4 +40,10 @@ interface ProductDao {
     // Nếu cần update stock sau order, thêm:
     @Update
     suspend fun updateProduct(product: ProductEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(products: List<ProductEntity>)
+
+    @Query("SELECT COUNT(*) FROM products")
+    suspend fun getProductCount(): Int
 }

@@ -35,4 +35,12 @@ class ProductRepository {
     suspend fun getProductById(id: Int): ProductEntity? {
         return productDao.getProductById(id)
     }
+
+    suspend fun getProductCount(): Int {
+        return productDao.getProductCount()
+    }
+
+    suspend fun insertAll(products: List<ProductEntity>) {
+        productDao.insertAll(products)
+    }
 }
