@@ -2,86 +2,145 @@ package com.example.uwe_shopping_app.ui.screens.cart
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.uwe_shopping_app.ui.components.common.BottomNavigationBar
-import com.example.uwe_shopping_app.ui.components.common.TopAppBar
-import com.example.uwe_shopping_app.ui.components.order.OrderCard
-import com.example.uwe_shopping_app.ui.components.order.OrderItem
-import com.example.uwe_shopping_app.ui.components.order.OrderStatus
-import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
+import com.example.uwe_shopping_app.ui.components.cart.CartHeader
+import com.example.uwe_shopping_app.ui.components.cart.CartItemCard
+import com.example.uwe_shopping_app.ui.components.cart.OrderSummaryCard
+import com.example.uwe_shopping_app.ui.components.common.BottomNavigationBar
+import com.example.uwe_shopping_app.ui.components.common.EmptyState
+import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
 
 @Composable
 fun CartScreen(
     navController: NavHostController,
     currentRoute: String,
-    onNavigate: (String) -> Unit = {}
+    viewModel: CartViewModel = viewModel()
 ) {
-    var selectedTab by remember { mutableStateOf(OrderStatus.PENDING) }
-
-    val allOrders = listOf(
-        OrderItem("1524", "IK287368838", 2, 110.0, "13/05/2021", OrderStatus.PENDING),
-        OrderItem("1525", "IK2873218897", 3, 230.0, "12/05/2021", OrderStatus.PENDING),
-        OrderItem("1514", "IK987362534", 2, 110.0, "13/05/2021", OrderStatus.DELIVERED),
-        OrderItem("1679", "IK3873218890", 3, 450.0, "12/05/2021", OrderStatus.DELIVERED),
-        OrderItem("1671", "IK237368881", 3, 400.0, "10/05/2021", OrderStatus.DELIVERED),
-        OrderItem("1200", "IK11112222", 1, 50.0, "09/05/2021", OrderStatus.CANCELLED)
-    )
-
-    val filteredOrders = allOrders.filter { it.status == selectedTab }
+    val uiState by viewModel.uiState.collectAsState()
+    val error = uiState.error
 
     Scaffold(
         topBar = {
-            TopAppBar()
+            CartHeader(
+                onBackClick = { navController.popBackStack() }
+            )
         },
         bottomBar = {
             BottomNavigationBar(
                 navController = navController,
                 currentRoute = currentRoute,
             )
-        }
-    ) { padding ->
+        },
+        containerColor = Color(0xFFF5F5F5)
+    ) { paddingValues ->
         Column(
             modifier = Modifier
-                .padding(padding)
                 .fillMaxSize()
+                .padding(paddingValues)
+                .background(Color(0xFFF5F5F5))
         ) {
-
-            // ===== Tabs =====
-            TabRow(
-                selectedTabIndex = selectedTab.ordinal,
-                containerColor = Color.White
-            ) {
-                OrderStatus.entries.forEach { status ->
-                    Tab(
-                        selected = selectedTab == status,
-                        onClick = { selectedTab = status },
-                        text = {
-                            Text(
-                                status.name,
-                                fontWeight = if (selectedTab == status) FontWeight.Bold else FontWeight.Normal
+            if (uiState.isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            } else if (error != null) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = error,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(onClick = { viewModel.loadCart() }) {
+                            Text("Retry")
+                        }
+                    }
+                }
+            } else if (uiState.cartItems.isEmpty()) {
+                EmptyState(
+                    message = "Your cart is empty",
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    // Cart Items List
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        uiState.cartItems.forEach { item ->
+                            CartItemCard(
+                                item = item,
+                                onToggleSelection = { viewModel.toggleItemSelection(it) },
+                                onQuantityDecrease = { viewModel.decreaseQuantity(it) },
+                                onQuantityIncrease = { viewModel.increaseQuantity(it) }
                             )
                         }
-                    )
-                }
-            }
+                    }
 
-            // ===== Order list =====
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color(0xFFF5F5F5))
-            ) {
-                items(filteredOrders) { order ->
-                    OrderCard(order = order, onDetailsClick = {})
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Order Summary
+                    OrderSummaryCard(
+                        productPrice = uiState.productPrice,
+                        shipping = "Free shipping",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Proceed to Checkout Button
+                    Button(
+                        onClick = { navController.navigate("checkout") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                            .height(56.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF424242) // Dark grey
+                        )
+                    ) {
+                        Text(
+                            text = "Proceed to checkout",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
         }
@@ -90,50 +149,125 @@ fun CartScreen(
 
 // ================= Screen Previews ===================
 
-//@Preview(showBackground = true, showSystemUi = true)
-//@Composable
-//fun CartScreenPreview() {
-//    Uwe_shopping_appTheme {
-//        CartScreen()
-//    }
-//}
-//
-//@Preview(showBackground = true, showSystemUi = true)
-//@Composable
-//fun CartScreenDeliveredPreview() {
-//    Uwe_shopping_appTheme {
-//        var status by remember { mutableStateOf(OrderStatus.DELIVERED) }
-//
-//        // Manually set delivered tab for preview
-//        Column {
-//            Text("Delivered", Modifier.padding(16.dp), fontWeight = FontWeight.Bold)
-//
-//            LazyColumn {
-//                items(
-//                    listOf(
-//                        OrderItem("1514", "IK987362534", 2, 110.0, "13/05/2021", OrderStatus.DELIVERED),
-//                        OrderItem("1679", "IK3873218890", 3, 450.0, "12/05/2021", OrderStatus.DELIVERED)
-//                    )
-//                ) {
-//                    OrderCard(order = it, onDetailsClick = {})
-//                }
-//            }
-//        }
-//    }
-//}
-//
-//@Preview(showBackground = true, showSystemUi = true)
-//@Composable
-//fun CartScreenCancelledPreview() {
-//    Uwe_shopping_appTheme {
-//        LazyColumn {
-//            items(
-//                listOf(
-//                    OrderItem("1200", "IK11112222", 1, 50.0, "09/05/2021", OrderStatus.CANCELLED)
-//                )
-//            ) {
-//                OrderCard(order = it, onDetailsClick = {})
-//            }
-//        }
-//    }
-//}
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun CartScreenPreview() {
+    Uwe_shopping_appTheme {
+        val viewModel = remember { CartViewModel() }
+        val uiState by viewModel.uiState.collectAsState()
+        val error = uiState.error
+
+        Scaffold(
+            topBar = {
+                CartHeader(
+                    onBackClick = { }
+                )
+            },
+            bottomBar = {
+                BottomNavigationBar(
+                    navController = rememberNavController(),
+                    currentRoute = "cart",
+                )
+            },
+            containerColor = Color(0xFFF5F5F5)
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .background(Color(0xFFF5F5F5))
+            ) {
+                if (uiState.isLoading) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                } else if (error != null) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = error,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(onClick = { viewModel.loadCart() }) {
+                                Text("Retry")
+                            }
+                        }
+                    }
+                } else if (uiState.cartItems.isEmpty()) {
+                    EmptyState(
+                        message = "Your cart is empty",
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        // Cart Items List
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            uiState.cartItems.forEach { item ->
+                                CartItemCard(
+                                    item = item,
+                                    onToggleSelection = { viewModel.toggleItemSelection(it) },
+                                    onQuantityDecrease = { viewModel.decreaseQuantity(it) },
+                                    onQuantityIncrease = { viewModel.increaseQuantity(it) }
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Order Summary
+                        OrderSummaryCard(
+                            productPrice = uiState.productPrice,
+                            shipping = "Free shipping",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Proceed to Checkout Button
+                        Button(
+                            onClick = { viewModel.proceedToCheckout() },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                                .height(56.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF424242) // Dark grey
+                            )
+                        ) {
+                            Text(
+                                text = "Proceed to checkout",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+                }
+            }
+        }
+    }
+}

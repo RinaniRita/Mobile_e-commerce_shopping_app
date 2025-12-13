@@ -19,6 +19,7 @@ import com.example.uwe_shopping_app.ui.screens.product.ProductScreen
 import com.example.uwe_shopping_app.ui.screens.search.SearchScreen
 import com.example.uwe_shopping_app.ui.screens.resultSearch.ResultSearchScreen
 import com.example.uwe_shopping_app.ui.screens.cart.CartScreen
+import com.example.uwe_shopping_app.ui.screens.checkout.CheckoutScreen
 import com.example.uwe_shopping_app.ui.screens.profile.ProfileScreen
 import com.example.uwe_shopping_app.ui.screens.profile.ProfileSetting
 import com.example.uwe_shopping_app.ui.screens.auth.LoginScreen
@@ -170,14 +171,14 @@ fun AppNavHost(navController: NavHostController, app: Application) {
 
                 CartScreen(
                     navController = navController,
-                    currentRoute = currentRoute,
-                    onNavigate = { route ->
-                        navController.navigate(route) {
-                            launchSingleTop = true
-                            restoreState = true
-                            popUpTo("home") { saveState = true }
-                        }
-                    }
+                    currentRoute = currentRoute
+                )
+            }
+
+            //  ========== Checkout ============
+            composable("checkout") {
+                CheckoutScreen(
+                    navController = navController
                 )
             }
 
