@@ -10,17 +10,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.uwe_shopping_app.domain.model.Product
+import com.example.uwe_shopping_app.data.local.entity.ProductEntity
 import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
 
-/**
- * Dedicated vertical grid for search/listing screens.
- */
 @Composable
 fun VerticalProductGrid(
-    products: List<Product>,
+    products: List<ProductEntity>,
     modifier: Modifier = Modifier,
-    onProductClick: (Product) -> Unit = {}
+    onProductClick: (ProductEntity) -> Unit = {}
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
@@ -45,12 +42,25 @@ private fun VerticalProductGridPreview() {
     Uwe_shopping_appTheme {
         VerticalProductGrid(
             products = listOf(
-                Product(id = "1", name = "Linen Dress", price = 52.00),
-                Product(id = "2", name = "Fitted Waist Dress", price = 47.99),
-                Product(id = "3", name = "Maxi Dress", price = 68.00),
-                Product(id = "4", name = "Front Tie Dress", price = 59.00)
+                ProductEntity(
+                    id = 1,
+                    name = "Linen Dress",
+                    description = "Light dress",
+                    price = 52.00,
+                    imageResId = android.R.drawable.ic_menu_gallery,
+                    stock = 10,
+                    category = "Dress"
+                ),
+                ProductEntity(
+                    id = 2,
+                    name = "Maxi Dress",
+                    description = "Long dress",
+                    price = 68.00,
+                    imageResId = android.R.drawable.ic_menu_gallery,
+                    stock = 5,
+                    category = "Dress"
+                )
             )
         )
     }
 }
-

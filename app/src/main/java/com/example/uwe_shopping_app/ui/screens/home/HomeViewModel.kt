@@ -1,85 +1,58 @@
 package com.example.uwe_shopping_app.ui.screens.home
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.example.uwe_shopping_app.domain.model.Product
+import androidx.lifecycle.viewModelScope
+import com.example.uwe_shopping_app.data.local.entity.ProductEntity
+import com.example.uwe_shopping_app.data.local.repository.ProductRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 
 data class HomeUiState(
-    val featuredProducts: List<Product> = emptyList(),
-    val recommendedProducts: List<Product> = emptyList(),
-    val topCollectionProducts: List<Product> = emptyList()
+    val featuredProducts: List<ProductEntity> = emptyList(),
+    val recommendedProducts: List<ProductEntity> = emptyList(),
+    val topCollectionProducts: List<ProductEntity> = emptyList(),
+    val isLoading: Boolean = false,
+    val error: String? = null
 )
 
-class HomeViewModel : ViewModel() {
+class HomeViewModel(
+    private val repository: ProductRepository = ProductRepository()
+) : ViewModel() {
 
     var uiState by mutableStateOf(HomeUiState())
         private set
 
     init {
-        loadMockData()
+        loadHomeData()
     }
 
-    private fun loadMockData() {
-        val featured = listOf(
-            Product(
-                id = "1",
-                name = "Long Sleeve Dress",
-                price = 45.00
-            ),
-            Product(
-                id = "2",
-                name = "Sportwear Set",
-                price = 80.00
-            ),
-            Product(
-                id = "3",
-                name = "Sweater",
-                price = 35.00
-            )
-        )
+    private fun loadHomeData() {
+        viewModelScope.launch {
+            uiState = uiState.copy(isLoading = true)
 
-        val recommended = listOf(
-            Product(
-                id = "4",
-                name = "White Hoodie",
-                price = 29.00
-            ),
-            Product(
-                id = "5",
-                name = "Cotton T‑Shirt",
-                price = 30.00
-            ),
-            Product(
-                id = "6",
-                name = "Casual Shirt",
-                price = 32.00
-            )
-        )
+            try {
+                //  Move DB work OFF main thread
+                val products = withContext(Dispatchers.IO) {
+                    repository.getProductsPaged(offset = 0, limit = 30)
+                }
 
-        val topCollection = listOf(
-            Product(
-                id = "7",
-                name = "Office Life T‑Shirt",
-                price = 25.00
-            ),
-            Product(
-                id = "8",
-                name = "Elegant Dress",
-                price = 65.00
-            ),
-            Product(
-                id = "9",
-                name = "Summer Collection",
-                price = 55.00
-            )
-        )
+                uiState = uiState.copy(
+                    featuredProducts = products.take(6),
+                    recommendedProducts = products.drop(6).take(6),
+                    topCollectionProducts = products.takeLast(6),
+                    isLoading = false
+                )
 
-        uiState = HomeUiState(
-            featuredProducts = featured,
-            recommendedProducts = recommended,
-            topCollectionProducts = topCollection
-        )
+            } catch (e: Exception) {
+                uiState = uiState.copy(
+                    isLoading = false,
+                    error = e.message
+                )
+            }
+        }
     }
 }
