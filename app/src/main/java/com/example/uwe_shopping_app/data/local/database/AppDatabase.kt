@@ -114,7 +114,7 @@ abstract class AppDatabase : RoomDatabase() {
                 name = "Jacket",
                 description = "Denim jacket.",
                 price = 89.0,
-                imageResId = R.drawable.fash_Jacket,
+                imageResId = R.drawable.fash_jacket,
                 stock = 60,
                 category = "Fashion"
             ),
