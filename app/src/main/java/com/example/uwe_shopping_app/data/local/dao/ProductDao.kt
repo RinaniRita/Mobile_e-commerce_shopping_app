@@ -34,6 +34,15 @@ interface ProductDao {
     @Query("SELECT * FROM products WHERE name LIKE '%' || :query || '%' OR description LIKE '%' || :query || '%' LIMIT :limit OFFSET :offset")
     suspend fun searchProducts(query: String, offset: Int, limit: Int): List<ProductEntity>
 
+    // Suggestion query
+    @Query("""
+    SELECT DISTINCT name FROM products
+    WHERE name LIKE :query || '%'
+    LIMIT 5
+""")
+    suspend fun getSearchSuggestions(query: String): List<String>
+
+
     @Query("SELECT * FROM products WHERE id = :id LIMIT 1")
     suspend fun getProductById(id: Int): ProductEntity?
 

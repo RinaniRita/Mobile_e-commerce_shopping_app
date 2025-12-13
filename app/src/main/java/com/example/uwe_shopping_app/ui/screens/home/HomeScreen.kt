@@ -22,6 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.uwe_shopping_app.R
 import com.example.uwe_shopping_app.ui.components.common.BottomNavigationBar
 import com.example.uwe_shopping_app.ui.components.common.TopAppBar
@@ -32,7 +33,7 @@ import androidx.navigation.NavHostController
 
 @Composable
 fun HomeScreen(
-    viewModel: HomeViewModel = HomeViewModel(),
+    viewModel: HomeViewModel = viewModel(),
     navController: NavHostController,
     currentRoute: String,
     onNavigate: (String) -> Unit = {}
@@ -71,7 +72,12 @@ fun HomeScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     SectionHeader(title = "Feature Products")
-                    ProductGrid(products = uiState.featuredProducts)
+                    ProductGrid(
+                        products = uiState.featuredProducts,
+                        onProductClick = { product ->
+                            navController.navigate("product/${product.id}")
+                        }
+                    )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -83,12 +89,22 @@ fun HomeScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     SectionHeader(title = "Recommended")
-                    ProductGrid(products = uiState.recommendedProducts)
+                    ProductGrid(
+                        products = uiState.recommendedProducts,
+                        onProductClick = { product ->
+                            navController.navigate("product/${product.id}")
+                        }
+                    )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
                     SectionHeader(title = "Top Collection")
-                    ProductGrid(products = uiState.topCollectionProducts)
+                    ProductGrid(
+                        products = uiState.topCollectionProducts,
+                        onProductClick = { product ->
+                            navController.navigate("product/${product.id}")
+                        }
+                    )
 
                     Spacer(modifier = Modifier.height(80.dp))
                 }

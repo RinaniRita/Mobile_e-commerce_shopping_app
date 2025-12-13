@@ -37,10 +37,13 @@ import com.example.uwe_shopping_app.ui.screens.home.CategoryChipsRow
 import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+
 
 @Composable
 fun SearchScreen(
-    viewModel: SearchViewModel = SearchViewModel(),
+    viewModel: SearchViewModel = viewModel(),
     navController: NavHostController,
     currentRoute: String,
     onNavigate: (String) -> Unit = {}
@@ -71,14 +74,63 @@ fun SearchScreen(
                     keyboardController?.hide()
                 },
                 onSearch = {
-                    if (searchQuery.isNotBlank()) {
+                    val trimmed = searchQuery.trim()
+                    if (trimmed.isNotBlank()) {
                         keyboardController?.hide()
-                        navController.navigate("resultSearch/$searchQuery") {
+
+                        viewModel.submitSearch()
+
+                        val encodedQuery = URLEncoder.encode(
+                            trimmed,
+                            StandardCharsets.UTF_8.toString()
+                        )
+
+                        navController.navigate("resultSearch/$encodedQuery") {
                             launchSingleTop = true
                         }
                     }
                 }
             )
+
+            //  Search Suggestions
+            if (uiState.suggestions.isNotEmpty()) {
+                Card(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                ) {
+                    Column {
+                        uiState.suggestions.forEach { suggestion ->
+                            Text(
+                                text = suggestion,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        viewModel.updateSearchQuery(suggestion)
+                                        viewModel.submitSearch()
+                                        keyboardController?.hide()
+
+                                        val encoded = URLEncoder.encode(
+                                            suggestion,
+                                            StandardCharsets.UTF_8.toString()
+                                        )
+
+                                        navController.navigate("resultSearch/$encoded") {
+                                            launchSingleTop = true
+                                        }
+                                    }
+                                    .padding(16.dp),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+
+                            Divider(color = Color(0xFFE0E0E0))
+                        }
+                    }
+                }
+            }
+
 
             Box(
                 modifier = Modifier

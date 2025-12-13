@@ -32,6 +32,11 @@ class ProductRepository {
         return productDao.searchProducts(query, offset, limit)
     }
 
+    suspend fun getSearchSuggestions(query: String): List<String> {
+        return productDao.getSearchSuggestions(query)
+    }
+
+
     suspend fun getProductById(id: Int): ProductEntity? {
         return productDao.getProductById(id)
     }

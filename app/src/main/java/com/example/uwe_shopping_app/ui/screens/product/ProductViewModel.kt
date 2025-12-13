@@ -3,6 +3,7 @@ package com.example.uwe_shopping_app.ui.screens.product
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.uwe_shopping_app.data.local.entity.ProductEntity
+import com.example.uwe_shopping_app.data.local.repository.ProductRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,7 +18,9 @@ data class ProductUiState(
     val isDescriptionExpanded: Boolean = false
 )
 
-class ProductViewModel : ViewModel() {
+class ProductViewModel(
+    private val repository: ProductRepository = ProductRepository()
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProductUiState())
     val uiState: StateFlow<ProductUiState> = _uiState.asStateFlow()
@@ -27,21 +30,20 @@ class ProductViewModel : ViewModel() {
             _uiState.value = _uiState.value.copy(isLoading = true)
 
             try {
-                // TODO replace with repository call
-                val product = ProductEntity(
-                    id = productId,
-                    name = "Sportwear Set",
-                    description = "Sportwear is fashion today.",
-                    price = 80.00,
-                    imageResId = android.R.drawable.ic_menu_gallery,
-                    stock = 10,
-                    category = "Clothing"
-                )
+                val product = repository.getProductById(productId)
 
-                _uiState.value = _uiState.value.copy(
-                    product = product,
-                    isLoading = false
-                )
+                if (product != null) {
+                    _uiState.value = _uiState.value.copy(
+                        product = product,
+                        isLoading = false
+                    )
+                } else {
+                    _uiState.value = _uiState.value.copy(
+                        error = "Product not found",
+                        isLoading = false
+                    )
+                }
+
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     error = "Failed to load product",
@@ -57,13 +59,11 @@ class ProductViewModel : ViewModel() {
         )
     }
 
-    fun setCurrentImageIndex(index: Int) {
-        _uiState.value = _uiState.value.copy(currentImageIndex = index)
-    }
-
     fun toggleDescriptionExpanded() {
         _uiState.value = _uiState.value.copy(
             isDescriptionExpanded = !_uiState.value.isDescriptionExpanded
         )
     }
+
 }
+

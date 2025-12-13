@@ -36,31 +36,3 @@ fun ProductGrid(
 
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//private fun ProductGridPreview() {
-//    Uwe_shopping_appTheme {
-//        ProductGrid(
-//            products = listOf(
-//                ProductEntity(
-//                    id = 1,
-//                    name = "Sweater",
-//                    description = "Warm sweater",
-//                    price = 35.00,
-//                    imageResId = android.R.drawable.ic_menu_gallery,
-//                    stock = 10,
-//                    category = "Clothing"
-//                ),
-//                ProductEntity(
-//                    id = 2,
-//                    name = "Dress",
-//                    description = "Summer dress",
-//                    price = 45.00,
-//                    imageResId = android.R.drawable.ic_menu_gallery,
-//                    stock = 5,
-//                    category = "Clothing"
-//                )
-//            )
-//        )
-//    }
-//}

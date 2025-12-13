@@ -15,6 +15,7 @@ import androidx.navigation.NavType
 import com.example.uwe_shopping_app.data.local.session.SessionManager
 import com.example.uwe_shopping_app.ui.screens.onboarding.WelcomeScreen
 import com.example.uwe_shopping_app.ui.screens.home.HomeScreen
+import com.example.uwe_shopping_app.ui.screens.product.ProductScreen
 import com.example.uwe_shopping_app.ui.screens.search.SearchScreen
 import com.example.uwe_shopping_app.ui.screens.resultSearch.ResultSearchScreen
 import com.example.uwe_shopping_app.ui.screens.cart.CartScreen
@@ -142,6 +143,23 @@ fun AppNavHost(navController: NavHostController, app: Application) {
                     onBack = {
                         navController.popBackStack()
                     }
+                )
+            }
+
+            //  ========== Product Detail ============
+            composable(
+                route = "product/{productId}",
+                arguments = listOf(
+                    navArgument("productId") {
+                        type = NavType.IntType
+                    }
+                )
+            ) { backStackEntry ->
+                val productId = backStackEntry.arguments?.getInt("productId") ?: 0
+
+                ProductScreen(
+                    productId = productId,
+                    onBack = { navController.popBackStack() }
                 )
             }
 

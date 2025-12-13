@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -25,6 +26,9 @@ import androidx.navigation.NavHostController
 import com.example.uwe_shopping_app.ui.components.common.BottomNavigationBar
 import com.example.uwe_shopping_app.ui.components.product.VerticalProductGrid
 import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
+
 
 @Composable
 fun ResultSearchScreen(
@@ -37,8 +41,18 @@ fun ResultSearchScreen(
 ) {
     val uiState = viewModel.uiState
 
+    val decodedQuery = URLDecoder.decode(
+        query,
+        StandardCharsets.UTF_8.toString()
+    )
+
+
     LaunchedEffect(query) {
-        viewModel.search(query)
+        val decodedQuery = URLDecoder.decode(
+            query,
+            StandardCharsets.UTF_8.toString()
+        )
+        viewModel.search(decodedQuery)
     }
 
     Surface(
@@ -83,34 +97,49 @@ fun ResultSearchScreen(
                 modifier = Modifier
                     .weight(1f)
             ) {
-                if (uiState.searchResults.isEmpty()) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(32.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "No products found for \"$query\"",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = Color(0xFF9E9E9E)
-                        )
+                when {
+                    uiState.isLoading -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
                     }
-                } else {
-                    Column(
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        SearchResultsHeader(
-                            resultsCount = uiState.searchResults.size,
-                            query = uiState.query
-                        )
-                        VerticalProductGrid(
-                            products = uiState.searchResults,
-                            modifier = Modifier.weight(1f)
-                        )
+
+                    uiState.searchResults.isEmpty() -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "No products found for \"$query\"",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = Color(0xFF9E9E9E)
+                            )
+                        }
+                    }
+
+                    else -> {
+                        Column(modifier = Modifier.fillMaxSize()) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            SearchResultsHeader(
+                                resultsCount = uiState.searchResults.size,
+                                query = uiState.query
+                            )
+                            VerticalProductGrid(
+                                products = uiState.searchResults,
+                                modifier = Modifier.weight(1f),
+                                onProductClick = { product ->
+                                    navController?.navigate("product/${product.id}")
+                                }
+                            )
+                        }
                     }
                 }
+
             }
 
             navController?.let {

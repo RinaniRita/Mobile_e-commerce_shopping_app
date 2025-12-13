@@ -24,6 +24,10 @@ import com.example.uwe_shopping_app.data.local.entity.ProductEntity
 import com.example.uwe_shopping_app.ui.components.product.ProductCard
 import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
 import java.util.Locale
+import androidx.compose.foundation.Image
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+
 
 @Composable
 fun ProductScreen(
@@ -140,16 +144,18 @@ private fun ProductDetailsCard(
             modifier = Modifier.padding(20.dp)
         ) {
             // Image
-            Box(
+            Image(
+                painter = painterResource(
+                    id = product.imageResId.takeIf { it != 0 }
+                        ?: android.R.drawable.ic_menu_gallery
+                ),
+                contentDescription = product.name,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(260.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(Color(0xFFE0E0E0)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("📦", fontSize = 64.sp)
-            }
+                    .clip(RoundedCornerShape(16.dp)),
+                contentScale = ContentScale.Crop
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 

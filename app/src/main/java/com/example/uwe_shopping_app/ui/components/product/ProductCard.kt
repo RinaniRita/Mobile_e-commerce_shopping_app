@@ -87,20 +87,3 @@ fun ProductCard(
     }
 }
 
-//@Preview(showBackground = true, widthDp = 180)
-//@Composable
-//private fun ProductCardPreview() {
-//    Uwe_shopping_appTheme {
-//        ProductCard(
-//            product = ProductEntity(
-//                id = 1,
-//                name = "Sweater",
-//                description = "Warm sweater",
-//                price = 35.00,
-//                imageResId = android.R.drawable.ic_menu_gallery,
-//                stock = 10,
-//                category = "Clothing"
-//            )
-//        )
-//    }
-//}
