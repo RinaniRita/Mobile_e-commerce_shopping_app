@@ -24,6 +24,8 @@ import com.example.uwe_shopping_app.ui.screens.profile.ProfileScreen
 import com.example.uwe_shopping_app.ui.screens.profile.ProfileSetting
 import com.example.uwe_shopping_app.ui.screens.auth.LoginScreen
 import com.example.uwe_shopping_app.ui.screens.auth.SignUpScreen
+import com.example.uwe_shopping_app.ui.screens.order.OrderInfoDeliveredScreen
+import com.example.uwe_shopping_app.ui.screens.order.OrderInfoOnTheWayScreen
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
@@ -180,6 +182,16 @@ fun AppNavHost(navController: NavHostController, app: Application) {
                 CheckoutScreen(
                     navController = navController
                 )
+            }
+
+            //  ========== Order Info (Delivered) ============
+            composable("orderInfoDelivered") {
+                OrderInfoDeliveredScreen(navController = navController)
+            }
+
+            //  ========== Order Info (On The Way) ============
+            composable("orderInfoOnTheWay") {
+                OrderInfoOnTheWayScreen(navController = navController)
             }
 
             //  ========== Profile ============

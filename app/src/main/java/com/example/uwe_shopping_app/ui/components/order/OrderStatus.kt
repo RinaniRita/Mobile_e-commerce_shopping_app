@@ -17,7 +17,8 @@ import androidx.compose.ui.unit.dp
 enum class OrderStatus {
     PENDING,
     DELIVERED,
-    CANCELLED
+    CANCELLED,
+    ON_THE_WAY
 }
 
 @Composable
@@ -29,6 +30,7 @@ fun OrderStatusLabel(
         OrderStatus.PENDING -> "PENDING" to Color(0xFFFF9800)
         OrderStatus.DELIVERED -> "DELIVERED" to Color(0xFF4CAF50)
         OrderStatus.CANCELLED -> "CANCELLED" to Color(0xFFF44336)
+        OrderStatus.ON_THE_WAY -> "ON THE WAY" to Color(0xFF2196F3)
     }
 
     Text(

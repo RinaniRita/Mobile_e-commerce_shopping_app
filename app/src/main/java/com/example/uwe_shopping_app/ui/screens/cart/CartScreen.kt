@@ -1,6 +1,8 @@
 package com.example.uwe_shopping_app.ui.screens.cart
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -11,9 +13,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -32,6 +34,7 @@ fun CartScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val error = uiState.error
+    var selectedTab by remember { mutableStateOf(CartStatusTab.YOUR_CART) }
 
     Scaffold(
         topBar = {
@@ -53,6 +56,14 @@ fun CartScreen(
                 .padding(paddingValues)
                 .background(Color(0xFFF5F5F5))
         ) {
+            CartStatusTabs(
+                selectedTab = selectedTab,
+                onTabSelected = { selectedTab = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+            )
+
             if (uiState.isLoading) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -156,6 +167,7 @@ fun CartScreenPreview() {
         val viewModel = remember { CartViewModel() }
         val uiState by viewModel.uiState.collectAsState()
         val error = uiState.error
+        var selectedTab by remember { mutableStateOf(CartStatusTab.YOUR_CART) }
 
         Scaffold(
             topBar = {
@@ -177,6 +189,14 @@ fun CartScreenPreview() {
                     .padding(paddingValues)
                     .background(Color(0xFFF5F5F5))
             ) {
+                CartStatusTabs(
+                    selectedTab = selectedTab,
+                    onTabSelected = { selectedTab = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
+                )
+
                 if (uiState.isLoading) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -271,3 +291,55 @@ fun CartScreenPreview() {
         }
     }
 }
+
+enum class CartStatusTab(val label: String) {
+    YOUR_CART("Your cart"),
+    PENDING("Pending"),
+    DELIVERED("Delivered"),
+    CANCELLED("Cancelled")
+}
+
+@Composable
+private fun CartStatusTabs(
+    selectedTab: CartStatusTab,
+    onTabSelected: (CartStatusTab) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val tabs = CartStatusTab.values()
+
+    Row(
+        modifier = modifier
+            .padding(horizontal = 16.dp)
+            .height(40.dp)
+            .border(
+                width = 1.dp,
+                color = Color(0xFF7B3FF2),
+                shape = RoundedCornerShape(50)
+            ),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        tabs.forEach { tab ->
+            val isSelected = tab == selectedTab
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .clickable { onTabSelected(tab) }
+                    .background(
+                        color = if (isSelected) Color(0xFF424242) else Color.Transparent,
+                        shape = RoundedCornerShape(50)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = tab.label,
+                    color = if (isSelected) Color.White else Color(0xFF424242),
+                    fontSize = 12.sp,
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                )
+            }
+        }
+    }
+}
+
