@@ -14,16 +14,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.uwe_shopping_app.R
+import com.example.uwe_shopping_app.R // Đảm bảo import đúng R của project bạn
 import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
-
-import androidx.compose.ui.tooling.preview.Preview
 import com.example.uwe_shopping_app.data.local.repository.UserRepository
 import com.example.uwe_shopping_app.data.local.session.SessionManager
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-
 
 @Composable
 fun SignUpScreen(
@@ -35,10 +31,13 @@ fun SignUpScreen(
     var password by remember { mutableStateOf("") }
     var confirm by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val repo = remember { UserRepository() }
     val session = remember { SessionManager(context) }
+    // Dùng rememberCoroutineScope thay vì tạo CoroutineScope mới
+    val scope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -71,24 +70,42 @@ fun SignUpScreen(
                     message = "Passwords do not match"
                     return@Button
                 }
+                isLoading = true
+                message = ""
 
-                CoroutineScope(Dispatchers.Main).launch {
-                    val success = repo.registerUser(name, email, password)
-                    if (success) {
-                        // FIX: Thêm logic lưu email của người dùng
-                        session.setUserEmail(email)
-                        session.setLoggedIn(true)
-                        onSignUpSuccess()
+                scope.launch {
+                    // 1. Đăng ký
+                    val registerSuccess = repo.registerUser(name, email, password)
+
+                    if (registerSuccess) {
+                        // 2. Nếu đăng ký thành công -> Gọi Login ngay để lấy User ID
+                        val user = repo.loginUser(email, password)
+
+                        if (user != null) {
+                            // 3. Lưu ID và Email vào Session (QUAN TRỌNG)
+                            session.saveUserSession(user.id, user.email)
+                            isLoading = false
+                            onSignUpSuccess()
+                        } else {
+                            isLoading = false
+                            message = "Error logging in after signup"
+                        }
                     } else {
+                        isLoading = false
                         message = "Email already exists"
                     }
                 }
             },
             modifier = Modifier.width(180.dp).height(56.dp),
             shape = RoundedCornerShape(28.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2D201C))
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2D201C)),
+            enabled = !isLoading
         ) {
-            Text("SIGN UP", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            if (isLoading) {
+                CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+            } else {
+                Text("SIGN UP", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            }
         }
 
         if (message.isNotEmpty()) {
@@ -101,6 +118,7 @@ fun SignUpScreen(
         Spacer(Modifier.height(20.dp))
 
         Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+            // Đảm bảo bạn có hàm SocialButton hoặc thay thế bằng Icon
             SocialButton(R.drawable.apple)
             SocialButton(R.drawable.google)
             SocialButton(R.drawable.facebook)
@@ -113,11 +131,3 @@ fun SignUpScreen(
         }
     }
 }
-
-//@Preview(showBackground = true, name = "Sign Up Screen")
-//@Composable
-//fun SignUpScreenPreview() {
-//    Uwe_shopping_appTheme {
-//        SignUpScreen()
-//    }
-//}

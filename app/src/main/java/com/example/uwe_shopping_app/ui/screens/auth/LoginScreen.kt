@@ -14,15 +14,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.uwe_shopping_app.R
-import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
-import androidx.compose.ui.tooling.preview.Preview
 import com.example.uwe_shopping_app.data.local.repository.UserRepository
 import com.example.uwe_shopping_app.data.local.session.SessionManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-
 
 @Composable
 fun LoginScreen(
@@ -32,10 +28,13 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val repo = remember { UserRepository() }
     val session = remember { SessionManager(context) }
+    // Dùng scope gắn với Composition để an toàn hơn
+    val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -62,6 +61,7 @@ fun LoginScreen(
             modifier = Modifier.align(Alignment.End))
 
         Spacer(Modifier.height(40.dp))
+
         Button(
             onClick = {
                 if (email.isBlank() || password.isBlank()) {
@@ -69,24 +69,34 @@ fun LoginScreen(
                     return@Button
                 }
 
+                isLoading = true
+                message = ""
+
                 // LOGIN LOGIC
-                CoroutineScope(Dispatchers.Main).launch {
-                    val success = repo.loginUser(email, password)
-                    if (success) {
-                        // FIX: Thêm logic lưu email của người dùng
-                        session.setUserEmail(email)
-                        session.setLoggedIn(true)
+                coroutineScope.launch {
+
+                    val user = repo.loginUser(email, password)
+
+                    if (user != null) {
+                        session.saveUserSession(user.id, user.email)
+                        isLoading = false
                         onLoginSuccess()
                     } else {
+                        isLoading = false
                         message = "Invalid email or password"
                     }
                 }
             },
             modifier = Modifier.width(180.dp).height(56.dp),
             shape = RoundedCornerShape(28.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2D201C))
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2D201C)),
+            enabled = !isLoading
         ) {
-            Text("LOG IN", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            if (isLoading) {
+                CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+            } else {
+                Text("LOG IN", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            }
         }
 
         if (message.isNotEmpty()) {
@@ -94,28 +104,16 @@ fun LoginScreen(
             Text(message, color = Color.Red)
         }
 
-//        Spacer(Modifier.height(40.dp))
-//        Text("or log in with", fontSize = 14.sp, color = Color.Black.copy(alpha = 0.6f))
-//        Spacer(Modifier.height(20.dp))
-//
-//        Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-//            SocialButton(R.drawable.apple)
-//            SocialButton(R.drawable.google)      // tên đúng nếu bạn đổi tên file
-//            SocialButton(R.drawable.facebook)
-//        }
-
         Spacer(Modifier.height(48.dp))
         Row {
             Text("Don't have an account? ", fontSize = 14.sp)
-            Text("Sign Up", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color.Black, modifier = Modifier.clickable { onNavigateToSignUp() })
+            Text(
+                "Sign Up",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.Black,
+                modifier = Modifier.clickable { onNavigateToSignUp() }
+            )
         }
     }
 }
-
-//@Preview(showBackground = true, name = "Login Screen")
-//@Composable
-//fun LoginScreenPreview() {
-//    Uwe_shopping_appTheme {
-//        LoginScreen()
-//    }
-//}

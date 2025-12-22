@@ -1,5 +1,7 @@
 package com.example.uwe_shopping_app.ui.screens.product
 
+import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -15,30 +17,45 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.uwe_shopping_app.data.local.entity.ProductEntity
-import com.example.uwe_shopping_app.ui.components.product.ProductCard
 import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
 import java.util.Locale
-import androidx.compose.foundation.Image
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-
 
 @Composable
 fun ProductScreen(
     productId: Int,
     onBack: () -> Unit = {},
+    // ViewModel sẽ tự động được inject (AndroidViewModel)
     viewModel: ProductViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current // Lấy context để hiển thị Toast
 
+    // Load sản phẩm khi vào màn hình
     LaunchedEffect(productId) {
         viewModel.loadProduct(productId)
+    }
+
+    // --- LẮNG NGHE SỰ KIỆN THÊM THÀNH CÔNG ---
+    LaunchedEffect(uiState.isAddToCartSuccess) {
+        if (uiState.isAddToCartSuccess) {
+            Toast.makeText(context, "Added to cart successfully!", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Lắng nghe lỗi (ví dụ: chưa login, lỗi DB...)
+    LaunchedEffect(uiState.error) {
+        if (uiState.error != null) {
+            Toast.makeText(context, uiState.error, Toast.LENGTH_SHORT).show()
+        }
     }
 
     Scaffold(containerColor = Color(0xFFF5F5F5)) { paddingValues ->
@@ -61,7 +78,9 @@ fun ProductScreen(
                 uiState.product?.let { product ->
                     ProductDetailsCard(
                         product = product,
-                        onToggleDescription = viewModel::toggleDescriptionExpanded
+                        onToggleDescription = viewModel::toggleDescriptionExpanded,
+                        // --- TRUYỀN HÀM ADD TO CART XUỐNG DƯỚI ---
+                        onAddToCart = viewModel::addToCart
                     )
                 } ?: run {
                     Box(
@@ -132,7 +151,9 @@ private fun ProductTopBar(
 @Composable
 private fun ProductDetailsCard(
     product: ProductEntity,
-    onToggleDescription: () -> Unit
+    onToggleDescription: () -> Unit,
+    // --- THAM SỐ MỚI ĐỂ NHẬN SỰ KIỆN CLICK ---
+    onAddToCart: () -> Unit
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -187,7 +208,8 @@ private fun ProductDetailsCard(
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = { /* TODO add to cart */ },
+                // --- GỌI HÀM KHI CLICK ---
+                onClick = onAddToCart,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -219,7 +241,8 @@ fun ProductScreenPreview() {
                 stock = 10,
                 category = "Clothing"
             ),
-            onToggleDescription = {}
+            onToggleDescription = {},
+            onAddToCart = {} // Dummy function cho Preview
         )
     }
 }

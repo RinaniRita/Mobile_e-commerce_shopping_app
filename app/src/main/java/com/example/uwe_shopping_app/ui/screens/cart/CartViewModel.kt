@@ -1,10 +1,17 @@
 package com.example.uwe_shopping_app.ui.screens.cart
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.uwe_shopping_app.App
+import com.example.uwe_shopping_app.data.local.repository.CartRepository
+import com.example.uwe_shopping_app.data.local.session.SessionManager
 import com.example.uwe_shopping_app.ui.components.cart.CartItemUiModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 data class CartUiState(
     val cartItems: List<CartItemUiModel> = emptyList(),
@@ -13,7 +20,11 @@ data class CartUiState(
     val productPrice: Double = 0.0
 )
 
-class CartViewModel : ViewModel() {
+class CartViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val cartRepository = CartRepository()
+    private val sessionManager = SessionManager(application)
+    private val productDao = App.db.productDao()
 
     private val _uiState = MutableStateFlow(CartUiState())
     val uiState: StateFlow<CartUiState> = _uiState.asStateFlow()
@@ -23,122 +34,94 @@ class CartViewModel : ViewModel() {
     }
 
     fun loadCart() {
-        _uiState.value = _uiState.value.copy(isLoading = true)
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true)
 
-        // Mock cart data - matching the image
-        val mockCartItems = listOf(
-            CartItemUiModel(
-                id = 1,
-                productId = 1,
-                name = "Sportwear Set",
-                price = 80.00,
-                imageResId = android.R.drawable.ic_menu_gallery, // Replace with actual drawable
-                size = "L",
-                color = "Cream",
-                quantity = 1,
-                isSelected = true
-            ),
-            CartItemUiModel(
-                id = 2,
-                productId = 2,
-                name = "Turtleneck Sweater",
-                price = 39.99,
-                imageResId = android.R.drawable.ic_menu_gallery, // Replace with actual drawable
-                size = "M",
-                color = "White",
-                quantity = 1,
-                isSelected = true
-            ),
-            CartItemUiModel(
-                id = 3,
-                productId = 3,
-                name = "Cotton T-shirt",
-                price = 30.00,
-                imageResId = android.R.drawable.ic_menu_gallery, // Replace with actual drawable
-                size = "L",
-                color = "Black",
-                quantity = 1,
-                isSelected = true
-            )
-        )
+            // 1. Lấy UserID (Giả định luôn có vì đã Login)
+            val userId = sessionManager.userId.first() ?: return@launch
 
-        // Calculate total from selected items
-        val total = mockCartItems
-            .filter { it.isSelected }
-            .sumOf { it.price * it.quantity }
+            try {
+                // 2. Tìm Cart của User
+                val cart = cartRepository.getOrCreateCartForUser(userId)
 
-        _uiState.value = _uiState.value.copy(
-            cartItems = mockCartItems,
-            productPrice = total,
-            isLoading = false,
-            error = null
-        )
-    }
+                // 3. Lấy danh sách item
+                val cartItemsEntity = cartRepository.getCartItems(cart.id)
 
-    fun toggleItemSelection(itemId: Int) {
-        val updatedItems = _uiState.value.cartItems.map { item ->
-            if (item.id == itemId) {
-                item.copy(isSelected = !item.isSelected)
-            } else {
-                item
+                // 4. Ghép dữ liệu Product vào để hiển thị (Tên, Ảnh, Giá)
+                val uiItems = cartItemsEntity.mapNotNull { item ->
+                    val product = productDao.getProductById(item.productId)
+                    if (product != null) {
+                        CartItemUiModel(
+                            id = item.id,
+                            productId = item.productId,
+                            name = product.name,
+                            price = product.price,
+                            imageResId = product.imageResId,
+                            size = "L", // Logic size nếu có
+                            color = "Default",
+                            quantity = item.quantity,
+                            isSelected = true
+                        )
+                    } else null
+                }
+
+                calculateTotal(uiItems)
+
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(error = e.message, isLoading = false)
             }
         }
-        val total = updatedItems
-            .filter { it.isSelected }
-            .sumOf { it.price * it.quantity }
-        _uiState.value = _uiState.value.copy(
-            cartItems = updatedItems,
-            productPrice = total
-        )
     }
 
-    fun decreaseQuantity(itemId: Int) {
-        val updatedItems = _uiState.value.cartItems.map { item ->
-            if (item.id == itemId) {
-                val newQuantity = (item.quantity - 1).coerceAtLeast(1)
-                item.copy(quantity = newQuantity)
-            } else {
-                item
-            }
-        }
-        val total = updatedItems
-            .filter { it.isSelected }
-            .sumOf { it.price * it.quantity }
-        _uiState.value = _uiState.value.copy(
-            cartItems = updatedItems,
-            productPrice = total
-        )
+    // Tính tổng tiền
+    private fun calculateTotal(items: List<CartItemUiModel>) {
+        val total = items.filter { it.isSelected }.sumOf { it.price * it.quantity }
+        _uiState.value = _uiState.value.copy(cartItems = items, productPrice = total, isLoading = false)
     }
 
+    // Logic Tăng số lượng
     fun increaseQuantity(itemId: Int) {
-        val updatedItems = _uiState.value.cartItems.map { item ->
-            if (item.id == itemId) {
-                item.copy(quantity = item.quantity + 1)
-            } else {
-                item
-            }
+        viewModelScope.launch {
+            val userId = sessionManager.userId.first() ?: return@launch
+            val cart = cartRepository.getOrCreateCartForUser(userId)
+            val item = _uiState.value.cartItems.find { it.id == itemId } ?: return@launch
+
+            cartRepository.updateCartItemQuantity(cart.id, item.productId, item.quantity + 1)
+            loadCart()
         }
-        val total = updatedItems
-            .filter { it.isSelected }
-            .sumOf { it.price * it.quantity }
-        _uiState.value = _uiState.value.copy(
-            cartItems = updatedItems,
-            productPrice = total
-        )
     }
 
+    // Logic Giảm số lượng
+    fun decreaseQuantity(itemId: Int) {
+        viewModelScope.launch {
+            val userId = sessionManager.userId.first() ?: return@launch
+            val cart = cartRepository.getOrCreateCartForUser(userId)
+            val item = _uiState.value.cartItems.find { it.id == itemId } ?: return@launch
+
+            if (item.quantity > 1) {
+                cartRepository.updateCartItemQuantity(cart.id, item.productId, item.quantity - 1)
+            } else {
+                cartRepository.removeFromCart(cart.id, itemId)
+            }
+            loadCart()
+        }
+    }
+
+    // Logic Xóa item
     fun removeItem(itemId: Int) {
-        val updatedItems = _uiState.value.cartItems.filter { it.id != itemId }
-        val total = updatedItems
-            .filter { it.isSelected }
-            .sumOf { it.price * it.quantity }
-        _uiState.value = _uiState.value.copy(
-            cartItems = updatedItems,
-            productPrice = total
-        )
+        viewModelScope.launch {
+            val userId = sessionManager.userId.first() ?: return@launch
+            val cart = cartRepository.getOrCreateCartForUser(userId)
+            cartRepository.removeFromCart(cart.id, itemId)
+            loadCart()
+        }
     }
 
-    fun proceedToCheckout() {
-        // This will be handled by navigation
+    // Logic chọn item (chỉ update UI tạm thời)
+    fun toggleItemSelection(itemId: Int) {
+        val updated = _uiState.value.cartItems.map {
+            if (it.id == itemId) it.copy(isSelected = !it.isSelected) else it
+        }
+        calculateTotal(updated)
     }
 }

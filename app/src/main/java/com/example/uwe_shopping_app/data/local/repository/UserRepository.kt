@@ -16,8 +16,8 @@ class UserRepository {
         return true
     }
 
-    suspend fun loginUser(email: String, password: String): Boolean {
-        return userDao.login(email, password) != null
+    suspend fun loginUser(email: String, password: String): UserEntity? {
+        return userDao.login(email, password)
     }
     suspend fun insertUser(user: UserEntity) {
         userDao.insertUser(user)
