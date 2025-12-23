@@ -277,8 +277,7 @@ fun CheckoutScreen(
             Button(
                 onClick = {
                     if (viewModel.validateForm()) {
-                        // TODO: Navigate to payment screen when implemented
-                        // navController.navigate("checkout_payment")
+                        navController.navigate("checkout_payment")
                     }
                 },
                 modifier = Modifier

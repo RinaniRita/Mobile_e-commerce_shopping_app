@@ -130,21 +130,21 @@ fun CartItemCard(
                 modifier = Modifier
                     .align(Alignment.TopStart) // Căn góc trên bên TRÁI
                     .offset(x = (-4).dp, y = (-4).dp) // Nhích ra sát mép một chút cho đẹp
-                    .size(36.dp) // Vùng bấm
+                    .size(48.dp) // Vùng bấm lớn hơn để dễ nhấn
             ) {
                 // Làm nền tròn màu trắng mờ hoặc đỏ nhạt để nút X dễ nhìn hơn trên ảnh
                 Box(
                     modifier = Modifier
-                        .size(24.dp)
+                        .size(32.dp)
                         .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.8f)), // Nền trắng mờ
+                        .background(Color.White.copy(alpha = 0.85f)), // Nền trắng mờ
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Remove",
                         tint = Color.Red, // Màu đỏ cho nút xóa
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }

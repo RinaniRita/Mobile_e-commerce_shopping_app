@@ -20,8 +20,11 @@ import com.example.uwe_shopping_app.ui.screens.search.SearchScreen
 import com.example.uwe_shopping_app.ui.screens.resultSearch.ResultSearchScreen
 import com.example.uwe_shopping_app.ui.screens.cart.CartScreen
 import com.example.uwe_shopping_app.ui.screens.checkout.CheckoutScreen
+import com.example.uwe_shopping_app.ui.screens.checkout.CheckoutPaymentScreen
+import com.example.uwe_shopping_app.ui.screens.checkout.CheckoutCompletedScreen
 import com.example.uwe_shopping_app.ui.screens.profile.ProfileScreen
 import com.example.uwe_shopping_app.ui.screens.profile.ProfileSetting
+import com.example.uwe_shopping_app.ui.screens.address.AddressScreen
 import com.example.uwe_shopping_app.ui.screens.auth.LoginScreen
 import com.example.uwe_shopping_app.ui.screens.auth.SignUpScreen
 import com.example.uwe_shopping_app.ui.screens.order.OrderInfoDeliveredScreen
@@ -184,6 +187,20 @@ fun AppNavHost(navController: NavHostController, app: Application) {
                 )
             }
 
+            //  ========== Checkout Payment ============
+            composable("checkout_payment") {
+                CheckoutPaymentScreen(
+                    navController = navController
+                )
+            }
+
+            //  ========== Checkout Completed ============
+            composable("checkout_completed") {
+                CheckoutCompletedScreen(
+                    navController = navController
+                )
+            }
+
             //  ========== Order Info (Delivered) ============
             composable("orderInfoDelivered") {
                 OrderInfoDeliveredScreen(navController = navController)
@@ -215,6 +232,13 @@ fun AppNavHost(navController: NavHostController, app: Application) {
             composable("profile_setting") {
                 ProfileSetting(
                     onBack = { navController.popBackStack() }
+                )
+            }
+
+            // =========== Address ===========
+            composable("address") {
+                AddressScreen(
+                    onBackClick = { navController.popBackStack() }
                 )
             }
         }
