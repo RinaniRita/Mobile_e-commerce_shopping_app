@@ -14,15 +14,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.uwe_shopping_app.domain.model.ProductColor
 
 @Composable
 fun ColorSelector(
-    colors: List<ProductColor>,
+    colors: List<Long>,
     selectedIndex: Int,
     onColorSelected: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    if (colors.isEmpty()) return
+
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -34,12 +35,13 @@ fun ColorSelector(
             fontSize = 14.sp,
             color = Color.Black
         )
-        
+
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            colors.forEachIndexed { index, productColor ->
+            colors.forEachIndexed { index, colorValue ->
                 val isSelected = index == selectedIndex
+
                 Box(
                     modifier = Modifier
                         .size(32.dp)
@@ -56,7 +58,7 @@ fun ColorSelector(
                         modifier = Modifier
                             .size(if (isSelected) 24.dp else 28.dp)
                             .clip(CircleShape)
-                            .background(color = Color(productColor.colorValue))
+                            .background(Color(colorValue))
                     )
                 }
             }

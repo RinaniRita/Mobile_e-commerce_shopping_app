@@ -33,7 +33,7 @@ fun LoginScreen(
     val context = LocalContext.current
     val repo = remember { UserRepository() }
     val session = remember { SessionManager(context) }
-    // Dùng scope gắn với Composition để an toàn hơn
+    // Use scope with composition is safer
     val coroutineScope = rememberCoroutineScope()
 
     Column(
