@@ -14,11 +14,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.uwe_shopping_app.R // Đảm bảo import đúng R của project bạn
-import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
 import com.example.uwe_shopping_app.data.local.repository.UserRepository
 import com.example.uwe_shopping_app.data.local.session.SessionManager
-import kotlinx.coroutines.Dispatchers
+import com.example.uwe_shopping_app.util.isValidEmail
+import com.example.uwe_shopping_app.util.isValidPassword
 import kotlinx.coroutines.launch
 
 @Composable
@@ -30,94 +29,169 @@ fun SignUpScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirm by remember { mutableStateOf("") }
-    var message by remember { mutableStateOf("") }
+
+    var nameError by remember { mutableStateOf<String?>(null) }
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+    var confirmError by remember { mutableStateOf<String?>(null) }
+
     var isLoading by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val repo = remember { UserRepository() }
     val session = remember { SessionManager(context) }
-    // Dùng rememberCoroutineScope thay vì tạo CoroutineScope mới
     val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 40.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = "Create\nyour account",
-            fontSize = 32.sp,
-            fontWeight = FontWeight.Bold,
-            lineHeight = 40.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(bottom = 60.dp)
-        )
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { padding ->
 
-        UnderlinedTextField(name, { name = it }, "Enter your name")
-        Spacer(Modifier.height(24.dp))
-        UnderlinedTextField(email, { email = it }, "Email address", keyboardType = KeyboardType.Email)
-        Spacer(Modifier.height(24.dp))
-        UnderlinedTextField(password, { password = it }, "Password", isPassword = true)
-        Spacer(Modifier.height(24.dp))
-        UnderlinedTextField(confirm, { confirm = it }, "Confirm password", isPassword = true)
-
-        Spacer(Modifier.height(40.dp))
-        Button(
-            onClick = {
-                if (password != confirm) {
-                    message = "Passwords do not match"
-                    return@Button
-                }
-                isLoading = true
-                message = ""
-
-                scope.launch {
-                    // 1. Đăng ký
-                    val registerSuccess = repo.registerUser(name, email, password)
-
-                    if (registerSuccess) {
-                        // 2. Nếu đăng ký thành công -> Gọi Login ngay để lấy User ID
-                        val user = repo.loginUser(email, password)
-
-                        if (user != null) {
-                            // 3. Lưu ID và Email vào Session (QUAN TRỌNG)
-                            session.saveUserSession(user.id, user.email)
-                            isLoading = false
-                            onSignUpSuccess()
-                        } else {
-                            isLoading = false
-                            message = "Error logging in after signup"
-                        }
-                    } else {
-                        isLoading = false
-                        message = "Email already exists"
-                    }
-                }
-            },
-            modifier = Modifier.width(180.dp).height(56.dp),
-            shape = RoundedCornerShape(28.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2D201C)),
-            enabled = !isLoading
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = 40.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            if (isLoading) {
-                CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
-            } else {
-                Text("SIGN UP", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+
+            Text(
+                text = "Create\nyour account",
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold,
+                lineHeight = 40.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(bottom = 60.dp)
+            )
+
+            UnderlinedTextField(
+                value = name,
+                onValueChange = {
+                    name = it
+                    nameError = null
+                },
+                placeholder = "Enter your name",
+                isError = nameError != null,
+                errorMessage = nameError
+            )
+
+            Spacer(Modifier.height(24.dp))
+
+            UnderlinedTextField(
+                value = email,
+                onValueChange = {
+                    email = it
+                    emailError = null
+                },
+                placeholder = "Email address",
+                keyboardType = KeyboardType.Email,
+                isError = emailError != null,
+                errorMessage = emailError
+            )
+
+            Spacer(Modifier.height(24.dp))
+
+            UnderlinedTextField(
+                value = password,
+                onValueChange = {
+                    password = it
+                    passwordError = null
+                },
+                placeholder = "Password",
+                isPassword = true,
+                isError = passwordError != null,
+                errorMessage = passwordError
+            )
+
+            Spacer(Modifier.height(24.dp))
+
+            UnderlinedTextField(
+                value = confirm,
+                onValueChange = {
+                    confirm = it
+                    confirmError = null
+                },
+                placeholder = "Confirm password",
+                isPassword = true,
+                isError = confirmError != null,
+                errorMessage = confirmError
+            )
+
+            Spacer(Modifier.height(40.dp))
+
+            Button(
+                onClick = {
+                    scope.launch {
+                        nameError = null
+                        emailError = null
+                        passwordError = null
+                        confirmError = null
+
+                        when {
+                            name.isBlank() -> {
+                                nameError = "Name is required"
+                                return@launch
+                            }
+                            email.isBlank() -> {
+                                emailError = "Email is required"
+                                return@launch
+                            }
+                            !isValidEmail(email) -> {
+                                emailError = "Invalid email format"
+                                return@launch
+                            }
+                            !isValidPassword(password) -> {
+                                passwordError = "Password must be at least 8 characters"
+                                return@launch
+                            }
+                            password != confirm -> {
+                                confirmError = "Passwords do not match"
+                                return@launch
+                            }
+                        }
+
+                        isLoading = true
+                        val success = repo.registerUser(name, email, password)
+
+                        if (success) {
+                            val user = repo.loginUser(email, password)
+                            if (user != null) {
+                                session.saveUserSession(user.id, user.email)
+                                snackbarHostState.showSnackbar("Account created successfully 🎉")
+                                onSignUpSuccess()
+                            }
+                        } else {
+                            snackbarHostState.showSnackbar("Email already exists")
+                        }
+
+                        isLoading = false
+                    }
+                },
+                modifier = Modifier
+                    .width(180.dp)
+                    .height(56.dp),
+                shape = RoundedCornerShape(28.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2D201C)),
+                enabled = !isLoading
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                } else {
+                    Text("SIGN UP", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                }
             }
-        }
 
-        if (message.isNotEmpty()) {
-            Spacer(Modifier.height(16.dp))
-            Text(message, color = Color.Red)
-        }
+            Spacer(Modifier.height(40.dp))
 
-        Spacer(Modifier.height(40.dp))
-
-        Row {
-            Text("Already have account? ", fontSize = 14.sp)
-            Text("Log In", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color.Black, modifier = Modifier.clickable { onNavigateToLogin() })
+            Row {
+                Text("Already have an account? ")
+                Text(
+                    "Log In",
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.clickable { onNavigateToLogin() }
+                )
+            }
         }
     }
 }

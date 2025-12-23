@@ -16,8 +16,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.uwe_shopping_app.data.local.repository.UserRepository
 import com.example.uwe_shopping_app.data.local.session.SessionManager
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import com.example.uwe_shopping_app.util.isValidEmail
+import com.example.uwe_shopping_app.util.isValidPassword
 import kotlinx.coroutines.launch
 
 @Composable
@@ -27,93 +27,130 @@ fun LoginScreen(
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var message by remember { mutableStateOf("") }
+
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+
     var isLoading by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val repo = remember { UserRepository() }
     val session = remember { SessionManager(context) }
-    // Use scope with composition is safer
-    val coroutineScope = rememberCoroutineScope()
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 40.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = "Log into\nyour account",
-            fontSize = 32.sp,
-            fontWeight = FontWeight.Bold,
-            lineHeight = 40.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(bottom = 60.dp)
-        )
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { padding ->
 
-        UnderlinedTextField(email, { email = it }, "Email address", keyboardType = KeyboardType.Email)
-        Spacer(Modifier.height(24.dp))
-        UnderlinedTextField(password, { password = it }, "Password", isPassword = true)
-
-        Spacer(Modifier.height(16.dp))
-        Text("Forgot Password?", fontSize = 14.sp, color = Color.Black.copy(alpha = 0.7f),
-            modifier = Modifier.align(Alignment.End))
-
-        Spacer(Modifier.height(40.dp))
-
-        Button(
-            onClick = {
-                if (email.isBlank() || password.isBlank()) {
-                    message = "Please fill in all fields"
-                    return@Button
-                }
-
-                isLoading = true
-                message = ""
-
-                // LOGIN LOGIC
-                coroutineScope.launch {
-
-                    val user = repo.loginUser(email, password)
-
-                    if (user != null) {
-                        session.saveUserSession(user.id, user.email)
-                        isLoading = false
-                        onLoginSuccess()
-                    } else {
-                        isLoading = false
-                        message = "Invalid email or password"
-                    }
-                }
-            },
-            modifier = Modifier.width(180.dp).height(56.dp),
-            shape = RoundedCornerShape(28.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2D201C)),
-            enabled = !isLoading
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = 40.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            if (isLoading) {
-                CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
-            } else {
-                Text("LOG IN", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-            }
-        }
 
-        if (message.isNotEmpty()) {
-            Spacer(Modifier.height(16.dp))
-            Text(message, color = Color.Red)
-        }
-
-        Spacer(Modifier.height(48.dp))
-        Row {
-            Text("Don't have an account? ", fontSize = 14.sp)
             Text(
-                "Sign Up",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color.Black,
-                modifier = Modifier.clickable { onNavigateToSignUp() }
+                text = "Log into\nyour account",
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold,
+                lineHeight = 40.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(bottom = 60.dp)
             )
+
+            UnderlinedTextField(
+                value = email,
+                onValueChange = {
+                    email = it
+                    emailError = null
+                },
+                placeholder = "Email address",
+                keyboardType = KeyboardType.Email,
+                isError = emailError != null,
+                errorMessage = emailError
+            )
+
+            Spacer(Modifier.height(24.dp))
+
+            UnderlinedTextField(
+                value = password,
+                onValueChange = {
+                    password = it
+                    passwordError = null
+                },
+                placeholder = "Password",
+                isPassword = true,
+                isError = passwordError != null,
+                errorMessage = passwordError
+            )
+
+            Spacer(Modifier.height(40.dp))
+
+            Button(
+                onClick = {
+                    scope.launch {
+                        emailError = null
+                        passwordError = null
+
+                        when {
+                            email.isBlank() -> {
+                                emailError = "Email is required"
+                                return@launch
+                            }
+                            !isValidEmail(email) -> {
+                                emailError = "Invalid email format"
+                                return@launch
+                            }
+                            password.isBlank() -> {
+                                passwordError = "Password is required"
+                                return@launch
+                            }
+                            !isValidPassword(password) -> {
+                                passwordError = "Password must be at least 8 characters"
+                                return@launch
+                            }
+                        }
+
+                        isLoading = true
+                        val user = repo.loginUser(email, password)
+
+                        if (user != null) {
+                            session.saveUserSession(user.id, user.email)
+                            snackbarHostState.showSnackbar("Login successful 🎉")
+                            onLoginSuccess()
+                        } else {
+                            snackbarHostState.showSnackbar("Invalid email or password")
+                        }
+                        isLoading = false
+                    }
+                },
+                modifier = Modifier
+                    .width(180.dp)
+                    .height(56.dp),
+                shape = RoundedCornerShape(28.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2D201C)),
+                enabled = !isLoading
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                } else {
+                    Text("LOG IN", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+
+            Spacer(Modifier.height(48.dp))
+
+            Row {
+                Text("Don't have an account? ")
+                Text(
+                    "Sign Up",
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.clickable { onNavigateToSignUp() }
+                )
+            }
         }
     }
 }
