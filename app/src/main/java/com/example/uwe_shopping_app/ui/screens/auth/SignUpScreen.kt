@@ -114,17 +114,7 @@ fun SignUpScreen(
         }
 
         Spacer(Modifier.height(40.dp))
-        Text("or sign up with", fontSize = 14.sp, color = Color.Black.copy(alpha = 0.6f))
-        Spacer(Modifier.height(20.dp))
 
-        Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-            // Đảm bảo bạn có hàm SocialButton hoặc thay thế bằng Icon
-            SocialButton(R.drawable.apple)
-            SocialButton(R.drawable.google)
-            SocialButton(R.drawable.facebook)
-        }
-
-        Spacer(Modifier.height(48.dp))
         Row {
             Text("Already have account? ", fontSize = 14.sp)
             Text("Log In", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color.Black, modifier = Modifier.clickable { onNavigateToLogin() })
