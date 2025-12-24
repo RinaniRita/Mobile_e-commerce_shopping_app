@@ -15,17 +15,20 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.uwe_shopping_app.ui.components.common.BottomNavigationBar
+import com.example.uwe_shopping_app.ui.components.product.ProductFilterSidebar
 import com.example.uwe_shopping_app.ui.components.product.VerticalProductGrid
-import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
+import com.example.uwe_shopping_app.ui.screens.search.SearchFilterState
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 
@@ -33,11 +36,12 @@ import java.nio.charset.StandardCharsets
 @Composable
 fun ResultSearchScreen(
     query: String,
+    initialFilter: SearchFilterState,
     navController: NavHostController? = null,
     currentRoute: String = "search",
     onNavigate: (String) -> Unit = {},
     onBack: () -> Unit = {},
-    viewModel: ResultSearchViewModel = viewModel()
+    viewModel: ResultSearchViewModel
 ) {
     val uiState = viewModel.uiState
 
@@ -45,108 +49,138 @@ fun ResultSearchScreen(
         query,
         StandardCharsets.UTF_8.toString()
     )
+    var filterState by remember { mutableStateOf(initialFilter) }
+
+    var showFilter by remember { mutableStateOf(false) }
 
 
-    LaunchedEffect(query) {
-        val decodedQuery = URLDecoder.decode(
-            query,
-            StandardCharsets.UTF_8.toString()
+    LaunchedEffect(
+        decodedQuery,
+        filterState.minPrice,
+        filterState.maxPrice,
+        filterState.sortBy
+    ) {
+
+
+        viewModel.search(
+            decodedQuery,
+            filterState.minPrice,
+            filterState.maxPrice,
+            filterState.sortBy
         )
-        viewModel.search(decodedQuery)
     }
 
-    Surface(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFF5F5F5)),
-        color = Color(0xFFF5F5F5)
-    ) {
-        Column(
-            modifier = Modifier.fillMaxSize()
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Surface(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFF5F5F5)),
+            color = Color(0xFFF5F5F5)
         ) {
-            // Simple top bar with back button and title
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                color = Color.White,
-                shadowElevation = 4.dp
+            Column(
+                modifier = Modifier.fillMaxSize()
             ) {
-                Row(
+                // Simple top bar with back button and title
+                Surface(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        .fillMaxWidth(),
+                    color = Color.White,
+                    shadowElevation = 4.dp
                 ) {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                            tint = Color.Black
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        IconButton(onClick = onBack) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                                tint = Color.Black
+                            )
+                        }
+                        Text(
+                            text = "Results",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = Color.Black
                         )
                     }
-                    Text(
-                        text = "Results",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = Color.Black
+                }
+
+                Box(modifier = Modifier.weight(1f)) {
+
+                    when {
+                        uiState.isLoading -> {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator()
+                            }
+                        }
+
+                        else -> {
+                            Column(modifier = Modifier.fillMaxSize()) {
+
+                                // ALWAYS show header (even when 0 results)
+                                SearchResultsHeader(
+                                    resultsCount = uiState.searchResults.size,
+                                    query = uiState.query,
+                                    onFilterClick = { showFilter = true }
+                                )
+
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                if (uiState.searchResults.isEmpty()) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(top = 48.dp),
+                                        contentAlignment = Alignment.TopCenter
+                                    ) {
+                                        Text(
+                                            text = "No products match your filters",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = Color(0xFF9E9E9E)
+                                        )
+                                    }
+                                } else {
+                                    VerticalProductGrid(
+                                        products = uiState.searchResults,
+                                        modifier = Modifier.fillMaxSize(),
+                                        onProductClick = { product ->
+                                            navController?.navigate("product/${product.id}")
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+
+//                Filter
+                if (showFilter) {
+                    ProductFilterSidebar(
+                        visible = true,
+                        state = filterState,
+                        onStateChange = { filterState = it },
+                        onReset = { filterState = SearchFilterState() },
+                        onDismiss = { showFilter = false },
+                        onApply = {
+                            showFilter = false
+                        }
                     )
                 }
-            }
-
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-            ) {
-                when {
-                    uiState.isLoading -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator()
-                        }
-                    }
-
-                    uiState.searchResults.isEmpty() -> {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(32.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "No products found for \"$query\"",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = Color(0xFF9E9E9E)
-                            )
-                        }
-                    }
-
-                    else -> {
-                        Column(modifier = Modifier.fillMaxSize()) {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            SearchResultsHeader(
-                                resultsCount = uiState.searchResults.size,
-                                query = uiState.query
-                            )
-                            VerticalProductGrid(
-                                products = uiState.searchResults,
-                                modifier = Modifier.weight(1f),
-                                onProductClick = { product ->
-                                    navController?.navigate("product/${product.id}")
-                                }
-                            )
-                        }
-                    }
+                navController?.let {
+                    BottomNavigationBar(
+                        navController = it,
+                        currentRoute = currentRoute
+                    )
                 }
-
-            }
-
-            navController?.let {
-                BottomNavigationBar(
-                    navController = it,
-                    currentRoute = currentRoute
-                )
             }
         }
     }
@@ -213,12 +247,5 @@ private fun SearchResultsHeader(
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-private fun ResultSearchScreenPreview() {
-    Uwe_shopping_appTheme {
-        ResultSearchScreen(query = "Dress")
-    }
-}
 
 

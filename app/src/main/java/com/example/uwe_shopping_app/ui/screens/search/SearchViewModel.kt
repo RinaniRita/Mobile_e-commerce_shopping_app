@@ -5,13 +5,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.uwe_shopping_app.data.local.entity.ProductEntity
 import com.example.uwe_shopping_app.data.local.repository.ProductRepository
 import kotlinx.coroutines.launch
 
 data class SearchUiState(
     val searchQuery: String = "",
-    val suggestions: List<String> = emptyList()
+    val suggestions: List<String> = emptyList(),
+    val products: List<ProductEntity> = emptyList()
 )
+
 
 class SearchViewModel(
     private val repository: ProductRepository = ProductRepository()
@@ -36,6 +39,34 @@ class SearchViewModel(
             uiState = uiState.copy(suggestions = suggestions)
         }
     }
+
+    fun applyFilter(
+        minPrice: Float,
+        maxPrice: Float,
+        sortBy: SortOption
+    ) {
+        viewModelScope.launch {
+
+            val (sortField, sortOrder) = when (sortBy) {
+                SortOption.NEWEST -> "createdAt" to "DESC"
+                SortOption.OLDEST -> "createdAt" to "ASC"
+                SortOption.NAME_ASC -> "name" to "ASC"
+                SortOption.NAME_DESC -> "name" to "DESC"
+            }
+
+            val products = repository.getProductsSorted(
+                sortBy = sortField,
+                sortOrder = sortOrder,
+                offset = 0
+            ).filter {
+                it.price in minPrice..maxPrice
+            }
+
+            uiState = uiState.copy(products = products)
+        }
+    }
+
+
 
     fun submitSearch() {
         uiState = uiState.copy(suggestions = emptyList())

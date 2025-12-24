@@ -1,5 +1,8 @@
 package com.example.uwe_shopping_app.ui.screens.search
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,7 +19,11 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
+
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,8 +44,12 @@ import com.example.uwe_shopping_app.ui.screens.home.CategoryChipsRow
 import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.uwe_shopping_app.navigation.navigateToResult
+import com.example.uwe_shopping_app.ui.components.product.ProductFilterSidebar
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
+
+
 
 
 @Composable
@@ -51,113 +62,146 @@ fun SearchScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     val uiState = viewModel.uiState
     val searchQuery = uiState.searchQuery
+    var filterState by remember { mutableStateOf(SearchFilterState()) }
+    var showFilter by remember { mutableStateOf(false) }
 
-    Surface(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFF5F5F5)),
-        color = Color(0xFFF5F5F5)
-    ) {
-        Column(
-            modifier = Modifier.fillMaxSize()
+
+    Box(modifier = Modifier.fillMaxSize()) {
+
+        // MAIN CONTENT
+        Surface(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFF5F5F5)),
+            color = Color(0xFFF5F5F5)
         ) {
-            TopAppBar(title = "Discover")
+            Column(modifier = Modifier.fillMaxSize()) {
 
-            // Search Bar Section
-            SearchBar(
-                searchQuery = searchQuery,
-                onSearchQueryChange = { query ->
-                    viewModel.updateSearchQuery(query)
-                },
-                onClearSearch = {
-                    viewModel.clearSearch()
-                    keyboardController?.hide()
-                },
-                onSearch = {
-                    val trimmed = searchQuery.trim()
-                    if (trimmed.isNotBlank()) {
+                TopAppBar(title = "Discover")
+
+                // Search Bar
+                SearchBar(
+                    searchQuery = searchQuery,
+                    onSearchQueryChange = viewModel::updateSearchQuery,
+                    onClearSearch = {
+                        viewModel.clearSearch()
                         keyboardController?.hide()
+                    },
+                    onSearch = {
+                        val trimmed = searchQuery.trim()
+                        if (trimmed.isNotBlank()) {
+                            keyboardController?.hide()
+                            viewModel.submitSearch()
 
-                        viewModel.submitSearch()
-
-                        val encodedQuery = URLEncoder.encode(
-                            trimmed,
-                            StandardCharsets.UTF_8.toString()
-                        )
-
-                        navController.navigate("resultSearch/$encodedQuery") {
-                            launchSingleTop = true
-                        }
-                    }
-                }
-            )
-
-            //  Search Suggestions
-            if (uiState.suggestions.isNotEmpty()) {
-                Card(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                ) {
-                    Column {
-                        uiState.suggestions.forEach { suggestion ->
-                            Text(
-                                text = suggestion,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        viewModel.updateSearchQuery(suggestion)
-                                        viewModel.submitSearch()
-                                        keyboardController?.hide()
-
-                                        val encoded = URLEncoder.encode(
-                                            suggestion,
-                                            StandardCharsets.UTF_8.toString()
-                                        )
-
-                                        navController.navigate("resultSearch/$encoded") {
-                                            launchSingleTop = true
-                                        }
-                                    }
-                                    .padding(16.dp),
-                                style = MaterialTheme.typography.bodyMedium
+                            val encodedQuery = URLEncoder.encode(
+                                trimmed,
+                                StandardCharsets.UTF_8.toString()
                             )
 
-                            Divider(color = Color(0xFFE0E0E0))
+                            //  DEFAULT FILTER VALUES
+                            val min = 0f
+                            val max = 1500f
+                            val sort = SortOption.NEWEST.name
+
+                            navController.navigateToResult(
+                                query = trimmed,
+                                min = filterState.minPrice,
+                                max = filterState.maxPrice,
+                                sort = filterState.sortBy
+                            )
+                        }
+                    },
+                    onFilterClick = { showFilter = true }
+                )
+
+
+                // Suggestions
+                if (uiState.suggestions.isNotEmpty()) {
+                    Card(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                    ) {
+                        Column {
+                            uiState.suggestions.forEach { suggestion ->
+                                Text(
+                                    text = suggestion,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            viewModel.updateSearchQuery(suggestion)
+                                            viewModel.submitSearch()
+                                            keyboardController?.hide()
+
+
+                                            navController.navigateToResult(
+                                                query = suggestion,
+                                                min = filterState.minPrice,
+                                                max = filterState.maxPrice,
+                                                sort = filterState.sortBy
+                                            )
+
+                                        }
+                                        .padding(16.dp)
+                                )
+                                Divider()
+                            }
                         }
                     }
                 }
+
+                Box(modifier = Modifier.weight(1f)) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        CategoryChipsRow()
+                        Spacer(modifier = Modifier.height(16.dp))
+                        CategoryCardsSection()
+                        Spacer(modifier = Modifier.height(80.dp))
+                    }
+                }
+
+                BottomNavigationBar(
+                    navController = navController,
+                    currentRoute = currentRoute
+                )
             }
+        }
 
-
+        // BACKDROP (click to close)
+        if (showFilter) {
             Box(
                 modifier = Modifier
-                    .weight(1f)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    // Show category chips and cards as search discovery content
-                    Spacer(modifier = Modifier.height(8.dp))
-                    CategoryChipsRow()
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    CategoryCardsSection()
-                    Spacer(modifier = Modifier.height(80.dp))
-                }
-            }
-
-            BottomNavigationBar(
-                navController = navController,
-                currentRoute = currentRoute,
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.3f))
+                    .clickable { showFilter = false }
             )
         }
+
+        // RIGHT SIDEBAR
+        ProductFilterSidebar(
+            visible = showFilter,
+            state = filterState,
+            onStateChange = { filterState = it },
+            onReset = { filterState = SearchFilterState() },
+            onDismiss = { showFilter = false },
+            onApply = {
+                showFilter = false
+                viewModel.applyFilter(
+                    filterState.minPrice,
+                    filterState.maxPrice,
+                    filterState.sortBy
+                )
+            }
+        )
     }
 }
+
 
 @Composable
 private fun SearchBar(
@@ -165,7 +209,7 @@ private fun SearchBar(
     onSearchQueryChange: (String) -> Unit,
     onClearSearch: () -> Unit,
     onSearch: () -> Unit,
-    onFilterClick: () -> Unit = {}
+    onFilterClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -215,15 +259,15 @@ private fun SearchBar(
             ),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             keyboardActions = KeyboardActions(
-                onSearch = { onSearch() }
+                onSearch = {
+                    onSearch() }
             )
         )
 
-        // Filter Button
+        // Filter Button (RIGHT side)
         Surface(
             onClick = onFilterClick,
-            modifier = Modifier
-                .size(48.dp),
+            modifier = Modifier.size(48.dp),
             shape = RoundedCornerShape(12.dp),
             color = Color(0xFFF5F5F5)
         ) {
@@ -241,6 +285,7 @@ private fun SearchBar(
         }
     }
 }
+
 
 @Composable
 private fun CategoryCardsSection() {
@@ -363,15 +408,129 @@ private fun CategoryCard(
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true)
+data class SearchFilterState(
+    val minPrice: Float = 0f,
+    val maxPrice: Float = 1500f,
+    val sortBy: SortOption = SortOption.NEWEST
+)
+
+enum class SortOption {
+    NEWEST,
+    OLDEST,
+    NAME_ASC,
+    NAME_DESC
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchScreenPreview() {
-    Uwe_shopping_appTheme {
-        val navController = rememberNavController()
-        SearchScreen(
-            navController = navController,
-            currentRoute = "search"
+fun SearchFilterSheet(
+    state: SearchFilterState,
+    onStateChange: (SearchFilterState) -> Unit,
+    onApply: () -> Unit,
+    onReset: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(20.dp)
+    ) {
+        Text("Filter", style = MaterialTheme.typography.titleLarge)
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text("Price", fontWeight = FontWeight.SemiBold)
+
+        RangeSlider(
+            value = state.minPrice..state.maxPrice,
+            valueRange = 0f..1500f,
+            onValueChange = {
+                onStateChange(
+                    state.copy(
+                        minPrice = it.start,
+                        maxPrice = it.endInclusive
+                    )
+                )
+            }
         )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text("$${state.minPrice.toInt()}")
+            Text("$${state.maxPrice.toInt()}")
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text("Sort By", fontWeight = FontWeight.SemiBold)
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        SortChip("Newest", state.sortBy == SortOption.NEWEST) {
+            onStateChange(state.copy(sortBy = SortOption.NEWEST))
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        SortChip("Oldest", state.sortBy == SortOption.OLDEST) {
+            onStateChange(state.copy(sortBy = SortOption.OLDEST))
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        SortChip("A → Z", state.sortBy == SortOption.NAME_ASC) {
+            onStateChange(state.copy(sortBy = SortOption.NAME_ASC))
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        SortChip("Z → A", state.sortBy == SortOption.NAME_DESC) {
+            onStateChange(state.copy(sortBy = SortOption.NAME_DESC))
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            TextButton(onClick = onReset) {
+                Text("Reset")
+            }
+
+            Button(
+                onClick = onApply,
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("Apply")
+            }
+        }
     }
 }
+
+@Composable
+private fun SortChip(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(44.dp)
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(22.dp),
+        color = if (selected) Color.Black else Color(0xFFF2F2F2)
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Text(
+                text = label,
+                color = if (selected) Color.White else Color.Black
+            )
+        }
+    }
+}
+
+
+
+
 

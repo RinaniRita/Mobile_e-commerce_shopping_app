@@ -7,6 +7,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -26,6 +27,9 @@ import com.example.uwe_shopping_app.ui.screens.auth.LoginScreen
 import com.example.uwe_shopping_app.ui.screens.auth.SignUpScreen
 import com.example.uwe_shopping_app.ui.screens.order.OrderInfoDeliveredScreen
 import com.example.uwe_shopping_app.ui.screens.order.OrderInfoOnTheWayScreen
+import com.example.uwe_shopping_app.ui.screens.resultSearch.ResultSearchViewModel
+import com.example.uwe_shopping_app.ui.screens.search.SearchFilterState
+import com.example.uwe_shopping_app.ui.screens.search.SortOption
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
@@ -122,30 +126,33 @@ fun AppNavHost(navController: NavHostController, app: Application) {
 
             //  ========== Result Search ============
             composable(
-                route = "resultSearch/{query}",
+                route = "resultSearch/{query}/{min}/{max}/{sort}",
                 arguments = listOf(
-                    navArgument("query") {
-                        type = NavType.StringType
-                    }
+                    navArgument("query") { type = NavType.StringType },
+                    navArgument("min") { type = NavType.FloatType },
+                    navArgument("max") { type = NavType.FloatType },
+                    navArgument("sort") { type = NavType.StringType }
                 )
             ) { backStackEntry ->
+
                 val query = backStackEntry.arguments?.getString("query") ?: ""
-                val currentRoute = navController.currentBackStackEntry?.destination?.route ?: "search"
+                val min = backStackEntry.arguments?.getFloat("min") ?: 0f
+                val max = backStackEntry.arguments?.getFloat("max") ?: 1500f
+                val sort = SortOption.valueOf(
+                    backStackEntry.arguments?.getString("sort") ?: SortOption.NEWEST.name
+                )
+
+                val currentRoute =
+                    navController.currentBackStackEntry?.destination?.route ?: "search"
+                val viewModel: ResultSearchViewModel = viewModel()
 
                 ResultSearchScreen(
                     query = query,
+                    initialFilter = SearchFilterState(min, max, sort),
                     navController = navController,
                     currentRoute = currentRoute,
-                    onNavigate = { route ->
-                        navController.navigate(route) {
-                            launchSingleTop = true
-                            restoreState = true
-                            popUpTo("home") { saveState = true }
-                        }
-                    },
-                    onBack = {
-                        navController.popBackStack()
-                    }
+                    viewModel = viewModel,
+                    onBack = { navController.popBackStack() }
                 )
             }
 
