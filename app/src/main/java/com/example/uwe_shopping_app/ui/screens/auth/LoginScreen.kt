@@ -115,15 +115,22 @@ fun LoginScreen(
                         }
 
                         isLoading = true
+
                         val user = repo.loginUser(email, password)
 
                         if (user != null) {
-                            session.saveUserSession(user.id, user.email)
+                            session.saveUserSession(
+                                user.id,
+                                user.email,
+                                user.phone
+                            )
+
                             snackbarHostState.showSnackbar("Login successful 🎉")
                             onLoginSuccess()
                         } else {
                             snackbarHostState.showSnackbar("Invalid email or password")
                         }
+
                         isLoading = false
                     }
                 },
@@ -135,9 +142,17 @@ fun LoginScreen(
                 enabled = !isLoading
             ) {
                 if (isLoading) {
-                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
                 } else {
-                    Text("LOG IN", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        "LOG IN",
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
 

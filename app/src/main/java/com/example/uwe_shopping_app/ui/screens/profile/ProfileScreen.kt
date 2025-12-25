@@ -113,9 +113,14 @@ fun ProfileScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            if (text == "Log out") {
-                                viewModel.logout()
-                                onNavigate("login")
+                            when (text) {
+                                "Log out" -> {
+                                    viewModel.logout()
+                                    onNavigate("login")
+                                }
+                                "Address" -> {
+                                    onNavigate("address")
+                                }
                             }
                         }
                         .padding(vertical = 16.dp),

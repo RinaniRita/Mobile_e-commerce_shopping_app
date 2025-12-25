@@ -27,11 +27,13 @@ fun SignUpScreen(
 ) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirm by remember { mutableStateOf("") }
 
     var nameError by remember { mutableStateOf<String?>(null) }
     var emailError by remember { mutableStateOf<String?>(null) }
+    var phoneError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
     var confirmError by remember { mutableStateOf<String?>(null) }
 
@@ -62,7 +64,7 @@ fun SignUpScreen(
                 fontWeight = FontWeight.Bold,
                 lineHeight = 40.sp,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(bottom = 60.dp)
+                modifier = Modifier.padding(bottom = 40.dp)
             )
 
             UnderlinedTextField(
@@ -76,7 +78,7 @@ fun SignUpScreen(
                 errorMessage = nameError
             )
 
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(16.dp))
 
             UnderlinedTextField(
                 value = email,
@@ -90,7 +92,21 @@ fun SignUpScreen(
                 errorMessage = emailError
             )
 
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(16.dp))
+
+            UnderlinedTextField(
+                value = phone,
+                onValueChange = {
+                    phone = it
+                    phoneError = null
+                },
+                placeholder = "Phone number",
+                keyboardType = KeyboardType.Phone,
+                isError = phoneError != null,
+                errorMessage = phoneError
+            )
+
+            Spacer(Modifier.height(16.dp))
 
             UnderlinedTextField(
                 value = password,
@@ -104,7 +120,7 @@ fun SignUpScreen(
                 errorMessage = passwordError
             )
 
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(16.dp))
 
             UnderlinedTextField(
                 value = confirm,
@@ -118,13 +134,14 @@ fun SignUpScreen(
                 errorMessage = confirmError
             )
 
-            Spacer(Modifier.height(40.dp))
+            Spacer(Modifier.height(32.dp))
 
             Button(
                 onClick = {
                     scope.launch {
                         nameError = null
                         emailError = null
+                        phoneError = null
                         passwordError = null
                         confirmError = null
 
@@ -141,6 +158,10 @@ fun SignUpScreen(
                                 emailError = "Invalid email format"
                                 return@launch
                             }
+                            phone.isBlank() -> {
+                                phoneError = "Phone number is required"
+                                return@launch
+                            }
                             !isValidPassword(password) -> {
                                 passwordError = "Password must be at least 8 characters"
                                 return@launch
@@ -152,12 +173,22 @@ fun SignUpScreen(
                         }
 
                         isLoading = true
-                        val success = repo.registerUser(name, email, password)
+
+                        val success = repo.registerUser(
+                            name = name,
+                            email = email,
+                            password = password,
+                            phone = phone
+                        )
 
                         if (success) {
                             val user = repo.loginUser(email, password)
                             if (user != null) {
-                                session.saveUserSession(user.id, user.email)
+                                session.saveUserSession(
+                                    user.id,
+                                    user.email,
+                                    user.phone
+                                )
                                 snackbarHostState.showSnackbar("Account created successfully 🎉")
                                 onSignUpSuccess()
                             }
@@ -176,13 +207,21 @@ fun SignUpScreen(
                 enabled = !isLoading
             ) {
                 if (isLoading) {
-                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
                 } else {
-                    Text("SIGN UP", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        "SIGN UP",
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
 
-            Spacer(Modifier.height(40.dp))
+            Spacer(Modifier.height(32.dp))
 
             Row {
                 Text("Already have an account? ")

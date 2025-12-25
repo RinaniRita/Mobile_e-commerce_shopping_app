@@ -1,9 +1,17 @@
 package com.example.uwe_shopping_app.ui.screens.checkout
 
+import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.uwe_shopping_app.App
+import com.example.uwe_shopping_app.data.local.session.SessionManager
+import com.example.uwe_shopping_app.ui.components.address.AddressUiModel
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 data class ShippingMethod(
     val id: String,
@@ -13,171 +21,82 @@ data class ShippingMethod(
 )
 
 data class CheckoutUiState(
-    // Form fields
     val firstName: String = "",
     val lastName: String = "",
-    val country: String = "",
     val streetName: String = "",
-    val city: String = "",
-    val stateProvince: String = "",
-    val zipCode: String = "",
     val phoneNumber: String = "",
-    
-    // Validation errors
-    val lastNameError: String? = "Field is required",
-    val countryError: String? = null,
-    val streetNameError: String? = null,
-    val cityError: String? = null,
-    val zipCodeError: String? = null,
-    val phoneNumberError: String? = null,
-    
-    // Shipping method
     val selectedShippingMethod: String = "free",
-    
-    // Coupon code
-    val couponCode: String = "",
-    
-    // Billing address
-    val copyBillingAddress: Boolean = false
+    val shippingLabel: String = "Free shipping",
+    val shippingPrice: Double = 0.0,
+    val totalPrice: Double = 0.0,
+    val couponCode: String = "", // BỔ SUNG
+    val copyBillingAddress: Boolean = false // BỔ SUNG
 )
 
-class CheckoutViewModel : ViewModel() {
+class CheckoutViewModel(application: Application) : AndroidViewModel(application) {
+    
+    private val addressDao = App.db.addressDao()
+    private val sessionManager = SessionManager(application)
     
     var uiState by mutableStateOf(CheckoutUiState())
         private set
+
+    init {
+        observeDefaultAddress()
+    }
+
+    private fun observeDefaultAddress() {
+        viewModelScope.launch {
+            val userId = sessionManager.userId.first() ?: return@launch
+            addressDao.getAddressesByUserId(userId).collectLatest { addresses ->
+                val defaultAddress = addresses.find { it.isDefault } ?: addresses.firstOrNull()
+                
+                defaultAddress?.let {
+                    val names = it.recipient.split(" ")
+                    uiState = uiState.copy(
+                        firstName = names.firstOrNull() ?: "",
+                        lastName = if (names.size > 1) names.drop(1).joinToString(" ") else "",
+                        streetName = it.addressLine,
+                        phoneNumber = it.phoneNumber
+                    )
+                }
+            }
+        }
+    }
+
+    fun updateTotalPrice(price: Double) {
+        uiState = uiState.copy(totalPrice = price)
+    }
     
     val shippingMethods = listOf(
-        ShippingMethod(
-            id = "free",
-            name = "Free Delivery to home",
-            price = 0.0,
-            description = "Delivery from 3 to 7 business days"
-        ),
-        ShippingMethod(
-            id = "standard",
-            name = "$ 9.90 Delivery to home",
-            price = 9.90,
-            description = "Delivery from 4 to 6 business days"
-        ),
-        ShippingMethod(
-            id = "fast",
-            name = "$ 9.90 Fast Delivery",
-            price = 9.90,
-            description = "Delivery from 2 to 3 business days"
-        )
+        ShippingMethod("free", "Free Delivery to home", 0.0, "Delivery from 3 to 7 business days"),
+        ShippingMethod("standard", "$ 5.0 Delivery to home", 5.0, "Delivery from 4 to 6 business days"),
+        ShippingMethod("fast", "$ 9.90 Fast Delivery", 9.90, "Delivery from 2 to 3 business days")
     )
-    
-    fun updateFirstName(value: String) {
-        uiState = uiState.copy(firstName = value)
-    }
-    
-    fun updateLastName(value: String) {
-        val error = if (value.isBlank()) "Field is required" else null
-        uiState = uiState.copy(lastName = value, lastNameError = error)
-    }
-    
-    fun updateCountry(value: String) {
-        val error = if (value.isBlank()) "Field is required" else null
-        uiState = uiState.copy(country = value, countryError = error)
-    }
-    
-    fun updateStreetName(value: String) {
-        val error = if (value.isBlank()) "Field is required" else null
-        uiState = uiState.copy(streetName = value, streetNameError = error)
-    }
-    
-    fun updateCity(value: String) {
-        val error = if (value.isBlank()) "Field is required" else null
-        uiState = uiState.copy(city = value, cityError = error)
-    }
-    
-    fun updateStateProvince(value: String) {
-        uiState = uiState.copy(stateProvince = value)
-    }
-    
-    fun updateZipCode(value: String) {
-        val error = if (value.isBlank()) "Field is required" else null
-        uiState = uiState.copy(zipCode = value, zipCodeError = error)
-    }
-    
-    fun updatePhoneNumber(value: String) {
-        val error = if (value.isBlank()) "Field is required" else null
-        uiState = uiState.copy(phoneNumber = value, phoneNumberError = error)
-    }
-    
+
     fun selectShippingMethod(methodId: String) {
-        uiState = uiState.copy(selectedShippingMethod = methodId)
+        val method = shippingMethods.find { it.id == methodId }
+        val price = method?.price ?: 0.0
+        val label = method?.name ?: "Free shipping"
+        uiState = uiState.copy(
+            selectedShippingMethod = methodId, 
+            shippingPrice = price,
+            shippingLabel = label
+        )
     }
     
+    fun updateFromAddress(address: AddressUiModel) {
+    }
+
     fun updateCouponCode(value: String) {
         uiState = uiState.copy(couponCode = value)
     }
-    
+
     fun validateCouponCode() {
-        // Frontend only - just clear the field or show success
-        // In real app, this would call backend API
+        // Có thể thêm logic xử lý mã giảm giá ở đây
     }
     
     fun toggleCopyBillingAddress() {
         uiState = uiState.copy(copyBillingAddress = !uiState.copyBillingAddress)
     }
-    
-    fun validateForm(): Boolean {
-        var isValid = true
-        val errors = mutableMapOf<String, String?>()
-        
-        if (uiState.lastName.isBlank()) {
-            errors["lastName"] = "Field is required"
-            isValid = false
-        } else {
-            errors["lastName"] = null
-        }
-        
-        if (uiState.country.isBlank()) {
-            errors["country"] = "Field is required"
-            isValid = false
-        } else {
-            errors["country"] = null
-        }
-        
-        if (uiState.streetName.isBlank()) {
-            errors["streetName"] = "Field is required"
-            isValid = false
-        } else {
-            errors["streetName"] = null
-        }
-        
-        if (uiState.city.isBlank()) {
-            errors["city"] = "Field is required"
-            isValid = false
-        } else {
-            errors["city"] = null
-        }
-        
-        if (uiState.zipCode.isBlank()) {
-            errors["zipCode"] = "Field is required"
-            isValid = false
-        } else {
-            errors["zipCode"] = null
-        }
-        
-        if (uiState.phoneNumber.isBlank()) {
-            errors["phoneNumber"] = "Field is required"
-            isValid = false
-        } else {
-            errors["phoneNumber"] = null
-        }
-        
-        uiState = uiState.copy(
-            lastNameError = errors["lastName"],
-            countryError = errors["country"],
-            streetNameError = errors["streetName"],
-            cityError = errors["city"],
-            zipCodeError = errors["zipCode"],
-            phoneNumberError = errors["phoneNumber"]
-        )
-        
-        return isValid
-    }
 }
-

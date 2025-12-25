@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CheckoutHeader(
     onBackClick: () -> Unit,
@@ -26,75 +27,52 @@ fun CheckoutHeader(
         modifier = modifier
             .fillMaxWidth()
             .background(Color(0xFFF5F5F5))
+            .statusBarsPadding() // Tránh bị đè bởi status bar
     ) {
-        // Top bar with back button and title
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Back button
-            IconButton(
-                onClick = onBackClick,
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(Color.White)
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    tint = Color.Black
+        // Thanh tiêu đề chuẩn
+        CenterAlignedTopAppBar(
+            title = {
+                Text(
+                    text = "Check out",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
                 )
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            // Title
-            Text(
-                text = "Check out",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
+            },
+            navigationIcon = {
+                IconButton(
+                    onClick = { onBackClick() },
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(Color.White)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.Black
+                    )
+                }
+            },
+            colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                containerColor = Color.Transparent
             )
-        }
+        )
 
-        // Progress indicator
+        // Progress indicator (giữ nguyên logic cũ nhưng làm gọn)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 16.dp),
+                .padding(bottom = 16.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Step 1: Shipping (Location pin)
-            StepIndicator(
-                icon = Icons.Default.LocationOn,
-                isActive = currentStep >= 1,
-                isCompleted = currentStep > 1
-            )
-
-            // Dotted line
+            StepIndicator(icon = Icons.Default.LocationOn, isActive = currentStep >= 1)
             DottedLine(isActive = currentStep >= 2)
-
-            // Step 2: Payment (Menu icon - horizontal lines)
-            StepIndicator(
-                icon = Icons.Default.Menu,
-                isActive = currentStep >= 2,
-                isCompleted = currentStep > 2
-            )
-
-            // Dotted line
+            StepIndicator(icon = Icons.Default.Menu, isActive = currentStep >= 2)
             DottedLine(isActive = currentStep >= 3)
-
-            // Step 3: Confirmation (Checkmark)
-            StepIndicator(
-                icon = Icons.Default.Check,
-                isActive = currentStep >= 3,
-                isCompleted = false
-            )
+            StepIndicator(icon = Icons.Default.Check, isActive = currentStep >= 3)
         }
     }
 }
@@ -102,12 +80,10 @@ fun CheckoutHeader(
 @Composable
 private fun StepIndicator(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
-    isActive: Boolean,
-    isCompleted: Boolean,
-    modifier: Modifier = Modifier
+    isActive: Boolean
 ) {
     Box(
-        modifier = modifier
+        modifier = Modifier
             .size(32.dp)
             .clip(CircleShape)
             .background(if (isActive) Color.Black else Color(0xFFE0E0E0)),
@@ -128,10 +104,6 @@ private fun DottedLine(isActive: Boolean) {
         modifier = Modifier
             .width(40.dp)
             .height(2.dp)
-            .background(
-                if (isActive) Color.Black else Color(0xFFE0E0E0),
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(1.dp)
-            )
+            .background(if (isActive) Color.Black else Color(0xFFE0E0E0))
     )
 }
-
