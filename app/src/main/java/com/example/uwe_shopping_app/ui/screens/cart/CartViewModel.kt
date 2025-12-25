@@ -26,72 +26,109 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
     private val sessionManager = SessionManager(application)
     private val productDao = App.db.productDao()
 
+    // Expose login state to CartScreen
+    val isLoggedIn = sessionManager.isLoggedIn
+
     private val _uiState = MutableStateFlow(CartUiState())
     val uiState: StateFlow<CartUiState> = _uiState.asStateFlow()
 
     init {
-        loadCart()
+        observeLoginState()
     }
 
+    // ---------------- LOGIN OBSERVER ----------------
+    private fun observeLoginState() {
+        viewModelScope.launch {
+            sessionManager.isLoggedIn.collect { loggedIn ->
+                if (loggedIn) {
+                    loadCart()
+                } else {
+                    _uiState.value = CartUiState()
+                }
+            }
+        }
+    }
+
+    // ---------------- LOAD CART ----------------
     fun loadCart() {
         viewModelScope.launch {
+            val userId = sessionManager.userId.first()
+
+            // 👇 Guest user → empty cart
+            if (userId == null) {
+                _uiState.value = CartUiState()
+                return@launch
+            }
+
             _uiState.value = _uiState.value.copy(isLoading = true)
 
-            // 1. Lấy UserID (Giả định luôn có vì đã Login)
-            val userId = sessionManager.userId.first() ?: return@launch
-
             try {
-                // 2. Tìm Cart của User
+                // 1. Get or create cart
                 val cart = cartRepository.getOrCreateCartForUser(userId)
 
-                // 3. Lấy danh sách item
+                // 2. Load cart items
                 val cartItemsEntity = cartRepository.getCartItems(cart.id)
 
-                // 4. Ghép dữ liệu Product vào để hiển thị (Tên, Ảnh, Giá)
+                // 3. Map to UI model
                 val uiItems = cartItemsEntity.mapNotNull { item ->
                     val product = productDao.getProductById(item.productId)
-                    if (product != null) {
+                    product?.let {
                         CartItemUiModel(
                             id = item.id,
                             productId = item.productId,
-                            name = product.name,
-                            price = product.price,
-                            imageResId = product.imageResId,
-                            size = "L", // Logic size nếu có
+                            name = it.name,
+                            price = it.price,
+                            imageResId = it.imageResId,
+                            size = "L",
                             color = "Default",
                             quantity = item.quantity,
                             isSelected = true
                         )
-                    } else null
+                    }
                 }
 
                 calculateTotal(uiItems)
 
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(error = e.message, isLoading = false)
+                _uiState.value = _uiState.value.copy(
+                    error = e.message,
+                    isLoading = false
+                )
             }
         }
     }
 
-    // Tính tổng tiền
+    // ---------------- TOTAL PRICE ----------------
     private fun calculateTotal(items: List<CartItemUiModel>) {
-        val total = items.filter { it.isSelected }.sumOf { it.price * it.quantity }
-        _uiState.value = _uiState.value.copy(cartItems = items, productPrice = total, isLoading = false)
+        val total = items
+            .filter { it.isSelected }
+            .sumOf { it.price * it.quantity }
+
+        _uiState.value = _uiState.value.copy(
+            cartItems = items,
+            productPrice = total,
+            isLoading = false
+        )
     }
 
-    // Logic Tăng số lượng
+    // ---------------- INCREASE ----------------
     fun increaseQuantity(itemId: Int) {
         viewModelScope.launch {
             val userId = sessionManager.userId.first() ?: return@launch
             val cart = cartRepository.getOrCreateCartForUser(userId)
             val item = _uiState.value.cartItems.find { it.id == itemId } ?: return@launch
 
-            cartRepository.updateCartItemQuantity(cart.id, item.productId, item.quantity + 1)
+            cartRepository.updateCartItemQuantity(
+                cart.id,
+                item.productId,
+                item.quantity + 1
+            )
+
             loadCart()
         }
     }
 
-    // Logic Giảm số lượng
+    // ---------------- DECREASE ----------------
     fun decreaseQuantity(itemId: Int) {
         viewModelScope.launch {
             val userId = sessionManager.userId.first() ?: return@launch
@@ -99,29 +136,35 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
             val item = _uiState.value.cartItems.find { it.id == itemId } ?: return@launch
 
             if (item.quantity > 1) {
-                cartRepository.updateCartItemQuantity(cart.id, item.productId, item.quantity - 1)
+                cartRepository.updateCartItemQuantity(
+                    cart.id,
+                    item.productId,
+                    item.quantity - 1
+                )
             } else {
                 cartRepository.removeFromCart(cart.id, itemId)
             }
+
             loadCart()
         }
     }
 
-    // Logic Xóa item
+    // ---------------- REMOVE ----------------
     fun removeItem(itemId: Int) {
         viewModelScope.launch {
             val userId = sessionManager.userId.first() ?: return@launch
             val cart = cartRepository.getOrCreateCartForUser(userId)
+
             cartRepository.removeFromCart(cart.id, itemId)
             loadCart()
         }
     }
 
-    // Logic chọn item (chỉ update UI tạm thời)
+    // ---------------- SELECT ----------------
     fun toggleItemSelection(itemId: Int) {
-        val updated = _uiState.value.cartItems.map {
+        val updatedItems = _uiState.value.cartItems.map {
             if (it.id == itemId) it.copy(isSelected = !it.isSelected) else it
         }
-        calculateTotal(updated)
+        calculateTotal(updatedItems)
     }
 }

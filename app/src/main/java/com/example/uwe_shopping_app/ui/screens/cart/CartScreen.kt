@@ -1,8 +1,6 @@
 package com.example.uwe_shopping_app.ui.screens.cart
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -32,13 +30,8 @@ fun CartScreen(
     viewModel: CartViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val error = uiState.error
+    val isLoggedIn by viewModel.isLoggedIn.collectAsState(initial = false)
     var selectedTab by remember { mutableStateOf(ShopTab.YOUR_CART) }
-
-
-    LaunchedEffect(Unit) {
-        viewModel.loadCart()
-    }
 
     Scaffold(
         topBar = {
@@ -49,22 +42,24 @@ fun CartScreen(
         bottomBar = {
             BottomNavigationBar(
                 navController = navController,
-                currentRoute = currentRoute,
+                currentRoute = currentRoute
             )
         },
         containerColor = Color(0xFFF5F5F5)
     ) { paddingValues ->
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .background(Color(0xFFF5F5F5))
         ) {
+
+            // ---------------- TABS (VISIBLE FOR BOTH) ----------------
             ShopStatusTabs(
                 selectedTab = selectedTab,
                 onTabSelected = { tab ->
                     selectedTab = tab
-
                     when (tab) {
                         ShopTab.YOUR_CART -> Unit
                         else -> navController.navigate("orders?status=${tab.name}")
@@ -75,80 +70,138 @@ fun CartScreen(
                     .padding(top = 8.dp)
             )
 
-
-            if (uiState.isLoading) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
-            } else if (error != null) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = error, color = MaterialTheme.colorScheme.error)
-                        Button(onClick = { viewModel.loadCart() }) { Text("Retry") }
-                    }
-                }
-            } else if (uiState.cartItems.isEmpty()) {
-                EmptyState(message = "Your cart is empty", modifier = Modifier.fillMaxSize())
-            } else {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
+            // ===================== NOT LOGGED IN =====================
+            if (!isLoggedIn) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
                 ) {
                     Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        uiState.cartItems.forEach { item ->
-                            CartItemCard(
-                                item = item,
-                                onToggleSelection = { viewModel.toggleItemSelection(it) },
-                                onQuantityDecrease = { viewModel.decreaseQuantity(it) },
-                                onQuantityIncrease = { viewModel.increaseQuantity(it) },
-                                onRemoveClick = { viewModel.removeItem(it) }
-                            )
+                        Text(
+                            text = "Please log in to use your cart",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.DarkGray
+                        )
+
+                        Text(
+                            text = "Log in to add items and checkout",
+                            color = Color.Gray
+                        )
+
+                        Button(
+                            onClick = { navController.navigate("login") },
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text("Log in / Sign up")
                         }
                     }
+                }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                return@Scaffold
+            }
 
-                    OrderSummaryCard(
-                        productPrice = uiState.productPrice,
-                        shipping = "Free shipping",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Button(
-                        onClick = { 
-                            // TRUYỀN TỔNG TIỀN SANG CHECKOUT
-                            navController.navigate("address?from=checkout&totalPrice=${uiState.productPrice}") 
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
-                            .height(56.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF424242))
+            // ===================== LOGGED IN =====================
+            when {
+                uiState.isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = "Proceed to checkout",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
+                        CircularProgressIndicator()
                     }
+                }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                uiState.error != null -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = uiState.error ?: "Unknown error",
+                                color = MaterialTheme.colorScheme.error
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Button(onClick = { viewModel.loadCart() }) {
+                                Text("Retry")
+                            }
+                        }
+                    }
+                }
+
+                uiState.cartItems.isEmpty() -> {
+                    EmptyState(
+                        message = "Your cart is empty",
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+
+                else -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            uiState.cartItems.forEach { item ->
+                                CartItemCard(
+                                    item = item,
+                                    onToggleSelection = { viewModel.toggleItemSelection(it) },
+                                    onQuantityDecrease = { viewModel.decreaseQuantity(it) },
+                                    onQuantityIncrease = { viewModel.increaseQuantity(it) },
+                                    onRemoveClick = { viewModel.removeItem(it) }
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        OrderSummaryCard(
+                            productPrice = uiState.productPrice,
+                            shipping = "Free shipping",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Button(
+                            onClick = {
+                                navController.navigate(
+                                    "address?from=checkout&totalPrice=${uiState.productPrice}"
+                                )
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                                .height(56.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF424242)
+                            )
+                        ) {
+                            Text(
+                                text = "Proceed to checkout",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
                 }
             }
         }
     }
 }
-
-

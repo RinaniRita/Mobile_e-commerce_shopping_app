@@ -125,7 +125,7 @@ fun LoginScreen(
                                 user.phone
                             )
 
-                            snackbarHostState.showSnackbar("Login successful 🎉")
+                            snackbarHostState.showSnackbar("Login successful")
                             onLoginSuccess()
                         } else {
                             snackbarHostState.showSnackbar("Invalid email or password")

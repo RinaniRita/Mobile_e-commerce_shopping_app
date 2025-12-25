@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import com.example.uwe_shopping_app.util.LOGIN_REQUIRED
 
 data class ProductUiState(
     val product: ProductEntity? = null,
@@ -22,6 +23,7 @@ data class ProductUiState(
     val isDescriptionExpanded: Boolean = false,
     val isAddToCartSuccess: Boolean = false
 )
+
 
 class ProductViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -45,19 +47,20 @@ class ProductViewModel(application: Application) : AndroidViewModel(application)
         val currentProduct = _uiState.value.product ?: return
 
         viewModelScope.launch {
-            // Lấy ID trực tiếp (Vì đã login nên chắc chắn có, ?: return để an toàn code)
-            val userId = sessionManager.userId.first() ?: return@launch
+            val userId = sessionManager.userId.first()
+
+            // NOT LOGGED IN
+            if (userId == null) {
+                _uiState.value = _uiState.value.copy(error = LOGIN_REQUIRED)
+                return@launch
+            }
 
             try {
-                // 1. Lấy giỏ hàng của User này
                 val cart = cartRepository.getOrCreateCartForUser(userId)
-
-                // 2. Thêm vào giỏ
                 cartRepository.addToCart(cart.id, currentProduct.id, 1)
 
-                // 3. Báo UI để hiện thông báo thành công
                 _uiState.value = _uiState.value.copy(isAddToCartSuccess = true)
-                delay(100) // Reset cờ để toast không hiện lại
+                delay(100)
                 _uiState.value = _uiState.value.copy(isAddToCartSuccess = false)
 
             } catch (e: Exception) {
@@ -66,7 +69,13 @@ class ProductViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+
     // Các hàm phụ giữ nguyên
     fun toggleFavorite() { _uiState.value = _uiState.value.copy(isFavorite = !_uiState.value.isFavorite) }
     fun toggleDescriptionExpanded() { _uiState.value = _uiState.value.copy(isDescriptionExpanded = !_uiState.value.isDescriptionExpanded) }
+
+    fun clearError() {
+        _uiState.value = _uiState.value.copy(error = null)
+    }
+
 }

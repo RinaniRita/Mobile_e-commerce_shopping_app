@@ -18,6 +18,7 @@ import com.example.uwe_shopping_app.data.local.repository.UserRepository
 import com.example.uwe_shopping_app.data.local.session.SessionManager
 import com.example.uwe_shopping_app.util.isValidEmail
 import com.example.uwe_shopping_app.util.isValidPassword
+import com.example.uwe_shopping_app.util.isValidPhone
 import kotlinx.coroutines.launch
 
 @Composable
@@ -150,55 +151,64 @@ fun SignUpScreen(
                                 nameError = "Name is required"
                                 return@launch
                             }
+
                             email.isBlank() -> {
                                 emailError = "Email is required"
                                 return@launch
                             }
+
                             !isValidEmail(email) -> {
                                 emailError = "Invalid email format"
                                 return@launch
                             }
+
                             phone.isBlank() -> {
                                 phoneError = "Phone number is required"
                                 return@launch
                             }
+
+                            !isValidPhone(phone) -> {
+                                phoneError = "Phone must be 9–11 digits"
+                                return@launch
+                            }
+
                             !isValidPassword(password) -> {
                                 passwordError = "Password must be at least 8 characters"
                                 return@launch
                             }
+
                             password != confirm -> {
                                 confirmError = "Passwords do not match"
                                 return@launch
                             }
                         }
 
-                        isLoading = true
-
-                        val success = repo.registerUser(
-                            name = name,
-                            email = email,
-                            password = password,
-                            phone = phone
-                        )
-
-                        if (success) {
-                            val user = repo.loginUser(email, password)
-                            if (user != null) {
-                                session.saveUserSession(
-                                    user.id,
-                                    user.email,
-                                    user.phone
-                                )
-                                snackbarHostState.showSnackbar("Account created successfully 🎉")
-                                onSignUpSuccess()
-                            }
-                        } else {
-                            snackbarHostState.showSnackbar("Email already exists")
-                        }
-
                         isLoading = false
+
+                        when (repo.registerUser(name, email, password, phone)) {
+                            UserRepository.RegisterResult.Success -> {
+                                val user = repo.loginUser(email, password)
+                                if (user != null) {
+                                    session.saveUserSession(
+                                        user.id,
+                                        user.email,
+                                        user.phone
+                                    )
+                                    snackbarHostState.showSnackbar("Account created successfully")
+                                    onSignUpSuccess()
+                                }
+                            }
+
+                            UserRepository.RegisterResult.EmailExists -> {
+                                emailError = "Email already exists"
+                            }
+
+                            UserRepository.RegisterResult.PhoneExists -> {
+                                phoneError = "Phone number already exists"
+                            }
+                        }
                     }
-                },
+                    },
                 modifier = Modifier
                     .width(180.dp)
                     .height(56.dp),

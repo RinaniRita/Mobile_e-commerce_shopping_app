@@ -25,15 +25,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import com.example.uwe_shopping_app.data.local.entity.ProductEntity
 import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
 import java.util.Locale
+import com.example.uwe_shopping_app.util.LOGIN_REQUIRED
+
 
 @Composable
 fun ProductScreen(
     productId: Int,
+    navController: NavHostController,
     onBack: () -> Unit = {},
-    // ViewModel sẽ tự động được inject (AndroidViewModel)
     viewModel: ProductViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -53,10 +56,18 @@ fun ProductScreen(
 
     // Lắng nghe lỗi (ví dụ: chưa login, lỗi DB...)
     LaunchedEffect(uiState.error) {
-        if (uiState.error != null) {
-            Toast.makeText(context, uiState.error, Toast.LENGTH_SHORT).show()
+        when (uiState.error) {
+            LOGIN_REQUIRED -> {
+                navController.navigate("profile")
+                viewModel.clearError()
+            }
+            null -> Unit
+            else -> {
+                Toast.makeText(context, uiState.error, Toast.LENGTH_SHORT).show()
+            }
         }
     }
+
 
     Scaffold(containerColor = Color(0xFFF5F5F5)) { paddingValues ->
         Column(

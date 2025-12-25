@@ -5,15 +5,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -23,13 +20,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.example.uwe_shopping_app.R
-import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.uwe_shopping_app.R
 import com.example.uwe_shopping_app.ui.components.common.BottomNavigationBar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,6 +33,7 @@ fun ProfileScreen(
     onNavigate: (String) -> Unit = {}
 ) {
     val viewModel: ProfileViewModel = viewModel()
+    val isLoggedIn by viewModel.isLoggedIn.collectAsState()
     val user by viewModel.user.collectAsState()
 
     Scaffold(
@@ -50,6 +44,53 @@ fun ProfileScreen(
             )
         }
     ) { innerPadding ->
+
+        // ================= GUEST =================
+        if (!isLoggedIn) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.AccountCircle,
+                    contentDescription = null,
+                    modifier = Modifier.size(96.dp),
+                    tint = Color.Gray
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                Text(
+                    text = "You're not logged in",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                Text(
+                    text = "Log in to access your profile, orders and address",
+                    color = Color.Gray
+                )
+
+                Spacer(Modifier.height(24.dp))
+
+                Button(
+                    onClick = { navController.navigate("login") },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Log in / Sign up")
+                }
+            }
+
+            return@Scaffold
+        }
+
+        // ================= LOGGED IN =================
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -57,7 +98,8 @@ fun ProfileScreen(
                 .padding(horizontal = 16.dp)
         ) {
             Spacer(Modifier.height(16.dp))
-            // ---------------- HEADER WITH AVATAR, NAME, EMAIL, SETTINGS ICON ----------------
+
+            // ---------- HEADER ----------
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -70,8 +112,9 @@ fun ProfileScreen(
                         .clip(CircleShape),
                     contentScale = ContentScale.Crop
                 )
+
                 Spacer(Modifier.width(16.dp))
-                // Name and Email từ ViewModel
+
                 Column {
                     Text(
                         text = user?.name.orEmpty(),
@@ -85,12 +128,10 @@ fun ProfileScreen(
                         color = Color(0xFF808080)
                     )
                 }
-                Spacer(Modifier.weight(1f))
-                // Biểu tượng bánh răng → chuyển sang ProfileSetting
 
-                IconButton(onClick = {
-                    onNavigate("profile_setting")
-                }) {
+                Spacer(Modifier.weight(1f))
+
+                IconButton(onClick = { onNavigate("profile_setting") }) {
                     Icon(
                         imageVector = Icons.Default.Settings,
                         contentDescription = "Edit Profile",
@@ -98,8 +139,10 @@ fun ProfileScreen(
                     )
                 }
             }
+
             Spacer(Modifier.height(32.dp))
-            // ---------------- MENU ITEMS ----------------
+
+            // ---------- MENU ITEMS ----------
             val menuItems = listOf(
                 "Address" to Icons.Default.LocationOn,
                 "Payment method" to Icons.Default.Payment,
@@ -108,18 +151,19 @@ fun ProfileScreen(
                 "Rate this app" to Icons.Outlined.StarBorder,
                 "Log out" to Icons.AutoMirrored.Filled.ExitToApp
             )
+
             menuItems.forEach { (text, icon) ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
                             when (text) {
+                                "Address" -> onNavigate("address")
                                 "Log out" -> {
                                     viewModel.logout()
-                                    onNavigate("login")
-                                }
-                                "Address" -> {
-                                    onNavigate("address")
+                                    navController.navigate("home") {
+                                        popUpTo(0)
+                                    }
                                 }
                             }
                         }
@@ -140,7 +184,6 @@ fun ProfileScreen(
                     )
                     Spacer(Modifier.weight(1f))
                     Icon(
-                        // SỬA: Dùng AutoMirrored
                         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                         contentDescription = null,
                         tint = Color(0xFF222222)
@@ -148,16 +191,5 @@ fun ProfileScreen(
                 }
             }
         }
-    }
-}
-
-@Preview(showBackground = true, widthDp = 375, heightDp = 800)
-@Composable
-fun ProfileScreenPreview() {
-    Uwe_shopping_appTheme {
-        ProfileScreen(
-            navController = rememberNavController(),
-            onNavigate = {}
-        )
     }
 }

@@ -39,30 +39,16 @@ fun AppNavHost(
     navController: NavHostController,
     app: Application
 ) {
-    val session = remember { SessionManager(app) }
-    var isLoggedIn by remember { mutableStateOf<Boolean?>(null) }
-
-    LaunchedEffect(Unit) {
-        session.isLoggedIn.collectLatest { isLoggedIn = it }
-    }
-
-    if (isLoggedIn == null) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
-        }
-        return
-    }
-
     NavHost(
         navController = navController,
-        startDestination = if (isLoggedIn == true) "home" else "welcome"
+        startDestination = "welcome"
     ) {
 
         // ---------------- Onboarding ----------------
         composable("welcome") {
             WelcomeScreen(
                 onGetStarted = {
-                    navController.navigate("login") {
+                    navController.navigate("home") {
                         popUpTo("welcome") { inclusive = true }
                     }
                 }
@@ -92,7 +78,7 @@ fun AppNavHost(
             )
         }
 
-        // ---------------- Home ----------------
+        // ---------------- Home (PUBLIC) ----------------
         composable("home") {
             HomeScreen(
                 navController = navController,
@@ -107,7 +93,7 @@ fun AppNavHost(
             )
         }
 
-        // ---------------- Search ----------------
+        // ---------------- Search (PUBLIC) ----------------
         composable("search") {
             SearchScreen(
                 navController = navController,
@@ -122,7 +108,7 @@ fun AppNavHost(
             )
         }
 
-        // Search result with filters
+        // ---------------- Search Result with Filters ----------------
         composable(
             route = "resultSearch/{query}/{min}/{max}/{sort}",
             arguments = listOf(
@@ -151,21 +137,27 @@ fun AppNavHost(
             )
         }
 
-        // ---------------- Product ----------------
+
+        // ---------------- Product (PUBLIC) ----------------
         composable(
             route = "product/{productId}",
             arguments = listOf(navArgument("productId") { type = NavType.IntType })
-        ) { backStackEntry ->
-            val productId = backStackEntry.arguments?.getInt("productId") ?: 0
-            ProductScreen(productId = productId, onBack = { navController.popBackStack() })
+        ) {
+            val productId = it.arguments?.getInt("productId") ?: 0
+            ProductScreen(
+                productId = productId,
+                navController = navController,
+                onBack = { navController.popBackStack() }
+            )
         }
 
-        // ---------------- Cart ----------------
+
+        // ---------------- Cart (LOGIN REQUIRED INSIDE SCREEN) ----------------
         composable("cart") {
             CartScreen(navController = navController, currentRoute = "cart")
         }
 
-        // ---------------- Checkout ----------------
+        // ---------------- Checkout (LOGIN REQUIRED INSIDE SCREEN) ----------------
         composable(
             route = "checkout?totalPrice={totalPrice}",
             arguments = listOf(navArgument("totalPrice") {
@@ -186,7 +178,7 @@ fun AppNavHost(
             CheckoutScreen(navController = navController, viewModel = viewModel)
         }
 
-        // ---------------- Address ----------------
+        // ---------------- Address (LOGIN REQUIRED INSIDE SCREEN) ----------------
         composable(
             route = "address?from={from}&totalPrice={totalPrice}",
             arguments = listOf(
@@ -252,7 +244,7 @@ fun AppNavHost(
             )
         }
 
-        // ---------------- Checkout result ----------------
+        // ---------------- Checkout Payment ----------------
         composable(
             route = "checkout_payment?productPrice={productPrice}&shippingPrice={shippingPrice}&shippingLabel={shippingLabel}",
             arguments = listOf(
@@ -263,17 +255,23 @@ fun AppNavHost(
         ) { backStackEntry ->
             CheckoutPaymentScreen(
                 navController = navController,
-                productPrice = backStackEntry.arguments?.getString("productPrice")?.toDoubleOrNull() ?: 0.0,
-                shippingPrice = backStackEntry.arguments?.getString("shippingPrice")?.toDoubleOrNull() ?: 0.0,
-                shippingLabel = backStackEntry.arguments?.getString("shippingLabel") ?: "Free shipping"
+                productPrice = backStackEntry.arguments
+                    ?.getString("productPrice")
+                    ?.toDoubleOrNull() ?: 0.0,
+                shippingPrice = backStackEntry.arguments
+                    ?.getString("shippingPrice")
+                    ?.toDoubleOrNull() ?: 0.0,
+                shippingLabel = backStackEntry.arguments
+                    ?.getString("shippingLabel") ?: "Free shipping"
             )
         }
 
+        // ---------------- Checkout Completed ----------------
         composable("checkout_completed") {
             CheckoutCompletedScreen(navController = navController)
         }
 
-        // ---------------- Orders  ----------------
+        // ---------------- Orders (LOGIN REQUIRED INSIDE SCREEN) ----------------
         composable(
             route = "orders?status={status}",
             arguments = listOf(
@@ -282,9 +280,9 @@ fun AppNavHost(
                     defaultValue = ShopTab.ON_THE_WAY.name
                 }
             )
-        ) { backStack ->
+        ) { backStackEntry ->
             val status = ShopTab.valueOf(
-                backStack.arguments?.getString("status")!!
+                backStackEntry.arguments?.getString("status")!!
             )
 
             OrderScreen(
@@ -295,22 +293,15 @@ fun AppNavHost(
         }
 
 
-        // ---------------- Orders Info ----------------
-        composable(
-            route = "orderInfo/{orderId}",
-            arguments = listOf(navArgument("orderId") {
-                type = NavType.IntType
-            })
-        ) { backStack ->
-            val orderId = backStack.arguments!!.getInt("orderId")
-
+        // ---------------- Order Info (LOGIN REQUIRED INSIDE SCREEN) ----------------
+        composable("orderInfo/{orderId}") {
             OrderInfoScreen(
                 navController = navController,
-                orderId = orderId
+                orderId = it.arguments!!.getInt("orderId")
             )
         }
 
-        // ---------------- Profile ----------------
+        // ---------------- Profile (PUBLIC, SMART SCREEN) ----------------
         composable("profile") {
             ProfileScreen(
                 navController = navController,
@@ -319,11 +310,7 @@ fun AppNavHost(
                     if (route == "address") {
                         navController.navigate("address?from=profile")
                     } else {
-                        navController.navigate(route) {
-                            launchSingleTop = true
-                            restoreState = true
-                            popUpTo("home") { saveState = true }
-                        }
+                        navController.navigate(route)
                     }
                 }
             )

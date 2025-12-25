@@ -21,6 +21,8 @@ class OrderViewModel(
     private val sessionManager = SessionManager(application)
     private val repository = OrderRepository()
 
+    val isLoggedIn = sessionManager.isLoggedIn
+
     private val _orderItems = MutableStateFlow<List<OrderItem>>(emptyList())
     val orderItems: StateFlow<List<OrderItem>> = _orderItems
 
