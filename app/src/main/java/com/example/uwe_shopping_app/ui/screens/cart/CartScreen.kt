@@ -22,6 +22,8 @@ import com.example.uwe_shopping_app.ui.components.cart.CartItemCard
 import com.example.uwe_shopping_app.ui.components.cart.OrderSummaryCard
 import com.example.uwe_shopping_app.ui.components.common.BottomNavigationBar
 import com.example.uwe_shopping_app.ui.components.common.EmptyState
+import com.example.uwe_shopping_app.ui.components.common.ShopStatusTabs
+import com.example.uwe_shopping_app.ui.components.common.ShopTab
 
 @Composable
 fun CartScreen(
@@ -31,7 +33,8 @@ fun CartScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val error = uiState.error
-    var selectedTab by remember { mutableStateOf(CartStatusTab.YOUR_CART) }
+    var selectedTab by remember { mutableStateOf(ShopTab.YOUR_CART) }
+
 
     LaunchedEffect(Unit) {
         viewModel.loadCart()
@@ -57,13 +60,21 @@ fun CartScreen(
                 .padding(paddingValues)
                 .background(Color(0xFFF5F5F5))
         ) {
-            CartStatusTabs(
+            ShopStatusTabs(
                 selectedTab = selectedTab,
-                onTabSelected = { selectedTab = it },
+                onTabSelected = { tab ->
+                    selectedTab = tab
+
+                    when (tab) {
+                        ShopTab.YOUR_CART -> Unit
+                        else -> navController.navigate("orders?status=${tab.name}")
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 8.dp)
             )
+
 
             if (uiState.isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -140,44 +151,4 @@ fun CartScreen(
     }
 }
 
-enum class CartStatusTab(val label: String) {
-    YOUR_CART("Your cart"), PENDING("Pending"), DELIVERED("Delivered"), CANCELLED("Cancelled")
-}
 
-@Composable
-private fun CartStatusTabs(
-    selectedTab: CartStatusTab,
-    onTabSelected: (CartStatusTab) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val tabs = CartStatusTab.values()
-    Row(
-        modifier = modifier
-            .padding(horizontal = 16.dp)
-            .height(40.dp)
-            .border(width = 1.dp, color = Color(0xFF7B3FF2), shape = RoundedCornerShape(50)),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        tabs.forEach { tab ->
-            val isSelected = tab == selectedTab
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .clickable { onTabSelected(tab) }
-                    .background(
-                        color = if (isSelected) Color(0xFF424242) else Color.Transparent,
-                        shape = RoundedCornerShape(50)
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = tab.label,
-                    color = if (isSelected) Color.White else Color(0xFF424242),
-                    fontSize = 12.sp,
-                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                )
-            }
-        }
-    }
-}

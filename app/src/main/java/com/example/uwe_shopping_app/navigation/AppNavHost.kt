@@ -14,6 +14,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.uwe_shopping_app.data.local.session.SessionManager
 import com.example.uwe_shopping_app.ui.components.address.AddressUiModel
+import com.example.uwe_shopping_app.ui.components.common.ShopTab
 import com.example.uwe_shopping_app.ui.screens.address.*
 import com.example.uwe_shopping_app.ui.screens.auth.LoginScreen
 import com.example.uwe_shopping_app.ui.screens.auth.SignUpScreen
@@ -21,8 +22,9 @@ import com.example.uwe_shopping_app.ui.screens.cart.CartScreen
 import com.example.uwe_shopping_app.ui.screens.checkout.*
 import com.example.uwe_shopping_app.ui.screens.home.HomeScreen
 import com.example.uwe_shopping_app.ui.screens.onboarding.WelcomeScreen
-import com.example.uwe_shopping_app.ui.screens.order.OrderInfoDeliveredScreen
-import com.example.uwe_shopping_app.ui.screens.order.OrderInfoOnTheWayScreen
+import com.example.uwe_shopping_app.ui.screens.order.OrderScreen
+import com.example.uwe_shopping_app.ui.screens.orderInfo.OrderInfoScenario
+import com.example.uwe_shopping_app.ui.screens.orderInfo.OrderInfoScreen
 import com.example.uwe_shopping_app.ui.screens.product.ProductScreen
 import com.example.uwe_shopping_app.ui.screens.profile.ProfileScreen
 import com.example.uwe_shopping_app.ui.screens.profile.ProfileSetting
@@ -272,14 +274,45 @@ fun AppNavHost(
             CheckoutCompletedScreen(navController = navController)
         }
 
-        // ---------------- Orders ----------------
-        composable("orderInfoDelivered") {
-            OrderInfoDeliveredScreen(navController = navController)
+        // ---------------- Orders  ----------------
+        composable(
+            route = "orders?status={status}",
+            arguments = listOf(
+                navArgument("status") {
+                    type = NavType.StringType
+                    defaultValue = ShopTab.ON_THE_WAY.name
+                }
+            )
+        ) { backStack ->
+            val status = ShopTab.valueOf(
+                backStack.arguments?.getString("status")!!
+            )
+
+            OrderScreen(
+                navController = navController,
+                currentRoute = "orders",
+                initialTab = status
+            )
         }
 
-        composable("orderInfoOnTheWay") {
-            OrderInfoOnTheWayScreen(navController = navController)
+
+        // ---------------- Orders Info ----------------
+        composable(
+            route = "orderInfo/{scenario}",
+            arguments = listOf(navArgument("scenario") {
+                type = NavType.StringType
+            })
+        ) { backStack ->
+            val scenario = OrderInfoScenario.valueOf(
+                backStack.arguments!!.getString("scenario")!!
+            )
+
+            OrderInfoScreen(
+                navController = navController,
+                scenario = scenario
+            )
         }
+
 
         // ---------------- Profile ----------------
         composable("profile") {

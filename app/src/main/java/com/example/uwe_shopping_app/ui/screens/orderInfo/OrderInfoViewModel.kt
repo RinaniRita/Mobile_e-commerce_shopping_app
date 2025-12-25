@@ -1,4 +1,4 @@
-package com.example.uwe_shopping_app.ui.screens.order
+package com.example.uwe_shopping_app.ui.screens.orderInfo
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
