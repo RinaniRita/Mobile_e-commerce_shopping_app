@@ -25,6 +25,7 @@ import com.example.uwe_shopping_app.ui.screens.checkout.CheckoutCompletedScreen
 import com.example.uwe_shopping_app.ui.screens.profile.ProfileScreen
 import com.example.uwe_shopping_app.ui.screens.profile.ProfileSetting
 import com.example.uwe_shopping_app.ui.screens.address.AddressScreen
+import com.example.uwe_shopping_app.ui.screens.voucher.VoucherScreen
 import com.example.uwe_shopping_app.ui.screens.auth.LoginScreen
 import com.example.uwe_shopping_app.ui.screens.auth.SignUpScreen
 import com.example.uwe_shopping_app.ui.screens.order.OrderInfoDeliveredScreen
@@ -238,6 +239,13 @@ fun AppNavHost(navController: NavHostController, app: Application) {
             // =========== Address ===========
             composable("address") {
                 AddressScreen(
+                    onBackClick = { navController.popBackStack() }
+                )
+            }
+
+            // =========== Voucher ===========
+            composable("voucher") {
+                VoucherScreen(
                     onBackClick = { navController.popBackStack() }
                 )
             }

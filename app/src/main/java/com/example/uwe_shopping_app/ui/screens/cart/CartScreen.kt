@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.uwe_shopping_app.ui.components.cart.CartHeader
@@ -22,6 +23,7 @@ import com.example.uwe_shopping_app.ui.components.cart.CartItemCard
 import com.example.uwe_shopping_app.ui.components.cart.OrderSummaryCard
 import com.example.uwe_shopping_app.ui.components.common.BottomNavigationBar
 import com.example.uwe_shopping_app.ui.components.common.EmptyState
+import com.example.uwe_shopping_app.ui.components.common.Sidebar
 
 @Composable
 fun CartScreen(
@@ -33,18 +35,23 @@ fun CartScreen(
     val uiState by viewModel.uiState.collectAsState()
     val error = uiState.error
     var selectedTab by remember { mutableStateOf(CartStatusTab.YOUR_CART) }
+    var isSidebarOpen by remember { mutableStateOf(false) }
 
     // Tự động load lại giỏ hàng mỗi khi vào màn hình này
     LaunchedEffect(Unit) {
         viewModel.loadCart()
     }
 
-    Scaffold(
-        topBar = {
-            CartHeader(
-                onBackClick = { navController.popBackStack() }
-            )
-        },
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Scaffold(
+            topBar = {
+                CartHeader(
+                    onBackClick = { navController.popBackStack() },
+                    onMenuClick = { isSidebarOpen = true }
+                )
+            },
         bottomBar = {
             BottomNavigationBar(
                 navController = navController,
@@ -164,6 +171,16 @@ fun CartScreen(
                 }
             }
         }
+        }
+
+        // Sidebar
+        Sidebar(
+            isOpen = isSidebarOpen,
+            onClose = { isSidebarOpen = false },
+            navController = navController,
+            currentRoute = currentRoute,
+            modifier = Modifier.zIndex(10f)
+        )
     }
 }
 

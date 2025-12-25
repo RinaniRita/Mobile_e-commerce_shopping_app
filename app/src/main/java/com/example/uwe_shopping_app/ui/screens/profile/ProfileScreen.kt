@@ -14,6 +14,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -23,6 +26,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -31,6 +35,8 @@ import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.uwe_shopping_app.ui.components.common.BottomNavigationBar
+import com.example.uwe_shopping_app.ui.components.common.Sidebar
+import com.example.uwe_shopping_app.ui.components.common.TopAppBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,23 +47,33 @@ fun ProfileScreen(
 ) {
     val viewModel: ProfileViewModel = viewModel()
     val user by viewModel.user.collectAsState()
+    var isSidebarOpen by remember { mutableStateOf(false) }
 
-    Scaffold(
-        bottomBar = {
-            BottomNavigationBar(
-                navController = navController,
-                currentRoute = currentRoute,
-            )
-        }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = 16.dp)
-        ) {
-            Spacer(Modifier.height(16.dp))
-            // ---------------- HEADER WITH AVATAR, NAME, EMAIL, SETTINGS ICON ----------------
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = "Profile",
+                    onMenuClick = { isSidebarOpen = true }
+                )
+            },
+            bottomBar = {
+                BottomNavigationBar(
+                    navController = navController,
+                    currentRoute = currentRoute,
+                )
+            }
+        ) { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(horizontal = 16.dp)
+            ) {
+                Spacer(Modifier.height(16.dp))
+                // ---------------- HEADER WITH AVATAR, NAME, EMAIL, SETTINGS ICON ----------------
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -121,6 +137,9 @@ fun ProfileScreen(
                                 "Address" -> {
                                     onNavigate("address")
                                 }
+                                "Voucher" -> {
+                                    onNavigate("voucher")
+                                }
                             }
                         }
                         .padding(vertical = 16.dp),
@@ -148,6 +167,16 @@ fun ProfileScreen(
                 }
             }
         }
+        }
+
+        // Sidebar
+        Sidebar(
+            isOpen = isSidebarOpen,
+            onClose = { isSidebarOpen = false },
+            navController = navController,
+            currentRoute = currentRoute,
+            modifier = Modifier.zIndex(10f)
+        )
     }
 }
 
