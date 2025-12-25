@@ -1,25 +1,13 @@
 package com.example.uwe_shopping_app.ui.components.address
 
-import androidx.compose.foundation.background
+import android.os.Parcelable
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Apartment
 import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,15 +18,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 data class AddressUiModel(
     val id: Int,
     val title: String,
     val recipient: String,
     val addressLine: String,
+    val phoneNumber: String, // THÊM TRƯỜNG NÀY
     val type: AddressType,
     val isSelected: Boolean = false
-)
+) : Parcelable
 
 enum class AddressType { HOME, OFFICE }
 
@@ -105,8 +96,15 @@ fun AddressCard(
                 text = address.addressLine,
                 fontSize = 14.sp,
                 color = Color.Gray,
-                maxLines = 2,
+                maxLines = 1,
                 overflow = TextOverflow.Ellipsis
+            )
+            
+            // HIỂN THỊ SỐ ĐIỆN THOẠI
+            Text(
+                text = address.phoneNumber,
+                fontSize = 14.sp,
+                color = Color.Gray
             )
         }
     }
@@ -144,6 +142,7 @@ private fun AddressCardPreview() {
                 title = "SEND TO",
                 recipient = "My Office",
                 addressLine = "SBI Building, street 3, Software Park",
+                phoneNumber = "0123456789",
                 type = AddressType.OFFICE,
                 isSelected = true
             ),
@@ -152,4 +151,3 @@ private fun AddressCardPreview() {
         )
     }
 }
-

@@ -27,14 +27,12 @@ import com.example.uwe_shopping_app.ui.components.common.EmptyState
 fun CartScreen(
     navController: NavHostController,
     currentRoute: String,
-    // ViewModel sẽ tự động được khởi tạo đúng cách (bao gồm Application context)
     viewModel: CartViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val error = uiState.error
     var selectedTab by remember { mutableStateOf(CartStatusTab.YOUR_CART) }
 
-    // Tự động load lại giỏ hàng mỗi khi vào màn hình này
     LaunchedEffect(Unit) {
         viewModel.loadCart()
     }
@@ -59,7 +57,6 @@ fun CartScreen(
                 .padding(paddingValues)
                 .background(Color(0xFFF5F5F5))
         ) {
-            // Tab trạng thái (Your Cart, Pending...)
             CartStatusTabs(
                 selectedTab = selectedTab,
                 onTabSelected = { selectedTab = it },
@@ -68,47 +65,25 @@ fun CartScreen(
                     .padding(top = 8.dp)
             )
 
-            // Xử lý các trạng thái UI: Loading, Error, Empty, Content
             if (uiState.isLoading) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }
             } else if (error != null) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = error,
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = { viewModel.loadCart() }) {
-                            Text("Retry")
-                        }
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(text = error, color = MaterialTheme.colorScheme.error)
+                        Button(onClick = { viewModel.loadCart() }) { Text("Retry") }
                     }
                 }
             } else if (uiState.cartItems.isEmpty()) {
-                EmptyState(
-                    message = "Your cart is empty",
-                    modifier = Modifier.fillMaxSize()
-                )
+                EmptyState(message = "Your cart is empty", modifier = Modifier.fillMaxSize())
             } else {
-                // Nội dung chính khi có sản phẩm
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState())
                 ) {
-                    // Danh sách sản phẩm
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -121,7 +96,6 @@ fun CartScreen(
                                 onToggleSelection = { viewModel.toggleItemSelection(it) },
                                 onQuantityDecrease = { viewModel.decreaseQuantity(it) },
                                 onQuantityIncrease = { viewModel.increaseQuantity(it) },
-                                // GỌI HÀM XÓA TẠI ĐÂY
                                 onRemoveClick = { viewModel.removeItem(it) }
                             )
                         }
@@ -129,7 +103,6 @@ fun CartScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Tổng tiền
                     OrderSummaryCard(
                         productPrice = uiState.productPrice,
                         shipping = "Free shipping",
@@ -140,17 +113,17 @@ fun CartScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Nút thanh toán
                     Button(
-                        onClick = { navController.navigate("checkout") },
+                        onClick = { 
+                            // TRUYỀN TỔNG TIỀN SANG CHECKOUT
+                            navController.navigate("address?from=checkout&totalPrice=${uiState.productPrice}") 
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp)
                             .height(56.dp),
                         shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF424242)
-                        )
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF424242))
                     ) {
                         Text(
                             text = "Proceed to checkout",
@@ -167,13 +140,8 @@ fun CartScreen(
     }
 }
 
-// --- Các thành phần phụ trợ (Enum & Tab UI) ---
-
 enum class CartStatusTab(val label: String) {
-    YOUR_CART("Your cart"),
-    PENDING("Pending"),
-    DELIVERED("Delivered"),
-    CANCELLED("Cancelled")
+    YOUR_CART("Your cart"), PENDING("Pending"), DELIVERED("Delivered"), CANCELLED("Cancelled")
 }
 
 @Composable
@@ -183,21 +151,15 @@ private fun CartStatusTabs(
     modifier: Modifier = Modifier,
 ) {
     val tabs = CartStatusTab.values()
-
     Row(
         modifier = modifier
             .padding(horizontal = 16.dp)
             .height(40.dp)
-            .border(
-                width = 1.dp,
-                color = Color(0xFF7B3FF2),
-                shape = RoundedCornerShape(50)
-            ),
+            .border(width = 1.dp, color = Color(0xFF7B3FF2), shape = RoundedCornerShape(50)),
         verticalAlignment = Alignment.CenterVertically
     ) {
         tabs.forEach { tab ->
             val isSelected = tab == selectedTab
-
             Box(
                 modifier = Modifier
                     .weight(1f)

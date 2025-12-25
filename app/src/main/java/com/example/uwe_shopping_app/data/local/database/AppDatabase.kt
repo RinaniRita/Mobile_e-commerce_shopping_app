@@ -1,21 +1,18 @@
 package com.example.uwe_shopping_app.data.local.database
 
-
-
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.uwe_shopping_app.R
-
-
-
+import com.example.uwe_shopping_app.data.local.dao.AddressDao
 import com.example.uwe_shopping_app.data.local.dao.CartDao
 import com.example.uwe_shopping_app.data.local.dao.CartItemDao
 import com.example.uwe_shopping_app.data.local.dao.OrderDao
 import com.example.uwe_shopping_app.data.local.dao.OrderItemDao
 import com.example.uwe_shopping_app.data.local.dao.ProductDao
 import com.example.uwe_shopping_app.data.local.dao.UserDao
+import com.example.uwe_shopping_app.data.local.entity.AddressEntity
 import com.example.uwe_shopping_app.data.local.entity.CartEntity
 import com.example.uwe_shopping_app.data.local.entity.CartItemEntity
 import com.example.uwe_shopping_app.data.local.entity.OrderEntity
@@ -30,9 +27,10 @@ import com.example.uwe_shopping_app.data.local.entity.UserEntity
         OrderEntity::class,
         OrderItemEntity::class,
         CartEntity::class,
-        CartItemEntity::class
+        CartItemEntity::class,
+        AddressEntity::class
     ],
-    version = 3,  // Bump version vì thêm entities mới
+    version = 4,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -43,6 +41,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun orderItemDao(): OrderItemDao
     abstract fun cartDao(): CartDao
     abstract fun cartItemDao(): CartItemDao
+    abstract fun addressDao(): AddressDao
 
     companion object {
         @Volatile
@@ -65,9 +64,7 @@ abstract class AppDatabase : RoomDatabase() {
     }
 
     suspend fun populateDatabase(productDao: ProductDao) {
-
         val sampleProducts = listOf(
-            // --- ELECTRONICS ---
             ProductEntity(
                 name = "Smartphone Ultra",
                 description = "High-end smartphone with AI camera.",
@@ -100,8 +97,6 @@ abstract class AppDatabase : RoomDatabase() {
                 stock = 75,
                 category = "Electronics"
             ),
-
-            // --- FASHION ---
             ProductEntity(
                 name = "T-Shirt",
                 description = "Cotton t-shirt.",
@@ -134,8 +129,6 @@ abstract class AppDatabase : RoomDatabase() {
                 stock = 25,
                 category = "Fashion"
             ),
-
-            // --- HOME ---
             ProductEntity(
                 name = "Desk Lamp",
                 description = "LED lamp.",
@@ -168,8 +161,6 @@ abstract class AppDatabase : RoomDatabase() {
                 stock = 10,
                 category = "Home"
             ),
-
-            // --- BEAUTY ---
             ProductEntity(
                 name = "Serum",
                 description = "Face serum.",
@@ -202,8 +193,6 @@ abstract class AppDatabase : RoomDatabase() {
                 stock = 40,
                 category = "Beauty"
             ),
-
-            // --- SPORTS ---
             ProductEntity(
                 name = "Yoga Mat",
                 description = "Non-slip mat.",
@@ -237,7 +226,6 @@ abstract class AppDatabase : RoomDatabase() {
                 category = "Sports"
             )
         )
-
         productDao.insertAll(sampleProducts)
     }
 }

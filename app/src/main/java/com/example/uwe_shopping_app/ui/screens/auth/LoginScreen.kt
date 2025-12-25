@@ -16,8 +16,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.uwe_shopping_app.data.local.repository.UserRepository
 import com.example.uwe_shopping_app.data.local.session.SessionManager
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Composable
@@ -33,7 +31,6 @@ fun LoginScreen(
     val context = LocalContext.current
     val repo = remember { UserRepository() }
     val session = remember { SessionManager(context) }
-    // Dùng scope gắn với Composition để an toàn hơn
     val coroutineScope = rememberCoroutineScope()
 
     Column(
@@ -72,13 +69,12 @@ fun LoginScreen(
                 isLoading = true
                 message = ""
 
-                // LOGIN LOGIC
                 coroutineScope.launch {
-
                     val user = repo.loginUser(email, password)
 
                     if (user != null) {
-                        session.saveUserSession(user.id, user.email)
+                        // FIX: Truyền thêm user.phone vào session
+                        session.saveUserSession(user.id, user.email, user.phone)
                         isLoading = false
                         onLoginSuccess()
                     } else {

@@ -1,26 +1,26 @@
 package com.example.uwe_shopping_app.ui.screens.checkout
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
-import com.example.uwe_shopping_app.ui.components.checkout.CheckoutFormField
 import com.example.uwe_shopping_app.ui.components.checkout.CheckoutHeader
 import com.example.uwe_shopping_app.ui.components.checkout.ShippingMethodRadio
-import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
 
 @Composable
 fun CheckoutScreen(
@@ -44,273 +44,128 @@ fun CheckoutScreen(
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
                 .background(Color.White)
+                .padding(16.dp)
         ) {
-            // Step indicator text
-            Column(
+            Text(
+                text = "Shipping",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text(text = "Delivery Address", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 16.dp)
+                    .border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(12.dp))
+                    .padding(16.dp)
             ) {
-                Text(
-                    text = "STEP 1",
-                    fontSize = 12.sp,
-                    color = Color.Gray,
-                    fontWeight = FontWeight.Medium
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Shipping",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Form fields
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(20.dp)
-            ) {
-                // First name and Last name row
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    CheckoutFormField(
-                        label = "First name",
-                        value = uiState.firstName,
-                        onValueChange = viewModel::updateFirstName,
-                        modifier = Modifier.weight(1f)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Outlined.LocationOn,
+                        contentDescription = null,
+                        tint = Color.Black,
+                        modifier = Modifier.size(24.dp)
                     )
-                    CheckoutFormField(
-                        label = "Last name",
-                        value = uiState.lastName,
-                        onValueChange = viewModel::updateLastName,
-                        error = uiState.lastNameError,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
-                // Country
-                CheckoutFormField(
-                    label = "Country",
-                    value = uiState.country,
-                    onValueChange = viewModel::updateCountry,
-                    error = uiState.countryError,
-                    isDropdown = true,
-                    onDropdownClick = { /* Handle dropdown */ }
-                )
-
-                // Street name
-                CheckoutFormField(
-                    label = "Street name",
-                    value = uiState.streetName,
-                    onValueChange = viewModel::updateStreetName,
-                    error = uiState.streetNameError
-                )
-
-                // City
-                CheckoutFormField(
-                    label = "City",
-                    value = uiState.city,
-                    onValueChange = viewModel::updateCity,
-                    error = uiState.cityError
-                )
-
-                // State / Province
-                CheckoutFormField(
-                    label = "State / Province",
-                    value = uiState.stateProvince,
-                    onValueChange = viewModel::updateStateProvince,
-                    isRequired = false
-                )
-
-                // Zip-code
-                CheckoutFormField(
-                    label = "Zip-code",
-                    value = uiState.zipCode,
-                    onValueChange = viewModel::updateZipCode,
-                    error = uiState.zipCodeError,
-                    keyboardType = KeyboardType.Number
-                )
-
-                // Phone number
-                CheckoutFormField(
-                    label = "Phone number",
-                    value = uiState.phoneNumber,
-                    onValueChange = viewModel::updatePhoneNumber,
-                    error = uiState.phoneNumberError,
-                    keyboardType = KeyboardType.Phone
-                )
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Shipping method section
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-            ) {
-                Text(
-                    text = "Shipping method",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                viewModel.shippingMethods.forEach { method ->
-                    ShippingMethodRadio(
-                        method = method,
-                        isSelected = uiState.selectedShippingMethod == method.id,
-                        onSelect = { viewModel.selectShippingMethod(method.id) }
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Coupon Code section
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-            ) {
-                Text(
-                    text = "Coupon Code",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    OutlinedTextField(
-                        value = uiState.couponCode,
-                        onValueChange = viewModel::updateCouponCode,
-                        placeholder = {
-                            Text(
-                                text = "Have a code? type it here...",
-                                color = Color.Gray
-                            )
-                        },
-                        modifier = Modifier.weight(1f),
-                        singleLine = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White,
-                            focusedBorderColor = Color(0xFFE0E0E0),
-                            unfocusedBorderColor = Color(0xFFE0E0E0)
-                        ),
-                        shape = MaterialTheme.shapes.small
-                    )
-
-                    Button(
-                        onClick = { viewModel.validateCouponCode() },
-                        modifier = Modifier.height(56.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF424242)
-                        ),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Validate",
-                            color = Color.White,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium
+                            text = "${uiState.firstName} ${uiState.lastName}",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                        Text(
+                            text = uiState.streetName,
+                            color = Color.Gray,
+                            fontSize = 14.sp
+                        )
+                        Text(
+                            text = uiState.phoneNumber,
+                            color = Color.Gray,
+                            fontSize = 14.sp
                         )
                     }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Billing Address section
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-            ) {
-                Text(
-                    text = "Billing Address",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row(
-                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-                ) {
-                    Checkbox(
-                        checked = uiState.copyBillingAddress,
-                        onCheckedChange = { viewModel.toggleCopyBillingAddress() },
-                        colors = CheckboxDefaults.colors(
-                            checkedColor = Color(0xFF4CAF50)
-                        )
-                    )
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
                     Text(
-                        text = "Copy address data from shipping",
-                        fontSize = 16.sp,
-                        color = Color.Black
+                        text = "Change",
+                        color = Color(0xFF7B3FF2),
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.clickable { 
+                            navController.navigate("address?from=checkout&totalPrice=${uiState.totalPrice}") 
+                        }
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Continue to payment button
+            Text(text = "Shipping method", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            Spacer(modifier = Modifier.height(16.dp))
+            viewModel.shippingMethods.forEach { method ->
+                ShippingMethodRadio(
+                    method = method,
+                    isSelected = uiState.selectedShippingMethod == method.id,
+                    onSelect = { viewModel.selectShippingMethod(method.id) }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Text(text = "Coupon Code", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(
+                    value = uiState.couponCode,
+                    onValueChange = viewModel::updateCouponCode,
+                    placeholder = { Text("Have a code? type it here...", color = Color.Gray) },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(8.dp)
+                )
+                Button(
+                    onClick = { viewModel.validateCouponCode() },
+                    modifier = Modifier.height(56.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF424242)),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("Validate")
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Text(text = "Billing Address", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(
+                    checked = uiState.copyBillingAddress,
+                    onCheckedChange = { viewModel.toggleCopyBillingAddress() }
+                )
+                Text(text = "Copy address data from shipping")
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
             Button(
-                onClick = {
-                    if (viewModel.validateForm()) {
-                        navController.navigate("checkout_payment")
-                    }
+                onClick = { 
+                    // TRUYỀN TẤT CẢ DỮ LIỆU SANG PAYMENT
+                    navController.navigate(
+                        "checkout_payment?productPrice=${uiState.totalPrice}" +
+                        "&shippingPrice=${uiState.shippingPrice}" +
+                        "&shippingLabel=${uiState.shippingLabel}"
+                    ) 
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
                     .height(56.dp),
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF424242)
-                )
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF424242))
             ) {
-                Text(
-                    text = "Continue to payment",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
+                Text("Continue to payment", fontWeight = FontWeight.Bold, color = Color.White)
             }
 
             Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
-
-// ================= Screen Previews ===================
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun CheckoutScreenPreview() {
-    Uwe_shopping_appTheme {
-        CheckoutScreen(
-            navController = rememberNavController()
-        )
-    }
-}
-

@@ -1,49 +1,84 @@
 package com.example.uwe_shopping_app.ui.screens.address
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.uwe_shopping_app.App
+import com.example.uwe_shopping_app.data.local.entity.AddressEntity
+import com.example.uwe_shopping_app.data.local.session.SessionManager
 import com.example.uwe_shopping_app.ui.components.address.AddressType
 import com.example.uwe_shopping_app.ui.components.address.AddressUiModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 
-/**
- * Frontend-only ViewModel for the delivery address screen.
- * Holds an in-memory list of addresses and exposes selection logic.
- */
-class AddressViewModel : ViewModel() {
+class AddressViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val _addresses = MutableStateFlow(
-        listOf(
-            AddressUiModel(
-                id = 1,
-                title = "SEND TO",
-                recipient = "My Office",
-                addressLine = "SBI Building, street 3, Software Park",
-                type = AddressType.OFFICE,
-                isSelected = true
-            ),
-            AddressUiModel(
-                id = 2,
-                title = "SEND TO",
-                recipient = "My Home",
-                addressLine = "SBI Building, street 3, Software Park",
-                type = AddressType.HOME,
-                isSelected = false
-            )
-        )
-    )
+    private val addressDao = App.db.addressDao()
+    private val sessionManager = SessionManager(application)
 
-    val addresses: StateFlow<List<AddressUiModel>> = _addresses.asStateFlow()
+    // Lấy userId hiện tại từ Session
+    private val currentUserId = sessionManager.userId
 
-    fun selectAddress(id: Int) {
-        _addresses.update { list ->
-            list.map { address ->
-                address.copy(isSelected = address.id == id)
+    // Quan sát danh sách địa chỉ từ Database theo userId
+    val addresses: StateFlow<List<AddressUiModel>> = currentUserId
+        .flatMapLatest { userId ->
+            if (userId != null) {
+                addressDao.getAddressesByUserId(userId).map { entities ->
+                    entities.map { it.toUiModel() }
+                }
+            } else {
+                flowOf(emptyList())
             }
         }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    fun selectAddress(id: Int) {
+        viewModelScope.launch {
+            val userId = currentUserId.first() ?: return@launch
+            addressDao.clearDefaultAddress(userId)
+            addressDao.setDefaultAddress(id)
+        }
     }
+
+    fun addOrUpdateAddress(uiModel: AddressUiModel) {
+        viewModelScope.launch {
+            val userId = currentUserId.first() ?: return@launch
+            val entity = uiModel.toEntity(userId)
+            addressDao.insertAddress(entity)
+        }
+    }
+
+    fun deleteAddress(uiModel: AddressUiModel) {
+        viewModelScope.launch {
+            val userId = currentUserId.first() ?: return@launch
+            addressDao.deleteAddress(uiModel.toEntity(userId))
+        }
+    }
+
+    // --- Mappers ---
+    private fun AddressEntity.toUiModel() = AddressUiModel(
+        id = id,
+        title = type,
+        recipient = recipient,
+        addressLine = addressLine,
+        phoneNumber = phoneNumber,
+        type = if (type == "HOME") AddressType.HOME else AddressType.OFFICE,
+        isSelected = isDefault
+    )
+
+    private fun AddressUiModel.toEntity(userId: Int) = AddressEntity(
+        id = if (id == 0) 0 else id,
+        userId = userId,
+        recipient = recipient,
+        addressLine = addressLine,
+        city = "Default City", // Có thể mở rộng form để lấy city sau
+        zipCode = "00000",
+        phoneNumber = phoneNumber,
+        type = if (type == AddressType.HOME) "HOME" else "OFFICE",
+        isDefault = isSelected
+    )
 }
-
-

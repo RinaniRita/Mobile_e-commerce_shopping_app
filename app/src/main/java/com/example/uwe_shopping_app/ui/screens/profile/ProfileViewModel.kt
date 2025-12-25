@@ -26,30 +26,24 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
 
     fun loadUserProfile() {
         viewModelScope.launch {
-
-            val userId = sessionManager.userId.first()
             val userEmail = sessionManager.userEmail.first()
 
             if (userEmail != null) {
-                // 2. Lấy thông tin chi tiết từ DB
                 val userEntity = userRepository.getUserByEmail(userEmail)
                 _user.value = userEntity
             }
         }
     }
 
-    // Hàm cập nhật thông tin User (Dùng cho ProfileSetting)
     fun updateUser(updatedUser: UserEntity) {
         viewModelScope.launch {
             userRepository.updateUser(updatedUser)
             _user.value = updatedUser
-
-
-            sessionManager.saveUserSession(updatedUser.id, updatedUser.email)
+            // FIX: Cập nhật session bao gồm cả số điện thoại
+            sessionManager.saveUserSession(updatedUser.id, updatedUser.email, updatedUser.phone)
         }
     }
 
-    // Hàm đăng xuất (Dùng cho ProfileScreen)
     fun logout() {
         viewModelScope.launch {
             sessionManager.clearSession()

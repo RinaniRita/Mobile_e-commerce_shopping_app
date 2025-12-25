@@ -14,11 +14,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.uwe_shopping_app.R // Đảm bảo import đúng R của project bạn
-import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
 import com.example.uwe_shopping_app.data.local.repository.UserRepository
 import com.example.uwe_shopping_app.data.local.session.SessionManager
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Composable
@@ -28,6 +25,7 @@ fun SignUpScreen(
 ) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirm by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
@@ -36,7 +34,6 @@ fun SignUpScreen(
     val context = LocalContext.current
     val repo = remember { UserRepository() }
     val session = remember { SessionManager(context) }
-    // Dùng rememberCoroutineScope thay vì tạo CoroutineScope mới
     val scope = rememberCoroutineScope()
 
     Column(
@@ -52,20 +49,28 @@ fun SignUpScreen(
             fontWeight = FontWeight.Bold,
             lineHeight = 40.sp,
             textAlign = TextAlign.Center,
-            modifier = Modifier.padding(bottom = 60.dp)
+            modifier = Modifier.padding(bottom = 40.dp)
         )
 
         UnderlinedTextField(name, { name = it }, "Enter your name")
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(16.dp))
         UnderlinedTextField(email, { email = it }, "Email address", keyboardType = KeyboardType.Email)
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(16.dp))
+        // Ô NHẬP SỐ ĐIỆN THOẠI MỚI
+        UnderlinedTextField(phone, { phone = it }, "Phone number", keyboardType = KeyboardType.Phone)
+        Spacer(Modifier.height(16.dp))
         UnderlinedTextField(password, { password = it }, "Password", isPassword = true)
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(16.dp))
         UnderlinedTextField(confirm, { confirm = it }, "Confirm password", isPassword = true)
 
-        Spacer(Modifier.height(40.dp))
+        Spacer(Modifier.height(32.dp))
+        
         Button(
             onClick = {
+                if (name.isBlank() || email.isBlank() || phone.isBlank() || password.isBlank()) {
+                    message = "All fields are required"
+                    return@Button
+                }
                 if (password != confirm) {
                     message = "Passwords do not match"
                     return@Button
@@ -74,16 +79,13 @@ fun SignUpScreen(
                 message = ""
 
                 scope.launch {
-                    // 1. Đăng ký
-                    val registerSuccess = repo.registerUser(name, email, password)
+                    val registerSuccess = repo.registerUser(name, email, password, phone)
 
                     if (registerSuccess) {
-                        // 2. Nếu đăng ký thành công -> Gọi Login ngay để lấy User ID
                         val user = repo.loginUser(email, password)
-
                         if (user != null) {
-                            // 3. Lưu ID và Email vào Session (QUAN TRỌNG)
-                            session.saveUserSession(user.id, user.email)
+                            // Lưu ID, Email và PHONE vào Session
+                            session.saveUserSession(user.id, user.email, user.phone)
                             isLoading = false
                             onSignUpSuccess()
                         } else {
@@ -110,10 +112,10 @@ fun SignUpScreen(
 
         if (message.isNotEmpty()) {
             Spacer(Modifier.height(16.dp))
-            Text(message, color = Color.Red)
+            Text(message, color = Color.Red, textAlign = TextAlign.Center)
         }
 
-        Spacer(Modifier.height(40.dp))
+        Spacer(Modifier.height(32.dp))
 
         Row {
             Text("Already have account? ", fontSize = 14.sp)
