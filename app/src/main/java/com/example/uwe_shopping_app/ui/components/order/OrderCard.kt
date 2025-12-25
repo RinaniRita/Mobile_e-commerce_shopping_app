@@ -13,12 +13,11 @@ import androidx.compose.ui.unit.dp
 
 data class OrderItem(
     val orderId: String,
-    val trackingNumber: String,
-    val quantity: Int,
     val subtotal: Double,
     val date: String,
     val status: OrderStatus
 )
+
 
 @Composable
 fun OrderCard(
@@ -35,7 +34,7 @@ fun OrderCard(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
 
-            // Top: Order ID + Date
+            // Order ID + Date
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
@@ -52,35 +51,18 @@ fun OrderCard(
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // Tracking number
+            // Subtotal
             Text(
-                text = "Tracking number: ${order.trackingNumber}",
-                color = Color.Gray,
+                text = "Subtotal: $${order.subtotal}",
+                fontWeight = FontWeight.Bold,
                 style = MaterialTheme.typography.bodyMedium
             )
 
-            // Quantity + Subtotal
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = "Quantity: ${order.quantity}",
-                    color = Color.Gray,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Text(
-                    text = "Subtotal: $${order.subtotal}",
-                    fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
+            Spacer(modifier = Modifier.height(12.dp))
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Status + Details button
+            // Status + Details
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
@@ -99,20 +81,4 @@ fun OrderCard(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun PreviewOrderCard() {
-    val sampleOrder = OrderItem(
-        orderId = "1524",
-        trackingNumber = "IK287368838",
-        quantity = 2,
-        subtotal = 110.0,
-        date = "13/05/2021",
-        status = OrderStatus.PENDING
-    )
 
-    OrderCard(
-        order = sampleOrder,
-        onDetailsClick = {}
-    )
-}

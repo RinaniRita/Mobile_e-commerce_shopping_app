@@ -14,6 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.uwe_shopping_app.ui.components.checkout.CashPaymentOption
 import com.example.uwe_shopping_app.ui.components.checkout.CheckoutHeader
@@ -23,7 +24,8 @@ fun CheckoutPaymentScreen(
     navController: NavHostController,
     productPrice: Double,
     shippingPrice: Double,
-    shippingLabel: String
+    shippingLabel: String,
+    viewModel: CheckoutPaymentViewModel = viewModel()
 ) {
     var agreeTerms by remember { mutableStateOf(true) }
 
@@ -146,11 +148,17 @@ fun CheckoutPaymentScreen(
             Button(
                 onClick = {
                     if (agreeTerms) {
-                        navController.navigate("checkout_completed") {
-                            launchSingleTop = true
+                        val subtotal = productPrice + shippingPrice
+
+                        viewModel.placeOrder(
+                            totalPrice = subtotal
+                        ) { orderId ->
+                            navController.navigate("checkout_completed") {
+                                // Prevent going back to cart
+                                popUpTo("cart") { inclusive = true }
+                            }
                         }
-                    }
-                },
+                    }},
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)

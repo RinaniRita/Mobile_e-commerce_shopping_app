@@ -26,6 +26,22 @@ fun OrderScreen(
     viewModel: OrderViewModel = viewModel()
 ) {
     var selectedTab by remember { mutableStateOf(initialTab) }
+    val orders by viewModel.orders.collectAsState()
+
+//    ORDER ITEMS
+    val orderItems = orders.map { entity ->
+        com.example.uwe_shopping_app.ui.components.order.OrderItem(
+            orderId = entity.id.toString(),
+            subtotal = entity.totalPrice,
+            date = entity.createdAt.toString(), // format later
+            status = when (entity.status) {
+                "pending" -> OrderStatus.PENDING
+                "delivered" -> OrderStatus.DELIVERED
+                "cancelled" -> OrderStatus.CANCELLED
+                else -> OrderStatus.PENDING
+            }
+        )
+    }
 
 
     Scaffold(
@@ -58,23 +74,28 @@ fun OrderScreen(
 
 //            ORDER STATUS
             val orderStatus = when (selectedTab) {
-                ShopTab.ON_THE_WAY -> OrderStatus.ON_THE_WAY
+                ShopTab.ON_THE_WAY -> OrderStatus.PENDING
                 ShopTab.DELIVERED -> OrderStatus.DELIVERED
                 ShopTab.CANCELLED -> OrderStatus.CANCELLED
-                else -> OrderStatus.ON_THE_WAY
+                else -> OrderStatus.PENDING
             }
 
+
             LazyColumn {
-                items(viewModel.ordersByStatus(orderStatus)) { order ->
+                items(
+                    orderItems.filter { order ->
+                        when (orderStatus) {
+                            OrderStatus.PENDING -> order.status == OrderStatus.PENDING
+                            OrderStatus.DELIVERED -> order.status == OrderStatus.DELIVERED
+                            OrderStatus.CANCELLED -> order.status == OrderStatus.CANCELLED
+                            else -> false
+                        }
+                    }
+                ) { order ->
                     OrderCard(
                         order = order,
                         onDetailsClick = {
-                            navController.navigate(
-                                "orderInfo/${if (order.status == OrderStatus.DELIVERED)
-                                    "DELIVERED_SAMPLE"
-                                else
-                                    "ON_THE_WAY_SAMPLE"}"
-                            )
+                            navController.navigate("orderInfo/${order.orderId}")
                         }
                     )
                 }
