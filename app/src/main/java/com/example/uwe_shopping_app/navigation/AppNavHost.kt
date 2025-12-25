@@ -23,7 +23,6 @@ import com.example.uwe_shopping_app.ui.screens.checkout.*
 import com.example.uwe_shopping_app.ui.screens.home.HomeScreen
 import com.example.uwe_shopping_app.ui.screens.onboarding.WelcomeScreen
 import com.example.uwe_shopping_app.ui.screens.order.OrderScreen
-import com.example.uwe_shopping_app.ui.screens.orderInfo.OrderInfoScenario
 import com.example.uwe_shopping_app.ui.screens.orderInfo.OrderInfoScreen
 import com.example.uwe_shopping_app.ui.screens.product.ProductScreen
 import com.example.uwe_shopping_app.ui.screens.profile.ProfileScreen
@@ -298,21 +297,18 @@ fun AppNavHost(
 
         // ---------------- Orders Info ----------------
         composable(
-            route = "orderInfo/{scenario}",
-            arguments = listOf(navArgument("scenario") {
-                type = NavType.StringType
+            route = "orderInfo/{orderId}",
+            arguments = listOf(navArgument("orderId") {
+                type = NavType.IntType
             })
         ) { backStack ->
-            val scenario = OrderInfoScenario.valueOf(
-                backStack.arguments!!.getString("scenario")!!
-            )
+            val orderId = backStack.arguments!!.getInt("orderId")
 
             OrderInfoScreen(
                 navController = navController,
-                scenario = scenario
+                orderId = orderId
             )
         }
-
 
         // ---------------- Profile ----------------
         composable("profile") {

@@ -3,6 +3,7 @@ package com.example.uwe_shopping_app.data.local.repository
 import com.example.uwe_shopping_app.App
 import com.example.uwe_shopping_app.data.local.entity.OrderEntity
 import com.example.uwe_shopping_app.data.local.entity.OrderItemEntity
+import com.example.uwe_shopping_app.data.local.relation.OrderItemWithProduct
 
 class OrderRepository {
 
@@ -67,6 +68,18 @@ class OrderRepository {
         cartItems.forEach { cartItemDao.deleteCartItemById(it.id) }
 
         return orderId
+    }
+
+    suspend fun getOrderById(orderId: Int): OrderEntity? =
+        orderDao.getOrderById(orderId)
+
+    suspend fun getOrderItemsWithProducts(
+        orderId: Int
+    ): List<OrderItemWithProduct> =
+        orderItemDao.getOrderItemsWithProducts(orderId)
+
+    suspend fun getTotalItemsForOrder(orderId: Int): Int {
+        return orderItemDao.getTotalQuantity(orderId) ?: 0
     }
 
     suspend fun updateOrderStatus(orderId: Int, newStatus: String) {

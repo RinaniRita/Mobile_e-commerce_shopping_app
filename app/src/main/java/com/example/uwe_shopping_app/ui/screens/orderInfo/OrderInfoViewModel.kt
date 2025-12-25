@@ -4,65 +4,66 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.uwe_shopping_app.data.local.repository.OrderRepository
 import com.example.uwe_shopping_app.ui.components.order.OrderStatus
+import kotlinx.coroutines.launch
 
-data class OrderLineItem(
+
+data class OrderInfoUiState(
+    val orderId: Int = 0,
+    val status: OrderStatus = OrderStatus.ON_THE_WAY,
+    val deliveryAddress: String = "",
+    val trackingNumber: String = "",
+    val items: List<OrderItemUi> = emptyList(),
+    val subtotal: Double = 0.0,
+    val shipping: Double = 0.0
+)
+
+data class OrderItemUi(
     val name: String,
     val quantity: Int,
     val price: Double
 )
 
-enum class OrderInfoScenario {
-    DELIVERED_SAMPLE,
-    ON_THE_WAY_SAMPLE
-}
-
-data class OrderInfoUiState(
-    val orderId: String = "",
-    val trackingNumber: String = "",
-    val deliveryAddress: String = "",
-    val items: List<OrderLineItem> = emptyList(),
-    val subtotal: Double = 0.0,
-    val shipping: Double = 0.0,
-    val status: OrderStatus = OrderStatus.ON_THE_WAY
-)
-
 class OrderInfoViewModel : ViewModel() {
+
+    private val repository = OrderRepository()
 
     var uiState by mutableStateOf(OrderInfoUiState())
         private set
 
-    /**
-     * For now this only loads static/sample data for the two UI scenarios.
-     * No backend / database calls are performed here yet.
-     */
-    fun loadScenario(scenario: OrderInfoScenario) {
-        uiState = when (scenario) {
-            OrderInfoScenario.DELIVERED_SAMPLE -> OrderInfoUiState(
-                orderId = "1514",
-                trackingNumber = "IK987362341",
-                deliveryAddress = "SBI Building, Software Park",
-                items = listOf(
-                    OrderLineItem("Maxi Dress", quantity = 1, price = 68.0),
-                    OrderLineItem("Linen Dress", quantity = 1, price = 52.0)
-                ),
-                subtotal = 120.0,
-                shipping = 0.0,
-                status = OrderStatus.DELIVERED
-            )
+    fun loadOrder(orderId: Int) {
+        viewModelScope.launch {
 
-            OrderInfoScenario.ON_THE_WAY_SAMPLE -> OrderInfoUiState(
-                orderId = "1524",
-                trackingNumber = "IK287368838",
-                deliveryAddress = "SBI Building, Software Park",
-                items = listOf(
-                    OrderLineItem("Sportwear Set", quantity = 1, price = 80.0),
-                    OrderLineItem("Cotton T-shirt", quantity = 1, price = 30.0)
-                ),
-                subtotal = 110.0,
-                shipping = 0.0,
-                status = OrderStatus.ON_THE_WAY
+            val order = repository.getOrderById(orderId) ?: return@launch
+            val items = repository.getOrderItemsWithProducts(orderId)
+
+            uiState = uiState.copy(
+                orderId = order.id,
+                status = mapStatus(order.status),
+                trackingNumber = "TRK-${order.id}", // or empty
+                deliveryAddress = "Saved address", // replace later
+                items = items.map {
+                    OrderItemUi(
+                        name = it.product.name, // or join with product table
+                        quantity = it.orderItem.quantity,
+                        price = it.orderItem.price
+                    )
+                },
+                subtotal = order.totalPrice,
+                shipping = 0.0
             )
         }
     }
+
+    private fun mapStatus(status: String): OrderStatus {
+        return when (status.lowercase()) {
+            "pending" -> OrderStatus.ON_THE_WAY
+            "delivered" -> OrderStatus.DELIVERED
+            "cancelled" -> OrderStatus.CANCELLED
+            else -> OrderStatus.ON_THE_WAY
+        }
+    }
 }
+

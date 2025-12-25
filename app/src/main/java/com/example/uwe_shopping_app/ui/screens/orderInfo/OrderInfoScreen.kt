@@ -5,6 +5,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Cancel
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.LocalShipping
 import androidx.compose.material3.*
@@ -23,15 +24,15 @@ import com.example.uwe_shopping_app.ui.components.order.OrderStatus
 @Composable
 fun OrderInfoScreen(
     navController: NavHostController,
-    scenario: OrderInfoScenario,
+    orderId: Int,
     viewModel: OrderInfoViewModel = viewModel()
 ) {
-    LaunchedEffect(scenario) {
-        viewModel.loadScenario(scenario)
+    LaunchedEffect(orderId) {
+        viewModel.loadOrder(orderId)
     }
 
     val state = viewModel.uiState
-    val isDelivered = state.status == OrderStatus.DELIVERED
+
 
     Scaffold(
         topBar = {
@@ -59,33 +60,38 @@ fun OrderInfoScreen(
                 ) {
                     Column(Modifier.weight(1f)) {
                         Text(
-                            text = if (isDelivered)
-                                "Your order is delivered"
-                            else
-                                "Your order is on the way",
+                            text = when (state.status) {
+                                OrderStatus.ON_THE_WAY -> "Your order is on the way"
+                                OrderStatus.DELIVERED -> "Your order has been delivered"
+                                OrderStatus.CANCELLED -> "This order was cancelled"
+                            },
                             color = Color.White,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 16.sp
                         )
 
                         Text(
-                            text = if (isDelivered)
-                                "Rate product to get 5 points for collect."
-                            else
-                                "Click here to track your order",
+                            text = when (state.status) {
+                                OrderStatus.ON_THE_WAY -> "Click here to track your order"
+                                OrderStatus.DELIVERED -> "Rate product to get 5 points for collect."
+                                OrderStatus.CANCELLED -> "If this is a mistake, contact support"
+                            },
                             color = Color(0xFFEEEEEE),
                             fontSize = 12.sp
                         )
+
                     }
 
                     Icon(
-                        imageVector = if (isDelivered)
-                            Icons.Outlined.CheckCircle
-                        else
-                            Icons.Outlined.LocalShipping,
+                        imageVector = when (state.status) {
+                            OrderStatus.ON_THE_WAY -> Icons.Outlined.LocalShipping
+                            OrderStatus.DELIVERED -> Icons.Outlined.CheckCircle
+                            OrderStatus.CANCELLED -> Icons.Outlined.Cancel
+                        },
                         contentDescription = null,
                         tint = Color.White
                     )
+
                 }
             }
 
@@ -130,30 +136,44 @@ fun OrderInfoScreen(
             Spacer(Modifier.height(24.dp))
 
             // ===== Bottom actions =====
-            if (isDelivered) {
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    OutlinedButton(
-                        modifier = Modifier.weight(1f),
+            when (state.status) {
+                OrderStatus.DELIVERED -> {
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        OutlinedButton(
+                            modifier = Modifier.weight(1f),
+                            onClick = { navController.navigate("home") }
+                        ) {
+                            Text("Return home")
+                        }
+
+                        Button(
+                            modifier = Modifier.weight(1f),
+                            onClick = { /* TODO rating */ }
+                        ) {
+                            Text("Rate")
+                        }
+                    }
+                }
+
+                OrderStatus.CANCELLED -> {
+                    Button(
+                        modifier = Modifier.fillMaxWidth(),
                         onClick = { navController.navigate("home") }
                     ) {
                         Text("Return home")
                     }
+                }
 
+                OrderStatus.ON_THE_WAY -> {
                     Button(
-                        modifier = Modifier.weight(1f),
-                        onClick = { /* TODO rating */ }
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = { navController.navigate("home") }
                     ) {
-                        Text("Rate")
+                        Text("Continue shopping")
                     }
                 }
-            } else {
-                Button(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = { navController.navigate("home") }
-                ) {
-                    Text("Continue shopping")
-                }
             }
+
 
             Spacer(Modifier.height(16.dp))
         }

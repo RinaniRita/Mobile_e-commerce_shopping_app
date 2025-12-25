@@ -15,7 +15,6 @@ import com.example.uwe_shopping_app.ui.components.common.ShopTab
 import com.example.uwe_shopping_app.ui.components.order.OrderCard
 import com.example.uwe_shopping_app.ui.components.order.OrderStatus
 import com.example.uwe_shopping_app.ui.components.common.ShopStatusTabs
-import com.example.uwe_shopping_app.ui.components.order.OrderItem
 
 
 @Composable
@@ -26,27 +25,8 @@ fun OrderScreen(
     viewModel: OrderViewModel = viewModel()
 ) {
     var selectedTab by remember { mutableStateOf(initialTab) }
-    val orders by viewModel.orders.collectAsState(initial = emptyList())
 
-
-//    ORDER ITEMS
-    val orderItems = orders.mapNotNull { entity ->
-        OrderItem(
-            orderId = entity.id ?: return@mapNotNull null,
-            subtotal = entity.totalPrice,
-            date = entity.createdAt.toString(),
-            status = when (entity.status) {
-                "pending" -> OrderStatus.ON_THE_WAY
-                "delivered" -> OrderStatus.DELIVERED
-                "cancelled" -> OrderStatus.CANCELLED
-                else -> OrderStatus.ON_THE_WAY
-            }
-        )
-    }
-
-
-
-
+    val orderItems by viewModel.orderItems.collectAsState()
 
     Scaffold(
         topBar = { CartHeader(onBackClick = { navController.popBackStack() }) },

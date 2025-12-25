@@ -10,12 +10,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.clickable
 
 data class OrderItem(
     val orderId: Int,
     val subtotal: Double,
     val date: String,
-    val status: OrderStatus
+    val status: OrderStatus,
+    val totalItems: Int
 )
 
 
@@ -33,6 +35,7 @@ fun OrderCard(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clickable { onDetailsClick() }
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
 
