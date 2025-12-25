@@ -5,24 +5,29 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
 import com.example.uwe_shopping_app.data.local.entity.OrderEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface OrderDao {
 
+    //  Observe orders (UI auto-refresh)
+    @Query("SELECT * FROM orders WHERE userId = :userId ORDER BY createdAt DESC")
+    fun getOrdersByUser(userId: Int): Flow<List<OrderEntity>>
 
-    @Update
-    suspend fun updateOrder(order: OrderEntity)
+    //  Update ONLY status
+    @Query("UPDATE orders SET status = :status WHERE id = :orderId")
+    suspend fun updateOrderStatus(
+        orderId: Int,
+        status: String
+    )
 
-    @Query("DELETE FROM orders WHERE id = :id")
-    suspend fun deleteOrder(id: Int)
+
     @Insert
-    suspend fun insertOrder(order: OrderEntity): Long  // Returns inserted ID
-
-    @Query("SELECT * FROM orders WHERE userId = :userId")
-    suspend fun getOrdersByUser(userId: Int): List<OrderEntity>
+    suspend fun insertOrder(order: OrderEntity): Long
 
     @Query("SELECT * FROM orders WHERE id = :id LIMIT 1")
     suspend fun getOrderById(id: Int): OrderEntity?
 
-
+    @Query("DELETE FROM orders WHERE id = :id")
+    suspend fun deleteOrder(id: Int)
 }

@@ -15,10 +15,9 @@ import androidx.compose.ui.unit.dp
 
 
 enum class OrderStatus {
-    PENDING,
+    ON_THE_WAY,
     DELIVERED,
     CANCELLED,
-    ON_THE_WAY
 }
 
 @Composable
@@ -27,10 +26,9 @@ fun OrderStatusLabel(
     modifier: Modifier = Modifier
 ) {
     val (text, color) = when (status) {
-        OrderStatus.PENDING -> "PENDING" to Color(0xFFFF9800)
+        OrderStatus.ON_THE_WAY -> "ON THE WAY" to Color(0xFF2196F3)
         OrderStatus.DELIVERED -> "DELIVERED" to Color(0xFF4CAF50)
         OrderStatus.CANCELLED -> "CANCELLED" to Color(0xFFF44336)
-        OrderStatus.ON_THE_WAY -> "ON THE WAY" to Color(0xFF2196F3)
     }
 
     Text(
@@ -43,14 +41,3 @@ fun OrderStatusLabel(
 }
 
 
-@Preview(showBackground = true)
-@Composable
-fun PreviewOrderStatusLabel() {
-    Column(modifier = Modifier.padding(16.dp)) {
-        OrderStatusLabel(status = OrderStatus.PENDING)
-        Spacer(Modifier.height(8.dp))
-        OrderStatusLabel(status = OrderStatus.DELIVERED)
-        Spacer(Modifier.height(8.dp))
-        OrderStatusLabel(status = OrderStatus.CANCELLED)
-    }
-}

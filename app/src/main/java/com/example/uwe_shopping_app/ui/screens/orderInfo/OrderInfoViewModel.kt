@@ -24,7 +24,7 @@ data class OrderInfoUiState(
     val items: List<OrderLineItem> = emptyList(),
     val subtotal: Double = 0.0,
     val shipping: Double = 0.0,
-    val status: OrderStatus = OrderStatus.PENDING
+    val status: OrderStatus = OrderStatus.ON_THE_WAY
 )
 
 class OrderInfoViewModel : ViewModel() {

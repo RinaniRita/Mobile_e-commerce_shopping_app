@@ -15,7 +15,7 @@ import com.example.uwe_shopping_app.ui.components.common.ShopTab
 import com.example.uwe_shopping_app.ui.components.order.OrderCard
 import com.example.uwe_shopping_app.ui.components.order.OrderStatus
 import com.example.uwe_shopping_app.ui.components.common.ShopStatusTabs
-
+import com.example.uwe_shopping_app.ui.components.order.OrderItem
 
 
 @Composable
@@ -26,22 +26,26 @@ fun OrderScreen(
     viewModel: OrderViewModel = viewModel()
 ) {
     var selectedTab by remember { mutableStateOf(initialTab) }
-    val orders by viewModel.orders.collectAsState()
+    val orders by viewModel.orders.collectAsState(initial = emptyList())
+
 
 //    ORDER ITEMS
-    val orderItems = orders.map { entity ->
-        com.example.uwe_shopping_app.ui.components.order.OrderItem(
-            orderId = entity.id.toString(),
+    val orderItems = orders.mapNotNull { entity ->
+        OrderItem(
+            orderId = entity.id ?: return@mapNotNull null,
             subtotal = entity.totalPrice,
-            date = entity.createdAt.toString(), // format later
+            date = entity.createdAt.toString(),
             status = when (entity.status) {
-                "pending" -> OrderStatus.PENDING
+                "pending" -> OrderStatus.ON_THE_WAY
                 "delivered" -> OrderStatus.DELIVERED
                 "cancelled" -> OrderStatus.CANCELLED
-                else -> OrderStatus.PENDING
+                else -> OrderStatus.ON_THE_WAY
             }
         )
     }
+
+
+
 
 
     Scaffold(
@@ -74,10 +78,10 @@ fun OrderScreen(
 
 //            ORDER STATUS
             val orderStatus = when (selectedTab) {
-                ShopTab.ON_THE_WAY -> OrderStatus.PENDING
+                ShopTab.ON_THE_WAY -> OrderStatus.ON_THE_WAY
                 ShopTab.DELIVERED -> OrderStatus.DELIVERED
                 ShopTab.CANCELLED -> OrderStatus.CANCELLED
-                else -> OrderStatus.PENDING
+                else -> OrderStatus.ON_THE_WAY
             }
 
 
@@ -85,7 +89,7 @@ fun OrderScreen(
                 items(
                     orderItems.filter { order ->
                         when (orderStatus) {
-                            OrderStatus.PENDING -> order.status == OrderStatus.PENDING
+                            OrderStatus.ON_THE_WAY -> order.status == OrderStatus.ON_THE_WAY
                             OrderStatus.DELIVERED -> order.status == OrderStatus.DELIVERED
                             OrderStatus.CANCELLED -> order.status == OrderStatus.CANCELLED
                             else -> false
@@ -96,8 +100,15 @@ fun OrderScreen(
                         order = order,
                         onDetailsClick = {
                             navController.navigate("orderInfo/${order.orderId}")
+                        },
+                        onConfirmDelivered = {
+                            viewModel.markAsDelivered(order.orderId)
+                        },
+                        onCancelOrder = {
+                            viewModel.cancelOrder(order.orderId)
                         }
                     )
+
                 }
             }
         }

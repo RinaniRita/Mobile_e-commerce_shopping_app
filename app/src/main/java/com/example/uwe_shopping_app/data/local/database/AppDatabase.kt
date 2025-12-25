@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import com.example.uwe_shopping_app.R
 import com.example.uwe_shopping_app.data.local.dao.AddressDao
 import com.example.uwe_shopping_app.data.local.dao.CartDao
@@ -33,6 +34,8 @@ import com.example.uwe_shopping_app.data.local.entity.UserEntity
     version = 4,
     exportSchema = false
 )
+
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun userDao(): UserDao

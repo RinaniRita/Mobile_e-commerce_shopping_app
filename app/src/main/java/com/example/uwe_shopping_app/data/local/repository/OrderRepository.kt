@@ -25,7 +25,7 @@ class OrderRepository {
         return orderId
     }
 
-    suspend fun getOrdersByUser(userId: Int): List<OrderEntity> =
+    fun getOrdersByUser(userId: Int) =
         orderDao.getOrdersByUser(userId)
 
     suspend fun getOrderItemsByOrder(orderId: Int): List<OrderItemEntity> =
@@ -70,15 +70,22 @@ class OrderRepository {
     }
 
     suspend fun updateOrderStatus(orderId: Int, newStatus: String) {
-        val order = orderDao.getOrderById(orderId) ?: return
-        orderDao.updateOrder(order.copy(status = newStatus))
+        orderDao.updateOrderStatus(
+            orderId = orderId,
+            status = newStatus
+        )
     }
+
 
     suspend fun cancelOrder(orderId: Int) {
         val order = orderDao.getOrderById(orderId) ?: return
         if (order.status != "pending") return
 
-        orderDao.updateOrder(order.copy(status = "cancelled"))
+        orderDao.updateOrderStatus(
+            orderId = orderId,
+            status = "cancelled"
+        )
+
 
         // Hoàn lại stock
         val items = orderItemDao.getOrderItemsByOrder(orderId)

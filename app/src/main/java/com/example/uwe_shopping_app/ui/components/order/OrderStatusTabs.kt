@@ -21,7 +21,6 @@ fun OrderStatusTabs(
     modifier: Modifier = Modifier
 ) {
     val tabs = listOf(
-        OrderStatus.PENDING,
         OrderStatus.ON_THE_WAY,
         OrderStatus.DELIVERED,
         OrderStatus.CANCELLED

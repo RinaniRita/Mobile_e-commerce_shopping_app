@@ -2,6 +2,7 @@ package com.example.uwe_shopping_app.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.example.uwe_shopping_app.ui.components.order.OrderStatus
 
 @Entity(tableName = "orders")
 data class OrderEntity(

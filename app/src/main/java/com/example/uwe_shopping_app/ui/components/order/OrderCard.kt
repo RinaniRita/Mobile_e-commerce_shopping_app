@@ -12,7 +12,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 data class OrderItem(
-    val orderId: String,
+    val orderId: Int,
     val subtotal: Double,
     val date: String,
     val status: OrderStatus
@@ -23,6 +23,8 @@ data class OrderItem(
 fun OrderCard(
     order: OrderItem,
     onDetailsClick: () -> Unit,
+    onConfirmDelivered: () -> Unit,
+    onCancelOrder: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -62,23 +64,41 @@ fun OrderCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Status + Details
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                OrderStatusLabel(status = order.status)
+            // Status + Actions
+            OrderStatusLabel(status = order.status)
 
-                OutlinedButton(
-                    onClick = onDetailsClick,
-                    shape = RoundedCornerShape(50)
+            if (order.status == OrderStatus.ON_THE_WAY) {
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Details")
+                    Button(
+                        onClick = onConfirmDelivered,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Confirm Delivered")
+                    }
+
+                    OutlinedButton(
+                        onClick = onCancelOrder,
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error
+                        )
+                    ) {
+                        Text("Cancel")
+                    }
                 }
             }
+
+
+
         }
     }
 }
+
 
 
