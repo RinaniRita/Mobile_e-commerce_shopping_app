@@ -1,47 +1,71 @@
 package com.example.uwe_shopping_app.navigation
 
 import android.app.Application
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import androidx.navigation.NavType
 import com.example.uwe_shopping_app.data.local.session.SessionManager
 import com.example.uwe_shopping_app.ui.components.address.AddressUiModel
 import com.example.uwe_shopping_app.ui.components.common.ShopTab
-import com.example.uwe_shopping_app.ui.screens.address.*
-import com.example.uwe_shopping_app.ui.screens.auth.LoginScreen
-import com.example.uwe_shopping_app.ui.screens.auth.SignUpScreen
-import com.example.uwe_shopping_app.ui.screens.cart.CartScreen
-import com.example.uwe_shopping_app.ui.screens.checkout.*
-import com.example.uwe_shopping_app.ui.screens.home.HomeScreen
+import com.example.uwe_shopping_app.ui.components.product.SearchFilterState
+import com.example.uwe_shopping_app.ui.components.product.SortOption
+import com.example.uwe_shopping_app.ui.screens.address.AddressControl
 import com.example.uwe_shopping_app.ui.screens.onboarding.WelcomeScreen
-import com.example.uwe_shopping_app.ui.screens.order.OrderScreen
-import com.example.uwe_shopping_app.ui.screens.orderInfo.OrderInfoScreen
+import com.example.uwe_shopping_app.ui.screens.home.HomeScreen
 import com.example.uwe_shopping_app.ui.screens.product.ProductScreen
+import com.example.uwe_shopping_app.ui.screens.search.SearchScreen
+import com.example.uwe_shopping_app.ui.screens.resultSearch.ResultSearchScreen
+import com.example.uwe_shopping_app.ui.screens.cart.CartScreen
+import com.example.uwe_shopping_app.ui.screens.checkout.CheckoutScreen
+import com.example.uwe_shopping_app.ui.screens.checkout.CheckoutPaymentScreen
+import com.example.uwe_shopping_app.ui.screens.checkout.CheckoutCompletedScreen
 import com.example.uwe_shopping_app.ui.screens.profile.ProfileScreen
 import com.example.uwe_shopping_app.ui.screens.profile.ProfileSetting
-import com.example.uwe_shopping_app.ui.screens.resultSearch.ResultSearchScreen
+import com.example.uwe_shopping_app.ui.screens.address.AddressScreen
+import com.example.uwe_shopping_app.ui.screens.address.AddressViewModel
+import com.example.uwe_shopping_app.ui.screens.voucher.VoucherScreen
+import com.example.uwe_shopping_app.ui.screens.auth.LoginScreen
+import com.example.uwe_shopping_app.ui.screens.auth.SignUpScreen
+import com.example.uwe_shopping_app.ui.screens.checkout.CheckoutViewModel
+import com.example.uwe_shopping_app.ui.screens.order.OrderScreen
+import com.example.uwe_shopping_app.ui.screens.orderInfo.OrderInfoScreen
 import com.example.uwe_shopping_app.ui.screens.resultSearch.ResultSearchViewModel
-import com.example.uwe_shopping_app.ui.screens.search.SearchScreen
-import com.example.uwe_shopping_app.ui.screens.search.SearchFilterState
-import com.example.uwe_shopping_app.ui.screens.search.SortOption
-import kotlinx.coroutines.flow.collectLatest
 
+import kotlinx.coroutines.flow.collectLatest
 @Composable
 fun AppNavHost(
     navController: NavHostController,
     app: Application
 ) {
+    val session = remember { SessionManager(app) }
+    var isLoggedIn by remember { mutableStateOf<Boolean?>(null) }
+
+    LaunchedEffect(Unit) {
+        session.isLoggedIn.collectLatest { isLoggedIn = it }
+    }
+
+    if (isLoggedIn == null) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+
     NavHost(
         navController = navController,
-        startDestination = "welcome"
+        startDestination = if (isLoggedIn == true) "home" else "welcome"
     ) {
 
         // ---------------- Onboarding ----------------
@@ -108,7 +132,7 @@ fun AppNavHost(
             )
         }
 
-        // ---------------- Search Result with Filters ----------------
+        // ---------------- Search Result (FILTERED) ----------------
         composable(
             route = "resultSearch/{query}/{min}/{max}/{sort}",
             arguments = listOf(
@@ -129,7 +153,7 @@ fun AppNavHost(
 
             ResultSearchScreen(
                 query = query,
-                initialFilter = SearchFilterState(min, max, sort),
+//                initialFilter = SearchFilterState(min, max, sort),
                 navController = navController,
                 currentRoute = "search",
                 viewModel = viewModel,
@@ -137,27 +161,24 @@ fun AppNavHost(
             )
         }
 
-
-        // ---------------- Product (PUBLIC) ----------------
+        // ---------------- Product ----------------
         composable(
             route = "product/{productId}",
             arguments = listOf(navArgument("productId") { type = NavType.IntType })
         ) {
-            val productId = it.arguments?.getInt("productId") ?: 0
             ProductScreen(
-                productId = productId,
+                productId = it.arguments?.getInt("productId") ?: 0,
                 navController = navController,
                 onBack = { navController.popBackStack() }
             )
         }
 
-
-        // ---------------- Cart (LOGIN REQUIRED INSIDE SCREEN) ----------------
+        // ---------------- Cart ----------------
         composable("cart") {
             CartScreen(navController = navController, currentRoute = "cart")
         }
 
-        // ---------------- Checkout (LOGIN REQUIRED INSIDE SCREEN) ----------------
+        // ---------------- Checkout ----------------
         composable(
             route = "checkout?totalPrice={totalPrice}",
             arguments = listOf(navArgument("totalPrice") {
@@ -165,9 +186,8 @@ fun AppNavHost(
                 defaultValue = "0.0"
             })
         ) { backStackEntry ->
-            val totalPrice = backStackEntry.arguments
-                ?.getString("totalPrice")
-                ?.toDoubleOrNull() ?: 0.0
+            val totalPrice =
+                backStackEntry.arguments?.getString("totalPrice")?.toDoubleOrNull() ?: 0.0
 
             val viewModel: CheckoutViewModel = viewModel()
 
@@ -301,7 +321,9 @@ fun AppNavHost(
             )
         }
 
-        // ---------------- Profile (PUBLIC, SMART SCREEN) ----------------
+
+
+        // ---------------- Profile ----------------
         composable("profile") {
             ProfileScreen(
                 navController = navController,
@@ -316,8 +338,17 @@ fun AppNavHost(
             )
         }
 
+//        ---------------- Profile Setting ----------------
         composable("profile_setting") {
             ProfileSetting(onBack = { navController.popBackStack() })
         }
+
+        // -------------- Voucher --------------------------
+        composable("voucher") {
+            VoucherScreen(
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
     }
 }

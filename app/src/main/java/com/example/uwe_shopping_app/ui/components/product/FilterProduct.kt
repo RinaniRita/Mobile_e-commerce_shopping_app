@@ -12,9 +12,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.example.uwe_shopping_app.ui.screens.search.SearchFilterState
-import com.example.uwe_shopping_app.ui.screens.search.SearchFilterSheet
-
 @Composable
 fun ProductFilterSidebar(
     visible: Boolean,

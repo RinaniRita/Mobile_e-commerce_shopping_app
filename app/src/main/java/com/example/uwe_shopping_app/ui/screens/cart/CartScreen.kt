@@ -1,6 +1,8 @@
 package com.example.uwe_shopping_app.ui.screens.cart
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -13,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.uwe_shopping_app.ui.components.cart.CartHeader
@@ -20,8 +23,11 @@ import com.example.uwe_shopping_app.ui.components.cart.CartItemCard
 import com.example.uwe_shopping_app.ui.components.cart.OrderSummaryCard
 import com.example.uwe_shopping_app.ui.components.common.BottomNavigationBar
 import com.example.uwe_shopping_app.ui.components.common.EmptyState
+import com.example.uwe_shopping_app.ui.components.common.Sidebar
+import com.example.uwe_shopping_app.ui.components.common.EmptyState
 import com.example.uwe_shopping_app.ui.components.common.ShopStatusTabs
 import com.example.uwe_shopping_app.ui.components.common.ShopTab
+
 
 @Composable
 fun CartScreen(
@@ -32,6 +38,10 @@ fun CartScreen(
     val uiState by viewModel.uiState.collectAsState()
     val isLoggedIn by viewModel.isLoggedIn.collectAsState(initial = false)
     var selectedTab by remember { mutableStateOf(ShopTab.YOUR_CART) }
+
+    LaunchedEffect(Unit) {
+        viewModel.loadCart()
+    }
 
     Scaffold(
         topBar = {
@@ -55,14 +65,13 @@ fun CartScreen(
                 .background(Color(0xFFF5F5F5))
         ) {
 
-            // ---------------- TABS (VISIBLE FOR BOTH) ----------------
+            // ---------------- STATUS TABS ----------------
             ShopStatusTabs(
                 selectedTab = selectedTab,
                 onTabSelected = { tab ->
                     selectedTab = tab
-                    when (tab) {
-                        ShopTab.YOUR_CART -> Unit
-                        else -> navController.navigate("orders?status=${tab.name}")
+                    if (tab != ShopTab.YOUR_CART) {
+                        navController.navigate("orders?status=${tab.name}")
                     }
                 },
                 modifier = Modifier
@@ -70,7 +79,7 @@ fun CartScreen(
                     .padding(top = 8.dp)
             )
 
-            // ===================== NOT LOGGED IN =====================
+            // ================= NOT LOGGED IN =================
             if (!isLoggedIn) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -100,11 +109,10 @@ fun CartScreen(
                         }
                     }
                 }
-
                 return@Scaffold
             }
 
-            // ===================== LOGGED IN =====================
+            // ================= LOGGED IN =================
             when {
                 uiState.isLoading -> {
                     Box(

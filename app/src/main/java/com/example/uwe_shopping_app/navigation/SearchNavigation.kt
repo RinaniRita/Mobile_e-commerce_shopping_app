@@ -1,7 +1,7 @@
 package com.example.uwe_shopping_app.navigation
 
 import androidx.navigation.NavHostController
-import com.example.uwe_shopping_app.ui.screens.search.SortOption
+import com.example.uwe_shopping_app.ui.components.product.SortOption
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 

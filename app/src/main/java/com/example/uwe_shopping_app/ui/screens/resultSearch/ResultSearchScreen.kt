@@ -15,10 +15,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,7 +24,7 @@ import androidx.navigation.NavHostController
 import com.example.uwe_shopping_app.ui.components.common.BottomNavigationBar
 import com.example.uwe_shopping_app.ui.components.product.ProductFilterSidebar
 import com.example.uwe_shopping_app.ui.components.product.VerticalProductGrid
-import com.example.uwe_shopping_app.ui.screens.search.SearchFilterState
+import com.example.uwe_shopping_app.ui.components.product.SearchFilterState
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 
@@ -36,7 +32,7 @@ import java.nio.charset.StandardCharsets
 @Composable
 fun ResultSearchScreen(
     query: String,
-    initialFilter: SearchFilterState,
+//    initialFilter: SearchFilterState,
     navController: NavHostController? = null,
     currentRoute: String = "search",
     onNavigate: (String) -> Unit = {},
@@ -49,25 +45,9 @@ fun ResultSearchScreen(
         query,
         StandardCharsets.UTF_8.toString()
     )
-    var filterState by remember { mutableStateOf(initialFilter) }
 
-    var showFilter by remember { mutableStateOf(false) }
-
-
-    LaunchedEffect(
-        decodedQuery,
-        filterState.minPrice,
-        filterState.maxPrice,
-        filterState.sortBy
-    ) {
-
-
-        viewModel.search(
-            decodedQuery,
-            filterState.minPrice,
-            filterState.maxPrice,
-            filterState.sortBy
-        )
+    LaunchedEffect(decodedQuery) {
+        viewModel.setQuery(decodedQuery)
     }
 
 
@@ -129,7 +109,7 @@ fun ResultSearchScreen(
                                 SearchResultsHeader(
                                     resultsCount = uiState.searchResults.size,
                                     query = uiState.query,
-                                    onFilterClick = { showFilter = true }
+                                    onFilterClick = viewModel::showFilter
                                 )
 
                                 Spacer(modifier = Modifier.height(8.dp))
@@ -162,19 +142,7 @@ fun ResultSearchScreen(
                 }
 
 
-//                Filter
-                if (showFilter) {
-                    ProductFilterSidebar(
-                        visible = true,
-                        state = filterState,
-                        onStateChange = { filterState = it },
-                        onReset = { filterState = SearchFilterState() },
-                        onDismiss = { showFilter = false },
-                        onApply = {
-                            showFilter = false
-                        }
-                    )
-                }
+
                 navController?.let {
                     BottomNavigationBar(
                         navController = it,
@@ -184,7 +152,18 @@ fun ResultSearchScreen(
             }
         }
     }
+
+//                Filter
+    ProductFilterSidebar(
+        visible = uiState.showFilter,
+        state = uiState.filterState,
+        onStateChange = viewModel::updateFilterState,
+        onReset = viewModel::resetFilter,
+        onDismiss = viewModel::hideFilter,
+        onApply = viewModel::applyFilter
+    )
 }
+
 
 @Composable
 private fun SearchResultsHeader(

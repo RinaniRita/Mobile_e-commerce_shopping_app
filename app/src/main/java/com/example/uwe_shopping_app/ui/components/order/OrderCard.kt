@@ -96,9 +96,6 @@ fun OrderCard(
                     }
                 }
             }
-
-
-
         }
     }
 }
