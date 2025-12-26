@@ -12,6 +12,7 @@ import com.example.uwe_shopping_app.data.local.dao.CartItemDao
 import com.example.uwe_shopping_app.data.local.dao.OrderDao
 import com.example.uwe_shopping_app.data.local.dao.OrderItemDao
 import com.example.uwe_shopping_app.data.local.dao.ProductDao
+import com.example.uwe_shopping_app.data.local.dao.ProductReviewDao
 import com.example.uwe_shopping_app.data.local.dao.UserDao
 import com.example.uwe_shopping_app.data.local.entity.AddressEntity
 import com.example.uwe_shopping_app.data.local.entity.CartEntity
@@ -19,6 +20,7 @@ import com.example.uwe_shopping_app.data.local.entity.CartItemEntity
 import com.example.uwe_shopping_app.data.local.entity.OrderEntity
 import com.example.uwe_shopping_app.data.local.entity.OrderItemEntity
 import com.example.uwe_shopping_app.data.local.entity.ProductEntity
+import com.example.uwe_shopping_app.data.local.entity.ProductReviewEntity
 import com.example.uwe_shopping_app.data.local.entity.UserEntity
 
 @Database(
@@ -29,7 +31,8 @@ import com.example.uwe_shopping_app.data.local.entity.UserEntity
         OrderItemEntity::class,
         CartEntity::class,
         CartItemEntity::class,
-        AddressEntity::class
+        AddressEntity::class,
+        ProductReviewEntity::class,
     ],
     version = 4,
     exportSchema = false
@@ -45,6 +48,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun cartDao(): CartDao
     abstract fun cartItemDao(): CartItemDao
     abstract fun addressDao(): AddressDao
+    abstract fun productReviewDao(): ProductReviewDao
 
     companion object {
         @Volatile

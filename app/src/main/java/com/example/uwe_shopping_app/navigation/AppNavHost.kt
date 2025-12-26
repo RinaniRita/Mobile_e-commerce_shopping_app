@@ -38,7 +38,9 @@ import com.example.uwe_shopping_app.ui.screens.auth.SignUpScreen
 import com.example.uwe_shopping_app.ui.screens.checkout.CheckoutViewModel
 import com.example.uwe_shopping_app.ui.screens.order.OrderScreen
 import com.example.uwe_shopping_app.ui.screens.orderInfo.OrderInfoScreen
+import com.example.uwe_shopping_app.ui.screens.orderInfo.OrderInfoViewModel
 import com.example.uwe_shopping_app.ui.screens.resultSearch.ResultSearchViewModel
+import com.example.uwe_shopping_app.ui.screens.review.ReviewScreen
 
 import kotlinx.coroutines.flow.collectLatest
 @Composable
@@ -314,13 +316,45 @@ fun AppNavHost(
 
 
         // ---------------- Order Info (LOGIN REQUIRED INSIDE SCREEN) ----------------
-        composable("orderInfo/{orderId}") {
-            OrderInfoScreen(
-                navController = navController,
-                orderId = it.arguments!!.getInt("orderId")
-            )
+        composable(
+            route = "orderInfo/{orderId}",
+            arguments = listOf(navArgument("orderId") { type = NavType.IntType })
+        ) { backStackEntry ->
+
+            val userId by session.userId.collectAsState(initial = null)
+            val orderId = backStackEntry.arguments!!.getInt("orderId")
+
+            if (userId == null) {
+                // Show loading instead of crashing
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            } else {
+                OrderInfoScreen(
+                    navController = navController,
+                    orderId = orderId,
+                    userId = userId!!
+                )
+            }
         }
 
+        // ---------------- Review ----------------
+        composable(
+            "review/{orderId}/{userId}",
+            arguments = listOf(
+                navArgument("orderId") { type = NavType.IntType },
+                navArgument("userId") { type = NavType.IntType }
+            )
+        ) {
+            ReviewScreen(
+                orderId = it.arguments!!.getInt("orderId"),
+                userId = it.arguments!!.getInt("userId"),
+                onBack = { navController.popBackStack() }
+            )
+        }
 
 
         // ---------------- Profile ----------------

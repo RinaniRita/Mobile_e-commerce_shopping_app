@@ -20,11 +20,15 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.uwe_shopping_app.ui.components.cart.CartHeader
 import com.example.uwe_shopping_app.ui.components.order.OrderStatus
+import com.example.uwe_shopping_app.ui.components.order.ReviewDialog
+import com.example.uwe_shopping_app.ui.components.product.StarRating
+import com.example.uwe_shopping_app.ui.components.order.ReviewDialog
 
 @Composable
 fun OrderInfoScreen(
     navController: NavHostController,
     orderId: Int,
+    userId: Int,
     viewModel: OrderInfoViewModel = viewModel()
 ) {
     LaunchedEffect(orderId) {
@@ -40,6 +44,7 @@ fun OrderInfoScreen(
         },
         containerColor = Color(0xFFF5F5F5)
     ) { padding ->
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -49,51 +54,7 @@ fun OrderInfoScreen(
         ) {
 
             // ===== Status banner =====
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF424242)),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(Modifier.weight(1f)) {
-                        Text(
-                            text = when (state.status) {
-                                OrderStatus.ON_THE_WAY -> "Your order is on the way"
-                                OrderStatus.DELIVERED -> "Your order has been delivered"
-                                OrderStatus.CANCELLED -> "This order was cancelled"
-                            },
-                            color = Color.White,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 16.sp
-                        )
-
-                        Text(
-                            text = when (state.status) {
-                                OrderStatus.ON_THE_WAY -> "Click here to track your order"
-                                OrderStatus.DELIVERED -> "Rate product to get 5 points for collect."
-                                OrderStatus.CANCELLED -> "If this is a mistake, contact support"
-                            },
-                            color = Color(0xFFEEEEEE),
-                            fontSize = 12.sp
-                        )
-
-                    }
-
-                    Icon(
-                        imageVector = when (state.status) {
-                            OrderStatus.ON_THE_WAY -> Icons.Outlined.LocalShipping
-                            OrderStatus.DELIVERED -> Icons.Outlined.CheckCircle
-                            OrderStatus.CANCELLED -> Icons.Outlined.Cancel
-                        },
-                        contentDescription = null,
-                        tint = Color.White
-                    )
-
-                }
-            }
+            StatusBanner(state.status)
 
             Spacer(Modifier.height(16.dp))
 
@@ -106,15 +67,22 @@ fun OrderInfoScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // ===== Items & total =====
+            // ===== Items & rating =====
             InfoCard {
-                state.items.forEach {
+                state.items.forEach { item ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("${it.name} x${it.quantity}")
-                        Text("$${"%.2f".format(it.price)}")
+                        Column {
+                            Text("${item.name} x${item.quantity}")
+                            Text(
+                                "$${"%.2f".format(item.price)}",
+                                fontSize = 12.sp,
+                                color = Color.Gray
+                            )
+                        }
                     }
                     Divider()
                 }
@@ -123,22 +91,19 @@ fun OrderInfoScreen(
 
                 PriceRow("Sub total", state.subtotal)
                 PriceRow("Shipping", state.shipping)
-
                 Divider()
-
-                PriceRow(
-                    "Total",
-                    state.subtotal + state.shipping,
-                    bold = true
-                )
+                PriceRow("Total", state.subtotal + state.shipping, bold = true)
             }
 
             Spacer(Modifier.height(24.dp))
 
-            // ===== Bottom actions =====
+            // ===== Bottom action =====
             when (state.status) {
                 OrderStatus.DELIVERED -> {
-                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
                         OutlinedButton(
                             modifier = Modifier.weight(1f),
                             onClick = { navController.navigate("home") }
@@ -148,14 +113,20 @@ fun OrderInfoScreen(
 
                         Button(
                             modifier = Modifier.weight(1f),
-                            onClick = { /* TODO rating */ }
+                            onClick = {
+                                val firstProduct = state.items.firstOrNull()
+                                if (firstProduct != null) {
+                                    navController.navigate("review/${state.orderId}/$userId")
+
+                                }
+                            }
                         ) {
-                            Text("Rate")
+                            Text("Rate products")
                         }
                     }
                 }
 
-                OrderStatus.CANCELLED -> {
+                else -> {
                     Button(
                         modifier = Modifier.fillMaxWidth(),
                         onClick = { navController.navigate("home") }
@@ -163,19 +134,47 @@ fun OrderInfoScreen(
                         Text("Return home")
                     }
                 }
-
-                OrderStatus.ON_THE_WAY -> {
-                    Button(
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = { navController.navigate("home") }
-                    ) {
-                        Text("Continue shopping")
-                    }
-                }
             }
 
 
             Spacer(Modifier.height(16.dp))
+        }
+    }
+}
+
+@Composable
+private fun StatusBanner(status: OrderStatus) {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF424242)),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(
+                    text = when (status) {
+                        OrderStatus.ON_THE_WAY -> "Your order is on the way"
+                        OrderStatus.DELIVERED -> "Your order has been delivered"
+                        OrderStatus.CANCELLED -> "This order was cancelled"
+                    },
+                    color = Color.White,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 16.sp
+                )
+            }
+
+            Icon(
+                imageVector = when (status) {
+                    OrderStatus.ON_THE_WAY -> Icons.Outlined.LocalShipping
+                    OrderStatus.DELIVERED -> Icons.Outlined.CheckCircle
+                    OrderStatus.CANCELLED -> Icons.Outlined.Cancel
+                },
+                contentDescription = null,
+                tint = Color.White
+            )
         }
     }
 }

@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.uwe_shopping_app.data.local.repository.OrderRepository
+import com.example.uwe_shopping_app.data.local.repository.ProductReviewRepository
 import com.example.uwe_shopping_app.ui.components.order.OrderStatus
 import kotlinx.coroutines.launch
 
@@ -21,6 +22,7 @@ data class OrderInfoUiState(
 )
 
 data class OrderItemUi(
+    val productId: Int,
     val name: String,
     val quantity: Int,
     val price: Double
@@ -29,24 +31,25 @@ data class OrderItemUi(
 class OrderInfoViewModel : ViewModel() {
 
     private val repository = OrderRepository()
+    private val reviewRepository = ProductReviewRepository()
 
     var uiState by mutableStateOf(OrderInfoUiState())
         private set
 
     fun loadOrder(orderId: Int) {
         viewModelScope.launch {
-
             val order = repository.getOrderById(orderId) ?: return@launch
             val items = repository.getOrderItemsWithProducts(orderId)
 
             uiState = uiState.copy(
                 orderId = order.id,
                 status = mapStatus(order.status),
-                trackingNumber = "TRK-${order.id}", // or empty
-                deliveryAddress = "Saved address", // replace later
+                trackingNumber = "TRK-${order.id}",
+                deliveryAddress = "Saved address",
                 items = items.map {
                     OrderItemUi(
-                        name = it.product.name, // or join with product table
+                        productId = it.product.id,
+                        name = it.product.name,
                         quantity = it.orderItem.quantity,
                         price = it.orderItem.price
                     )
@@ -57,13 +60,32 @@ class OrderInfoViewModel : ViewModel() {
         }
     }
 
-    private fun mapStatus(status: String): OrderStatus {
-        return when (status.lowercase()) {
+    fun submitReview(
+        userId: Int,
+        productId: Int,
+        rating: Int,
+        comment: String
+    ) {
+        if (uiState.status != OrderStatus.DELIVERED) return
+
+        viewModelScope.launch {
+            reviewRepository.submitReview(
+                userId = userId,
+                productId = productId,
+                orderId = uiState.orderId,
+                rating = rating,
+                comment = comment
+            )
+        }
+    }
+
+    private fun mapStatus(status: String): OrderStatus =
+        when (status.lowercase()) {
             "pending" -> OrderStatus.ON_THE_WAY
             "delivered" -> OrderStatus.DELIVERED
             "cancelled" -> OrderStatus.CANCELLED
             else -> OrderStatus.ON_THE_WAY
         }
-    }
 }
+
 
