@@ -33,6 +33,7 @@ import com.example.uwe_shopping_app.ui.screens.profile.ProfileSetting
 import com.example.uwe_shopping_app.ui.screens.address.AddressScreen
 import com.example.uwe_shopping_app.ui.screens.address.AddressViewModel
 import com.example.uwe_shopping_app.ui.screens.voucher.VoucherScreen
+import com.example.uwe_shopping_app.ui.screens.wishlist.WishlistScreen
 import com.example.uwe_shopping_app.ui.screens.auth.LoginScreen
 import com.example.uwe_shopping_app.ui.screens.auth.SignUpScreen
 import com.example.uwe_shopping_app.ui.screens.checkout.CheckoutViewModel
@@ -329,10 +330,12 @@ fun AppNavHost(
                 navController = navController,
                 currentRoute = "profile",
                 onNavigate = { route ->
-                    if (route == "address") {
-                        navController.navigate("address?from=profile")
-                    } else {
-                        navController.navigate(route)
+                    when (route) {
+                        "address" -> navController.navigate("address?from=profile")
+                        "voucher" -> navController.navigate("voucher")
+                        "wishlist" -> navController.navigate("wishlist")
+                        "profile_setting" -> navController.navigate("profile_setting")
+                        else -> navController.navigate(route)
                     }
                 }
             )
@@ -343,12 +346,19 @@ fun AppNavHost(
             ProfileSetting(onBack = { navController.popBackStack() })
         }
 
-        // -------------- Voucher --------------------------
-        composable("voucher") {
-            VoucherScreen(
-                onBackClick = { navController.popBackStack() }
-            )
-        }
+         // -------------- Voucher --------------------------
+         composable("voucher") {
+             VoucherScreen(
+                 onBackClick = { navController.popBackStack() }
+             )
+         }
 
-    }
-}
+         // -------------- Wishlist --------------------------
+         composable("wishlist") {
+             WishlistScreen(
+                 navController = navController
+             )
+         }
+
+     }
+ }

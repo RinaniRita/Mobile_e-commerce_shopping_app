@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -38,6 +39,7 @@ sealed class SidebarItem(
     object Homepage : SidebarItem("Homepage", Icons.Default.Home, "home")
     object Discover : SidebarItem("Discover", Icons.Default.Search, "search")
     object MyOrder : SidebarItem("My Order", Icons.Default.ShoppingBag, "cart")
+    object MyWishlist : SidebarItem("My Wishlist", Icons.Outlined.FavoriteBorder, "wishlist")
     object MyProfile : SidebarItem("My profile", Icons.Default.Person, "profile")
 }
 
@@ -47,11 +49,13 @@ fun Sidebar(
     isOpen: Boolean,
     onClose: () -> Unit,
     navController: NavController,
-    currentRoute: String,
     modifier: Modifier = Modifier
 ) {
     val viewModel: ProfileViewModel = viewModel()
     val user by viewModel.user.collectAsState()
+    
+    // Get the actual current route from navController
+    val currentRoute = navController.currentBackStackEntry?.destination?.route ?: "home"
 
     // Animate sidebar visibility
     val sidebarAlpha by animateFloatAsState(
@@ -141,6 +145,7 @@ fun Sidebar(
                     SidebarItem.Homepage,
                     SidebarItem.Discover,
                     SidebarItem.MyOrder,
+                    SidebarItem.MyWishlist,
                     SidebarItem.MyProfile
                 )
 
@@ -152,11 +157,42 @@ fun Sidebar(
                             .fillMaxWidth()
                             .clickable {
                                 if (item.route != currentRoute) {
-                                    navController.navigate(item.route) {
-                                        launchSingleTop = true
-                                        restoreState = true
-                                        popUpTo("home") {
-                                            saveState = true
+                                    // Check if we're currently on a sub-route
+                                    val actualCurrentRoute = navController.currentBackStackEntry?.destination?.route ?: currentRoute
+                                    val isOnSubRoute = actualCurrentRoute !in listOf("home", "search", "cart", "profile")
+                                    
+                                    if (item.route == "home") {
+                                        // For home, always clear the stack
+                                        navController.navigate("home") {
+                                            launchSingleTop = true
+                                            popUpTo("home") {
+                                                inclusive = true
+                                            }
+                                        }
+                                    } else if (item.route in listOf("search", "cart", "profile")) {
+                                        // For main routes, clear sub-routes if we're on one
+                                        if (isOnSubRoute) {
+                                            navController.navigate(item.route) {
+                                                launchSingleTop = true
+                                                // Pop back to home to clear sub-routes
+                                                popUpTo("home") {
+                                                    inclusive = false
+                                                }
+                                            }
+                                        } else {
+                                            // Already on a main route, navigate normally
+                                            navController.navigate(item.route) {
+                                                launchSingleTop = true
+                                                restoreState = true
+                                                popUpTo("home") {
+                                                    saveState = true
+                                                }
+                                            }
+                                        }
+                                    } else {
+                                        // For wishlist and other sub-screens, navigate without popping
+                                        navController.navigate(item.route) {
+                                            launchSingleTop = true
                                         }
                                     }
                                 }

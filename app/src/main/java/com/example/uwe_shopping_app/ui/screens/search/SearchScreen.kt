@@ -167,7 +167,6 @@ fun SearchScreen(
         isOpen = isSidebarOpen,
         onClose = { isSidebarOpen = false },
         navController = navController,
-        currentRoute = currentRoute,
         modifier = Modifier.zIndex(10f)
     )
 
