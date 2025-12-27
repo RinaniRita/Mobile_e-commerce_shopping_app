@@ -36,6 +36,17 @@ fun BottomNavigationBar(
         BottomNavItem.Cart,
         BottomNavItem.Profile
     )
+    
+    // Get actual current route from navController
+    val actualCurrentRoute = navController.currentBackStackEntry?.destination?.route ?: currentRoute
+    // Check if we're on a sub-route (like wishlist, voucher, etc.)
+    val isOnSubRoute = actualCurrentRoute !in items.map { it.route }
+    // Determine which main route to show as selected
+    val mainRouteForSelection = when {
+        actualCurrentRoute == "wishlist" -> "profile"
+        actualCurrentRoute in items.map { it.route } -> actualCurrentRoute
+        else -> currentRoute
+    }
 
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -51,17 +62,42 @@ fun BottomNavigationBar(
             verticalAlignment = Alignment.CenterVertically
         ) {
             items.forEach { item ->
-                val isSelected = currentRoute == item.route
+                // Show as selected if this is the main route for selection
+                val isSelected = mainRouteForSelection == item.route
 
                 IconButton(
                     onClick = {
-                        if (item.route != currentRoute) {
-                            navController.navigate(item.route) {
-                                launchSingleTop = true
-                                restoreState = true
-
-                                popUpTo("home") {
-                                    saveState = true
+                        // Navigate to the main route
+                        when (item.route) {
+                            "home" -> {
+                                // For home, always clear the entire stack
+                                navController.navigate("home") {
+                                    launchSingleTop = true
+                                    popUpTo("home") {
+                                        inclusive = true
+                                    }
+                                }
+                            }
+                            "search", "cart", "profile" -> {
+                                // For other main routes
+                                if (isOnSubRoute) {
+                                    // If we're on a sub-route (like wishlist), clear it first
+                                    navController.navigate(item.route) {
+                                        launchSingleTop = true
+                                        // Pop back to the main route stack, clearing sub-routes
+                                        popUpTo("home") {
+                                            inclusive = false
+                                        }
+                                    }
+                                } else {
+                                    // Already on a main route, navigate with state saving
+                                    navController.navigate(item.route) {
+                                        launchSingleTop = true
+                                        restoreState = true
+                                        popUpTo("home") {
+                                            saveState = true
+                                        }
+                                    }
                                 }
                             }
                         }

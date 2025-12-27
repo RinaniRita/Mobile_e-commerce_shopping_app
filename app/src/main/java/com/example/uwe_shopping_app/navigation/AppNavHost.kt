@@ -1,37 +1,48 @@
 package com.example.uwe_shopping_app.navigation
 
 import android.app.Application
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import androidx.navigation.NavType
 import com.example.uwe_shopping_app.data.local.session.SessionManager
 import com.example.uwe_shopping_app.ui.components.address.AddressUiModel
 import com.example.uwe_shopping_app.ui.components.common.ShopTab
+import com.example.uwe_shopping_app.ui.components.product.SearchFilterState
 import com.example.uwe_shopping_app.ui.components.product.SortOption
+import com.example.uwe_shopping_app.ui.screens.address.AddressControl
 import com.example.uwe_shopping_app.ui.screens.onboarding.WelcomeScreen
-import com.example.uwe_shopping_app.ui.screens.address.*
-import com.example.uwe_shopping_app.ui.screens.auth.*
-import com.example.uwe_shopping_app.ui.screens.cart.CartScreen
-import com.example.uwe_shopping_app.ui.screens.checkout.*
 import com.example.uwe_shopping_app.ui.screens.home.HomeScreen
+import com.example.uwe_shopping_app.ui.screens.product.ProductScreen
+import com.example.uwe_shopping_app.ui.screens.search.SearchScreen
+import com.example.uwe_shopping_app.ui.screens.resultSearch.ResultSearchScreen
+import com.example.uwe_shopping_app.ui.screens.cart.CartScreen
+import com.example.uwe_shopping_app.ui.screens.checkout.CheckoutScreen
+import com.example.uwe_shopping_app.ui.screens.checkout.CheckoutPaymentScreen
+import com.example.uwe_shopping_app.ui.screens.checkout.CheckoutCompletedScreen
+import com.example.uwe_shopping_app.ui.screens.profile.ProfileScreen
+import com.example.uwe_shopping_app.ui.screens.profile.ProfileSetting
+import com.example.uwe_shopping_app.ui.screens.address.AddressScreen
+import com.example.uwe_shopping_app.ui.screens.address.AddressViewModel
+import com.example.uwe_shopping_app.ui.screens.voucher.VoucherScreen
+import com.example.uwe_shopping_app.ui.screens.wishlist.WishlistScreen
+import com.example.uwe_shopping_app.ui.screens.auth.LoginScreen
+import com.example.uwe_shopping_app.ui.screens.auth.SignUpScreen
+import com.example.uwe_shopping_app.ui.screens.checkout.CheckoutViewModel
 import com.example.uwe_shopping_app.ui.screens.order.OrderScreen
 import com.example.uwe_shopping_app.ui.screens.orderInfo.OrderInfoScreen
-import com.example.uwe_shopping_app.ui.screens.product.ProductScreen
-import com.example.uwe_shopping_app.ui.screens.profile.*
-import com.example.uwe_shopping_app.ui.screens.resultSearch.*
+import com.example.uwe_shopping_app.ui.screens.resultSearch.ResultSearchViewModel
 import com.example.uwe_shopping_app.ui.screens.review.ReviewScreen
-import com.example.uwe_shopping_app.ui.screens.search.SearchScreen
-import com.example.uwe_shopping_app.ui.screens.voucher.VoucherScreen
-import kotlinx.coroutines.flow.collectLatest
 
+import kotlinx.coroutines.flow.collectLatest
 @Composable
 fun AppNavHost(
     navController: NavHostController,
@@ -270,10 +281,10 @@ fun AppNavHost(
 
         // ---------------- Checkout Completed ----------------
         composable("checkout_completed") {
-            CheckoutCompletedScreen(navController)
+            CheckoutCompletedScreen(navController = navController)
         }
 
-        // ---------------- Orders ----------------
+        // ---------------- Orders (LOGIN REQUIRED INSIDE SCREEN) ----------------
         composable(
             route = "orders?status={status}",
             arguments = listOf(
@@ -295,7 +306,7 @@ fun AppNavHost(
         }
 
 
-        // ---------------- Order Info ----------------
+        // ---------------- Order Info  ----------------
         composable(
             route = "orderInfo/{orderId}",
             arguments = listOf(navArgument("orderId") { type = NavType.IntType })
@@ -342,22 +353,35 @@ fun AppNavHost(
                 navController = navController,
                 currentRoute = "profile",
                 onNavigate = { route ->
-                    if (route == "address") {
-                        navController.navigate("address?from=profile")
-                    } else {
-                        navController.navigate(route)
+                    when (route) {
+                        "address" -> navController.navigate("address?from=profile")
+                        "voucher" -> navController.navigate("voucher")
+                        "wishlist" -> navController.navigate("wishlist")
+                        "profile_setting" -> navController.navigate("profile_setting")
+                        else -> navController.navigate(route)
                     }
                 }
             )
         }
 
+//        ---------------- Profile Setting ----------------
         composable("profile_setting") {
             ProfileSetting(onBack = { navController.popBackStack() })
         }
 
-        // ---------------- Voucher ----------------
-        composable("voucher") {
-            VoucherScreen(onBackClick = { navController.popBackStack() })
-        }
-    }
-}
+         // -------------- Voucher --------------------------
+         composable("voucher") {
+             VoucherScreen(
+                 onBackClick = { navController.popBackStack() }
+             )
+         }
+
+         // -------------- Wishlist --------------------------
+         composable("wishlist") {
+             WishlistScreen(
+                 navController = navController
+             )
+         }
+
+     }
+ }

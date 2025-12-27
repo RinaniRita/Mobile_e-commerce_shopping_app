@@ -173,6 +173,7 @@ fun ProfileScreen(
                             when (text) {
                                 "Address" -> onNavigate("address")
                                 "Voucher" -> onNavigate("voucher")
+                                "My Wishlist" -> onNavigate("wishlist")
                                 "Log out" -> {
                                     viewModel.logout()
                                     navController.navigate("home") {
