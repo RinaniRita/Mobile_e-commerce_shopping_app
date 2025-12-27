@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.uwe_shopping_app.data.local.entity.ProductReviewEntity
+import com.example.uwe_shopping_app.data.local.model.ReviewWithUser
 
 @Dao
 interface ProductReviewDao {
@@ -42,4 +43,14 @@ interface ProductReviewDao {
         WHERE productId = :productId
     """)
     suspend fun getReviewCount(productId: Int): Int
+
+    @Query("""
+    SELECT r.rating, r.comment, u.name AS userName
+    FROM product_reviews r
+    INNER JOIN users u ON r.userId = u.id
+    WHERE r.productId = :productId
+    ORDER BY r.createdAt DESC
+""")
+    suspend fun getReviewsWithUsers(productId: Int): List<ReviewWithUser>
+
 }

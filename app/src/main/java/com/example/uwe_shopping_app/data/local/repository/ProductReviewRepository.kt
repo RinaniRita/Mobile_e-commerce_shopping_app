@@ -35,4 +35,17 @@ class ProductReviewRepository {
             )
         )
     }
+
+    suspend fun getReviewsByProduct(productId: Int) =
+        reviewDao.getReviewsByProduct(productId)
+
+    suspend fun getAverageRating(productId: Int): Double =
+        reviewDao.getAverageRating(productId) ?: 0.0
+
+    suspend fun getReviewCount(productId: Int): Int =
+        reviewDao.getReviewCount(productId)
+
+    suspend fun getReviewsWithUsers(productId: Int) =
+        reviewDao.getReviewsWithUsers(productId)
+
 }

@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.uwe_shopping_app.data.local.entity.ProductEntity
 import com.example.uwe_shopping_app.data.local.repository.CartRepository
 import com.example.uwe_shopping_app.data.local.repository.ProductRepository
+import com.example.uwe_shopping_app.data.local.repository.ProductReviewRepository
 import com.example.uwe_shopping_app.data.local.session.SessionManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,7 +22,19 @@ data class ProductUiState(
     val error: String? = null,
     val isFavorite: Boolean = false,
     val isDescriptionExpanded: Boolean = false,
-    val isAddToCartSuccess: Boolean = false
+    val isAddToCartSuccess: Boolean = false,
+
+    val avgRating: Double = 0.0,
+    val reviewCount: Int = 0,
+    val reviews: List<ProductReviewUi> = emptyList(),
+    val showDescription: Boolean = true,
+    val showReviews: Boolean = true
+)
+
+data class ProductReviewUi(
+    val rating: Int,
+    val comment: String,
+    val userName: String
 )
 
 
@@ -29,6 +42,8 @@ class ProductViewModel(application: Application) : AndroidViewModel(application)
 
     private val productRepository = ProductRepository()
     private val cartRepository = CartRepository()
+    private val reviewRepository = ProductReviewRepository()
+
     private val sessionManager = SessionManager(application)
 
     private val _uiState = MutableStateFlow(ProductUiState())
@@ -38,9 +53,42 @@ class ProductViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
             val product = productRepository.getProductById(productId)
-            _uiState.value = _uiState.value.copy(product = product, isLoading = false)
+            val avg = reviewRepository.getAverageRating(productId) ?: 0.0
+            val count = reviewRepository.getReviewCount(productId)
+            val reviews = reviewRepository
+                .getReviewsWithUsers(productId)
+                .map {
+                    ProductReviewUi(
+                        rating = it.rating,
+                        comment = it.comment,
+                        userName = it.userName
+                    )
+                }
+
+            _uiState.value = _uiState.value.copy(
+                product = product,
+                avgRating = avg,
+                reviewCount = count,
+                reviews = reviews,
+                isLoading = false
+            )
         }
     }
+
+
+    fun toggleDescription() {
+        _uiState.value = _uiState.value.copy(
+            showDescription = !_uiState.value.showDescription
+        )
+    }
+
+
+    fun toggleReviews() {
+        _uiState.value = _uiState.value.copy(
+            showReviews = !_uiState.value.showReviews
+        )
+    }
+
 
     // --- HÀM ADD TO CART (GỌN GÀNG) ---
     fun addToCart() {

@@ -11,11 +11,15 @@ import androidx.compose.ui.graphics.Color
 @Composable
 fun StarRating(
     rating: Int,
-    onRatingChange: (Int) -> Unit
+    onRatingChange: (Int) -> Unit,
+    enabled: Boolean = true
 ) {
     Row {
         repeat(5) { index ->
-            IconButton(onClick = { onRatingChange(index + 1) }) {
+            IconButton(
+                onClick = { if (enabled) onRatingChange(index + 1) },
+                enabled = enabled
+            ) {
                 Icon(
                     imageVector = Icons.Default.Star,
                     contentDescription = null,
@@ -25,3 +29,4 @@ fun StarRating(
         }
     }
 }
+
