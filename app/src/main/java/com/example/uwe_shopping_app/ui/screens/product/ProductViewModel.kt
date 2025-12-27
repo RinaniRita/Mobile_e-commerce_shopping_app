@@ -7,6 +7,7 @@ import com.example.uwe_shopping_app.data.local.entity.ProductEntity
 import com.example.uwe_shopping_app.data.local.repository.CartRepository
 import com.example.uwe_shopping_app.data.local.repository.ProductRepository
 import com.example.uwe_shopping_app.data.local.repository.ProductReviewRepository
+import com.example.uwe_shopping_app.data.local.repository.WishlistRepository
 import com.example.uwe_shopping_app.data.local.session.SessionManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -43,6 +44,7 @@ class ProductViewModel(application: Application) : AndroidViewModel(application)
     private val productRepository = ProductRepository()
     private val cartRepository = CartRepository()
     private val reviewRepository = ProductReviewRepository()
+    private val wishlistRepository = WishlistRepository()
 
     private val sessionManager = SessionManager(application)
 
@@ -64,14 +66,20 @@ class ProductViewModel(application: Application) : AndroidViewModel(application)
                         userName = it.userName
                     )
                 }
+            val userId = sessionManager.userId.first()
+            val isFav = userId?.let {
+                wishlistRepository.isWishlisted(it, productId)
+            } ?: false
 
             _uiState.value = _uiState.value.copy(
                 product = product,
                 avgRating = avg,
                 reviewCount = count,
                 reviews = reviews,
+                isFavorite = isFav,
                 isLoading = false
             )
+
         }
     }
 
@@ -118,9 +126,28 @@ class ProductViewModel(application: Application) : AndroidViewModel(application)
     }
 
 
-    // Các hàm phụ giữ nguyên
-    fun toggleFavorite() { _uiState.value = _uiState.value.copy(isFavorite = !_uiState.value.isFavorite) }
-    fun toggleDescriptionExpanded() { _uiState.value = _uiState.value.copy(isDescriptionExpanded = !_uiState.value.isDescriptionExpanded) }
+    fun toggleFavorite() {
+        val product = _uiState.value.product ?: return
+
+        viewModelScope.launch {
+            val userId = sessionManager.userId.first()
+
+            if (userId == null) {
+                _uiState.value = _uiState.value.copy(error = LOGIN_REQUIRED)
+                return@launch
+            }
+
+            val isWishlisted = wishlistRepository.isWishlisted(userId, product.id)
+
+            if (isWishlisted) {
+                wishlistRepository.remove(userId, product.id)
+            } else {
+                wishlistRepository.add(userId, product.id)
+            }
+
+            _uiState.value = _uiState.value.copy(isFavorite = !isWishlisted)
+        }
+    }
 
     fun clearError() {
         _uiState.value = _uiState.value.copy(error = null)

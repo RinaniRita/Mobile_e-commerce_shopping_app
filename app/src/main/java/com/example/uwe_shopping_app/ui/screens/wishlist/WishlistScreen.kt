@@ -12,6 +12,8 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,6 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.uwe_shopping_app.R
 import com.example.uwe_shopping_app.ui.components.common.BottomNavigationBar
@@ -40,42 +43,13 @@ fun WishlistScreen(
 ) {
     var isSidebarOpen by remember { mutableStateOf(false) }
 
-    // Sample wishlist products matching the image
-    val wishlistProducts = listOf(
-        WishlistProduct(
-            id = 1,
-            name = "Front Tie Mini Dress",
-            price = 59.00,
-            imageResId = R.drawable.welcome_img,
-            rating = 4.5,
-            reviewCount = 38
-        ),
-        WishlistProduct(
-            id = 2,
-            name = "Linen Dress",
-            price = 52.00,
-            originalPrice = 90.00,
-            imageResId = R.drawable.welcome_img,
-            rating = 4.5,
-            reviewCount = 64
-        ),
-        WishlistProduct(
-            id = 3,
-            name = "Ohara Dress",
-            price = 85.00,
-            imageResId = R.drawable.welcome_img,
-            rating = 4.5,
-            reviewCount = 50
-        ),
-        WishlistProduct(
-            id = 4,
-            name = "Tie Back Mini Dress",
-            price = 67.00,
-            imageResId = R.drawable.welcome_img,
-            rating = 4.5,
-            reviewCount = 39
-        )
-    )
+    val viewModel: WishlistViewModel = viewModel()
+    val products by viewModel.products.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.loadWishlist()
+    }
+
 
     Box(
         modifier = modifier.fillMaxSize()
@@ -102,14 +76,14 @@ fun WishlistScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp)
             ) {
-                items(wishlistProducts, key = { it.id }) { product ->
+                items(products, key = { it.id }) { product ->
                     WishlistProductCard(
                         product = product,
                         onClick = {
                             navController.navigate("product/${product.id}")
                         },
                         onFavoriteClick = {
-                            // Handle remove from wishlist (frontend only)
+                            viewModel.remove(product.id)
                         }
                     )
                 }
@@ -128,16 +102,6 @@ fun WishlistScreen(
             onClose = { isSidebarOpen = false },
             navController = navController,
             modifier = Modifier.zIndex(10f)
-        )
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-private fun WishlistScreenPreview() {
-    Uwe_shopping_appTheme {
-        WishlistScreen(
-            navController = androidx.navigation.compose.rememberNavController()
         )
     }
 }

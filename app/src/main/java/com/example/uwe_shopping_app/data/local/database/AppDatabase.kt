@@ -20,6 +20,7 @@ import com.example.uwe_shopping_app.data.local.entity.*
         AddressEntity::class,
         VoucherEntity::class,
         ProductReviewEntity::class,
+        WishlistEntity::class,
     ],
     version = 5,
     exportSchema = false
@@ -37,6 +38,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun addressDao(): AddressDao
     abstract fun voucherDao(): VoucherDao
     abstract fun productReviewDao(): ProductReviewDao
+    abstract fun wishlistDao(): WishlistDao
 
     companion object {
         @Volatile
