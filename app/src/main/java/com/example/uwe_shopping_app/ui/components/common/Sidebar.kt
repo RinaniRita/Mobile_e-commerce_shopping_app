@@ -10,7 +10,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -39,7 +38,6 @@ sealed class SidebarItem(
     object Homepage : SidebarItem("Homepage", Icons.Default.Home, "home")
     object Discover : SidebarItem("Discover", Icons.Default.Search, "search")
     object MyOrder : SidebarItem("My Order", Icons.Default.ShoppingBag, "cart")
-    object MyWishlist : SidebarItem("My Wishlist", Icons.Outlined.FavoriteBorder, "wishlist")
     object MyProfile : SidebarItem("My profile", Icons.Default.Person, "profile")
 }
 
@@ -145,7 +143,6 @@ fun Sidebar(
                     SidebarItem.Homepage,
                     SidebarItem.Discover,
                     SidebarItem.MyOrder,
-                    SidebarItem.MyWishlist,
                     SidebarItem.MyProfile
                 )
 
