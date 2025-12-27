@@ -2,19 +2,19 @@ package com.example.uwe_shopping_app.data.local.repository
 
 import com.example.uwe_shopping_app.App
 import com.example.uwe_shopping_app.data.local.entity.UserEntity
+import com.example.uwe_shopping_app.data.local.entity.VoucherEntity
 
 class UserRepository {
 
     private val userDao = App.db.userDao()
+    private val voucherDao = App.db.voucherDao()
 
-    /* ---------- Register result ---------- */
     sealed class RegisterResult {
         object Success : RegisterResult()
         object EmailExists : RegisterResult()
         object PhoneExists : RegisterResult()
     }
 
-    /* ---------- Registration ---------- */
     suspend fun registerUser(
         name: String,
         email: String,
@@ -37,29 +37,65 @@ class UserRepository {
             phone = phone
         )
 
-        userDao.insertUser(user)
+        val userId = userDao.insertUser(user).toInt()
+        
+        // TỰ ĐỘNG TẶNG 4 VOUCHER KHI ĐĂNG KÝ THÀNH CÔNG
+        val initialVouchers = listOf(
+            VoucherEntity(
+                userId = userId,
+                code = "fridaysale",
+                title = "Black Friday",
+                description = "Sale off 50%",
+                discountValue = 50,
+                discountType = "PERCENTAGE",
+                target = "PRODUCT",
+                expiryDay = 20,
+                expiryMonth = "Dec"
+            ),
+            VoucherEntity(
+                userId = userId,
+                code = "holiday30",
+                title = "Holiday Sale",
+                description = "Sale off 30%",
+                discountValue = 30,
+                discountType = "PERCENTAGE",
+                target = "PRODUCT",
+                expiryDay = 22,
+                expiryMonth = "Dec"
+            ),
+            VoucherEntity(
+                userId = userId,
+                code = "welcome",
+                title = "First order",
+                description = "20% off your first order",
+                discountValue = 20,
+                discountType = "PERCENTAGE",
+                target = "PRODUCT",
+                expiryDay = 28,
+                expiryMonth = "Dec"
+            ),
+            // VOUCHER LOẠI 2: GIẢM PHÍ SHIP
+            VoucherEntity(
+                userId = userId,
+                code = "FREESHIP2",
+                title = "Shipping Discount",
+                description = "Save $2.0 on shipping fee",
+                discountValue = 2,
+                discountType = "FIXED",
+                target = "SHIPPING",
+                expiryDay = 31,
+                expiryMonth = "Dec"
+            )
+        )
+        voucherDao.insertVouchers(initialVouchers)
+        
         return RegisterResult.Success
     }
 
-    /* ---------- Login ---------- */
     suspend fun loginUser(email: String, password: String): UserEntity? {
         return userDao.login(email, password)
     }
 
-    /* ---------- Existing helpers ---------- */
-    suspend fun insertUser(user: UserEntity) {
-        userDao.insertUser(user)
-    }
-
-    suspend fun getUserByEmail(email: String): UserEntity? {
-        return userDao.getUserByEmail(email)
-    }
-
-    suspend fun getUserByPhone(phone: String): UserEntity? {
-        return userDao.getUserByPhone(phone)
-    }
-
-    suspend fun updateUser(user: UserEntity) {
-        userDao.updateUser(user)
-    }
+    suspend fun getUserByEmail(email: String): UserEntity? = userDao.getUserByEmail(email)
+    suspend fun updateUser(user: UserEntity) = userDao.updateUser(user)
 }

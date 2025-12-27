@@ -79,7 +79,7 @@ fun CheckoutScreen(
                             fontSize = 16.sp
                         )
                         Text(
-                            text = uiState.streetName,
+                            text = "${uiState.streetName}, ${uiState.district}, ${uiState.city}",
                             color = Color.Gray,
                             fontSize = 14.sp
                         )
@@ -94,10 +94,50 @@ fun CheckoutScreen(
                         color = Color(0xFF7B3FF2),
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.clickable { 
-                            navController.navigate("address?from=checkout&totalPrice=${uiState.totalPrice}") 
+                            navController.navigate("address?from=checkout&totalPrice=${uiState.productPrice}") 
                         }
                     )
                 }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = { viewModel.verifyAddressAndCalculateFee() },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF7B3FF2),
+                    disabledContainerColor = Color.LightGray
+                ),
+                enabled = !uiState.isCalculating,
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                if (uiState.isCalculating) {
+                    CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White, strokeWidth = 2.dp)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Calculating fee...", fontSize = 14.sp)
+                } else {
+                    Text("Verify Address & Calculate Fee", fontWeight = FontWeight.SemiBold)
+                }
+            }
+
+            if (uiState.calculationError != null) {
+                Text(
+                    text = uiState.calculationError!!,
+                    color = Color.Red,
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            }
+
+            if (uiState.distanceKm != null) {
+                Text(
+                    text = "Distance to Shop: ${"%.2f".format(uiState.distanceKm)} km",
+                    color = Color(0xFF4CAF50),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
             }
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -133,6 +173,12 @@ fun CheckoutScreen(
                     Text("Validate")
                 }
             }
+            
+            if (uiState.voucherError != null) {
+                Text(text = uiState.voucherError!!, color = Color.Red, fontSize = 12.sp)
+            } else if (uiState.appliedVoucher != null) {
+                Text(text = "Applied: ${uiState.appliedVoucher!!.title}", color = Color(0xFF4CAF50), fontSize = 12.sp)
+            }
 
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -147,18 +193,38 @@ fun CheckoutScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                SummaryLine("Product Price", "$${uiState.productPrice}")
+                if (uiState.itemDiscount > 0) SummaryLine("Voucher Discount", "-$${uiState.itemDiscount}", Color.Red)
+                SummaryLine("Shipping fee", "$${uiState.methodPrice + uiState.distancePrice}")
+                if (uiState.shippingDiscount > 0) SummaryLine("Shipping Discount", "-$${uiState.shippingDiscount}", Color.Red)
+                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                SummaryLine("Total", "$${uiState.grandTotal}", Color.Black, isBold = true)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             Button(
                 onClick = { 
-                    // TRUYỀN TẤT CẢ DỮ LIỆU SANG PAYMENT
+                    val fullAddress = "${uiState.firstName} ${uiState.lastName}, ${uiState.streetName}, ${uiState.district}, ${uiState.city}"
+                    val totalDiscount = uiState.itemDiscount + uiState.shippingDiscount
+                    
                     navController.navigate(
-                        "checkout_payment?productPrice=${uiState.totalPrice}" +
-                        "&shippingPrice=${uiState.shippingPrice}" +
-                        "&shippingLabel=${uiState.shippingLabel}"
+                        "checkout_payment?productPrice=${uiState.finalProductPrice}" +
+                        "&shippingPrice=${uiState.finalShippingPrice}" +
+                        "&shippingLabel=${uiState.shippingLabel}" +
+                        "&address=$fullAddress" +
+                        "&phone=${uiState.phoneNumber}" +
+                        "&discount=$totalDiscount"
                     ) 
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
+                enabled = uiState.distanceKm != null,
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF424242))
             ) {
@@ -167,5 +233,13 @@ fun CheckoutScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
         }
+    }
+}
+
+@Composable
+fun SummaryLine(label: String, value: String, color: Color = Color.Gray, isBold: Boolean = false) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Text(text = label, color = Color.Gray, fontSize = 14.sp)
+        Text(text = value, color = color, fontSize = 16.sp, fontWeight = if (isBold) FontWeight.Bold else FontWeight.Medium)
     }
 }

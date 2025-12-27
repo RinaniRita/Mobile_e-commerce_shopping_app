@@ -26,7 +26,9 @@ data class AddressUiModel(
     val title: String,
     val recipient: String,
     val addressLine: String,
-    val phoneNumber: String, // THÊM TRƯỜNG NÀY
+    val district: String, // MỚI
+    val city: String,     // MỚI
+    val phoneNumber: String,
     val type: AddressType,
     val isSelected: Boolean = false
 ) : Parcelable
@@ -93,14 +95,13 @@ fun AddressCard(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = address.addressLine,
+                text = "${address.addressLine}, ${address.district}, ${address.city}",
                 fontSize = 14.sp,
                 color = Color.Gray,
-                maxLines = 1,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
             
-            // HIỂN THỊ SỐ ĐIỆN THOẠI
             Text(
                 text = address.phoneNumber,
                 fontSize = 14.sp,
@@ -141,7 +142,9 @@ private fun AddressCardPreview() {
                 id = 1,
                 title = "SEND TO",
                 recipient = "My Office",
-                addressLine = "SBI Building, street 3, Software Park",
+                addressLine = "SBI Building, street 3",
+                district = "Nam Tu Liem",
+                city = "Hanoi",
                 phoneNumber = "0123456789",
                 type = AddressType.OFFICE,
                 isSelected = true

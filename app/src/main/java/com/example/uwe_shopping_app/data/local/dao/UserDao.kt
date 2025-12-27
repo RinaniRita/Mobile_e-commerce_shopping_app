@@ -10,7 +10,7 @@ import com.example.uwe_shopping_app.data.local.entity.UserEntity
 interface UserDao {
 
     @Insert
-    suspend fun insertUser(user: UserEntity)
+    suspend fun insertUser(user: UserEntity): Long
 
     @Query("SELECT * FROM users WHERE phone = :phone LIMIT 1")
     suspend fun getUserByPhone(phone: String): UserEntity?

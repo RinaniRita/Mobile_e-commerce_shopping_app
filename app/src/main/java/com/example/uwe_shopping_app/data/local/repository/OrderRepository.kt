@@ -37,14 +37,28 @@ class OrderRepository {
         userId: Int,
         cartId: Int,
         totalPrice: Double,
+        address: String,
+        phoneNumber: String,
+        shippingMethod: String,
+        shippingFee: Double,
+        discountAmount: Double,
         status: String = "pending"
     ): Long {
         // 1. Lấy items trong giỏ
         val cartItems = cartItemDao.getCartItemsByCart(cartId)
         if (cartItems.isEmpty()) return 0L
 
-        // 2. Tạo order
-        val order = OrderEntity(userId = userId, totalPrice = totalPrice, status = status)
+        // 2. Tạo order với đầy đủ thông tin
+        val order = OrderEntity(
+            userId = userId,
+            totalPrice = totalPrice,
+            status = status,
+            address = address,
+            phoneNumber = phoneNumber,
+            shippingMethod = shippingMethod,
+            shippingFee = shippingFee,
+            discountAmount = discountAmount
+        )
         val orderId = orderDao.insertOrder(order)
 
         // 3. Chuyển từng item → order_item + giảm stock

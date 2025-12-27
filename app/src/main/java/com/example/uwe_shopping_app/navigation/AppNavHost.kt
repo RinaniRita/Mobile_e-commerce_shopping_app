@@ -1,48 +1,37 @@
 package com.example.uwe_shopping_app.navigation
 
 import android.app.Application
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import androidx.navigation.NavType
 import com.example.uwe_shopping_app.data.local.session.SessionManager
 import com.example.uwe_shopping_app.ui.components.address.AddressUiModel
 import com.example.uwe_shopping_app.ui.components.common.ShopTab
-import com.example.uwe_shopping_app.ui.components.product.SearchFilterState
 import com.example.uwe_shopping_app.ui.components.product.SortOption
-import com.example.uwe_shopping_app.ui.screens.address.AddressControl
 import com.example.uwe_shopping_app.ui.screens.onboarding.WelcomeScreen
-import com.example.uwe_shopping_app.ui.screens.home.HomeScreen
-import com.example.uwe_shopping_app.ui.screens.product.ProductScreen
-import com.example.uwe_shopping_app.ui.screens.search.SearchScreen
-import com.example.uwe_shopping_app.ui.screens.resultSearch.ResultSearchScreen
+import com.example.uwe_shopping_app.ui.screens.address.*
+import com.example.uwe_shopping_app.ui.screens.auth.*
 import com.example.uwe_shopping_app.ui.screens.cart.CartScreen
-import com.example.uwe_shopping_app.ui.screens.checkout.CheckoutScreen
-import com.example.uwe_shopping_app.ui.screens.checkout.CheckoutPaymentScreen
-import com.example.uwe_shopping_app.ui.screens.checkout.CheckoutCompletedScreen
-import com.example.uwe_shopping_app.ui.screens.profile.ProfileScreen
-import com.example.uwe_shopping_app.ui.screens.profile.ProfileSetting
-import com.example.uwe_shopping_app.ui.screens.address.AddressScreen
-import com.example.uwe_shopping_app.ui.screens.address.AddressViewModel
-import com.example.uwe_shopping_app.ui.screens.voucher.VoucherScreen
-import com.example.uwe_shopping_app.ui.screens.auth.LoginScreen
-import com.example.uwe_shopping_app.ui.screens.auth.SignUpScreen
-import com.example.uwe_shopping_app.ui.screens.checkout.CheckoutViewModel
+import com.example.uwe_shopping_app.ui.screens.checkout.*
+import com.example.uwe_shopping_app.ui.screens.home.HomeScreen
 import com.example.uwe_shopping_app.ui.screens.order.OrderScreen
 import com.example.uwe_shopping_app.ui.screens.orderInfo.OrderInfoScreen
-import com.example.uwe_shopping_app.ui.screens.orderInfo.OrderInfoViewModel
-import com.example.uwe_shopping_app.ui.screens.resultSearch.ResultSearchViewModel
+import com.example.uwe_shopping_app.ui.screens.product.ProductScreen
+import com.example.uwe_shopping_app.ui.screens.profile.*
+import com.example.uwe_shopping_app.ui.screens.resultSearch.*
 import com.example.uwe_shopping_app.ui.screens.review.ReviewScreen
-
+import com.example.uwe_shopping_app.ui.screens.search.SearchScreen
+import com.example.uwe_shopping_app.ui.screens.voucher.VoucherScreen
 import kotlinx.coroutines.flow.collectLatest
+
 @Composable
 fun AppNavHost(
     navController: NavHostController,
@@ -104,7 +93,7 @@ fun AppNavHost(
             )
         }
 
-        // ---------------- Home (PUBLIC) ----------------
+        // ---------------- Home ----------------
         composable("home") {
             HomeScreen(
                 navController = navController,
@@ -119,7 +108,7 @@ fun AppNavHost(
             )
         }
 
-        // ---------------- Search (PUBLIC) ----------------
+        // ---------------- Search ----------------
         composable("search") {
             SearchScreen(
                 navController = navController,
@@ -134,7 +123,7 @@ fun AppNavHost(
             )
         }
 
-        // ---------------- Search Result (FILTERED) ----------------
+        // ---------------- Search Result ----------------
         composable(
             route = "resultSearch/{query}/{min}/{max}/{sort}",
             arguments = listOf(
@@ -155,7 +144,6 @@ fun AppNavHost(
 
             ResultSearchScreen(
                 query = query,
-//                initialFilter = SearchFilterState(min, max, sort),
                 navController = navController,
                 currentRoute = "search",
                 viewModel = viewModel,
@@ -182,34 +170,32 @@ fun AppNavHost(
 
         // ---------------- Checkout ----------------
         composable(
-            route = "checkout?totalPrice={totalPrice}",
+            "checkout?totalPrice={totalPrice}",
             arguments = listOf(navArgument("totalPrice") {
                 type = NavType.StringType
                 defaultValue = "0.0"
             })
-        ) { backStackEntry ->
-            val totalPrice =
-                backStackEntry.arguments?.getString("totalPrice")?.toDoubleOrNull() ?: 0.0
-
-            val viewModel: CheckoutViewModel = viewModel()
+        ) { entry ->
+            val totalPrice = entry.arguments?.getString("totalPrice")?.toDoubleOrNull() ?: 0.0
+            val vm: CheckoutViewModel = viewModel()
 
             LaunchedEffect(totalPrice) {
-                viewModel.updateTotalPrice(totalPrice)
+                vm.updateTotalPrice(totalPrice)
             }
 
-            CheckoutScreen(navController = navController, viewModel = viewModel)
+            CheckoutScreen(navController = navController, viewModel = vm)
         }
 
-        // ---------------- Address (LOGIN REQUIRED INSIDE SCREEN) ----------------
+        // ---------------- Address ----------------
         composable(
-            route = "address?from={from}&totalPrice={totalPrice}",
+            "address?from={from}&totalPrice={totalPrice}",
             arguments = listOf(
                 navArgument("from") { defaultValue = "checkout" },
                 navArgument("totalPrice") { defaultValue = "0.0" }
             )
-        ) { backStackEntry ->
-            val from = backStackEntry.arguments?.getString("from")
-            val totalPrice = backStackEntry.arguments?.getString("totalPrice") ?: "0.0"
+        ) { entry ->
+            val from = entry.arguments?.getString("from")
+            val totalPrice = entry.arguments?.getString("totalPrice") ?: "0.0"
             val addressViewModel: AddressViewModel = viewModel()
 
             AddressScreen(
@@ -219,26 +205,19 @@ fun AppNavHost(
                     navController.currentBackStackEntry
                         ?.savedStateHandle
                         ?.remove<AddressUiModel>("address_to_edit")
-
                     navController.navigate("address_control")
                 },
-                onEditClick = { address ->
+                onEditClick = {
                     navController.currentBackStackEntry
                         ?.savedStateHandle
-                        ?.set("address_to_edit", address)
+                        ?.set("address_to_edit", it)
                     navController.navigate("address_control")
                 },
                 onAddressSelected = { address ->
                     addressViewModel.selectAddress(address.id)
-
                     if (from != "profile") {
-                        val prev = navController.previousBackStackEntry?.destination?.route
-                        if (prev?.contains("checkout") == true) {
-                            navController.popBackStack()
-                        } else {
-                            navController.navigate("checkout?totalPrice=$totalPrice") {
-                                popUpTo("cart")
-                            }
+                        navController.navigate("checkout?totalPrice=$totalPrice") {
+                            popUpTo("cart")
                         }
                     }
                 }
@@ -246,7 +225,7 @@ fun AppNavHost(
         }
 
         composable("address_control") {
-            val addressViewModel: AddressViewModel = viewModel()
+            val vm: AddressViewModel = viewModel()
             val addressToEdit =
                 navController.previousBackStackEntry
                     ?.savedStateHandle
@@ -256,11 +235,11 @@ fun AppNavHost(
                 addressToEdit = addressToEdit,
                 onBackClick = { navController.popBackStack() },
                 onSaveClick = {
-                    addressViewModel.addOrUpdateAddress(it)
+                    vm.addOrUpdateAddress(it)
                     navController.popBackStack()
                 },
                 onDeleteClick = {
-                    addressViewModel.deleteAddress(it)
+                    vm.deleteAddress(it)
                     navController.popBackStack()
                 }
             )
@@ -268,32 +247,33 @@ fun AppNavHost(
 
         // ---------------- Checkout Payment ----------------
         composable(
-            route = "checkout_payment?productPrice={productPrice}&shippingPrice={shippingPrice}&shippingLabel={shippingLabel}",
+            "checkout_payment?productPrice={productPrice}&shippingPrice={shippingPrice}&shippingLabel={shippingLabel}&address={address}&phone={phone}&discount={discount}",
             arguments = listOf(
                 navArgument("productPrice") { defaultValue = "0.0" },
                 navArgument("shippingPrice") { defaultValue = "0.0" },
-                navArgument("shippingLabel") { defaultValue = "Free shipping" }
+                navArgument("shippingLabel") { defaultValue = "Free shipping" },
+                navArgument("address") { defaultValue = "" },
+                navArgument("phone") { defaultValue = "" },
+                navArgument("discount") { defaultValue = "0.0" }
             )
-        ) { backStackEntry ->
+        ) {
             CheckoutPaymentScreen(
                 navController = navController,
-                productPrice = backStackEntry.arguments
-                    ?.getString("productPrice")
-                    ?.toDoubleOrNull() ?: 0.0,
-                shippingPrice = backStackEntry.arguments
-                    ?.getString("shippingPrice")
-                    ?.toDoubleOrNull() ?: 0.0,
-                shippingLabel = backStackEntry.arguments
-                    ?.getString("shippingLabel") ?: "Free shipping"
+                productPrice = it.arguments!!.getString("productPrice")!!.toDouble(),
+                shippingPrice = it.arguments!!.getString("shippingPrice")!!.toDouble(),
+                shippingLabel = it.arguments!!.getString("shippingLabel")!!,
+                address = it.arguments!!.getString("address")!!,
+                phone = it.arguments!!.getString("phone")!!,
+                discount = it.arguments!!.getString("discount")!!.toDouble()
             )
         }
 
         // ---------------- Checkout Completed ----------------
         composable("checkout_completed") {
-            CheckoutCompletedScreen(navController = navController)
+            CheckoutCompletedScreen(navController)
         }
 
-        // ---------------- Orders (LOGIN REQUIRED INSIDE SCREEN) ----------------
+        // ---------------- Orders ----------------
         composable(
             route = "orders?status={status}",
             arguments = listOf(
@@ -315,7 +295,7 @@ fun AppNavHost(
         }
 
 
-        // ---------------- Order Info (LOGIN REQUIRED INSIDE SCREEN) ----------------
+        // ---------------- Order Info ----------------
         composable(
             route = "orderInfo/{orderId}",
             arguments = listOf(navArgument("orderId") { type = NavType.IntType })
@@ -356,7 +336,6 @@ fun AppNavHost(
             )
         }
 
-
         // ---------------- Profile ----------------
         composable("profile") {
             ProfileScreen(
@@ -372,17 +351,13 @@ fun AppNavHost(
             )
         }
 
-//        ---------------- Profile Setting ----------------
         composable("profile_setting") {
             ProfileSetting(onBack = { navController.popBackStack() })
         }
 
-        // -------------- Voucher --------------------------
+        // ---------------- Voucher ----------------
         composable("voucher") {
-            VoucherScreen(
-                onBackClick = { navController.popBackStack() }
-            )
+            VoucherScreen(onBackClick = { navController.popBackStack() })
         }
-
     }
 }
