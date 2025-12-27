@@ -17,6 +17,11 @@ class CheckoutPaymentViewModel(application: Application) : AndroidViewModel(appl
 
     fun placeOrder(
         totalPrice: Double,
+        address: String,
+        phoneNumber: String,
+        shippingMethod: String,
+        shippingFee: Double,
+        discountAmount: Double,
         onSuccess: (Long) -> Unit
     ) {
         viewModelScope.launch {
@@ -30,7 +35,12 @@ class CheckoutPaymentViewModel(application: Application) : AndroidViewModel(appl
             val orderId = orderRepository.createOrderFromCart(
                 userId = userId,
                 cartId = cart.id,
-                totalPrice = totalPrice
+                totalPrice = totalPrice,
+                address = address,
+                phoneNumber = phoneNumber,
+                shippingMethod = shippingMethod,
+                shippingFee = shippingFee,
+                discountAmount = discountAmount
             )
 
             if (orderId > 0) {

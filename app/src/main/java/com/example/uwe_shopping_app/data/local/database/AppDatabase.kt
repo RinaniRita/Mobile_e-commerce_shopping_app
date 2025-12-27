@@ -6,20 +6,8 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.example.uwe_shopping_app.R
-import com.example.uwe_shopping_app.data.local.dao.AddressDao
-import com.example.uwe_shopping_app.data.local.dao.CartDao
-import com.example.uwe_shopping_app.data.local.dao.CartItemDao
-import com.example.uwe_shopping_app.data.local.dao.OrderDao
-import com.example.uwe_shopping_app.data.local.dao.OrderItemDao
-import com.example.uwe_shopping_app.data.local.dao.ProductDao
-import com.example.uwe_shopping_app.data.local.dao.UserDao
-import com.example.uwe_shopping_app.data.local.entity.AddressEntity
-import com.example.uwe_shopping_app.data.local.entity.CartEntity
-import com.example.uwe_shopping_app.data.local.entity.CartItemEntity
-import com.example.uwe_shopping_app.data.local.entity.OrderEntity
-import com.example.uwe_shopping_app.data.local.entity.OrderItemEntity
-import com.example.uwe_shopping_app.data.local.entity.ProductEntity
-import com.example.uwe_shopping_app.data.local.entity.UserEntity
+import com.example.uwe_shopping_app.data.local.dao.*
+import com.example.uwe_shopping_app.data.local.entity.*
 
 @Database(
     entities = [
@@ -29,9 +17,10 @@ import com.example.uwe_shopping_app.data.local.entity.UserEntity
         OrderItemEntity::class,
         CartEntity::class,
         CartItemEntity::class,
-        AddressEntity::class
+        AddressEntity::class,
+        VoucherEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 
@@ -45,6 +34,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun cartDao(): CartDao
     abstract fun cartItemDao(): CartItemDao
     abstract fun addressDao(): AddressDao
+    abstract fun voucherDao(): VoucherDao
 
     companion object {
         @Volatile

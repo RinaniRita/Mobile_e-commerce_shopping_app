@@ -22,9 +22,11 @@ fun CartHeader(
     onMenuClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    // THÊM statusBarsPadding ĐỂ NÚT BACK KHÔNG BỊ ĐÈ
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .statusBarsPadding()
             .padding(horizontal = 16.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -33,22 +35,24 @@ fun CartHeader(
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Back button
-            IconButton(
-                onClick = onBackClick,
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(Color.White)
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    tint = Color.Black
-                )
+            // Back button - Tăng size vùng bấm lên 48dp chuẩn Google
+            Box(modifier = Modifier.size(48.dp), contentAlignment = Alignment.Center) {
+                IconButton(
+                    onClick = { onBackClick() },
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(Color.White)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.Black
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(12.dp))
 
             // Title
             Text(
@@ -69,4 +73,3 @@ fun CartHeader(
         }
     }
 }
-

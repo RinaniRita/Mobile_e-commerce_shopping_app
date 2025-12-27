@@ -1,3 +1,5 @@
+@file:OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+
 package com.example.uwe_shopping_app.ui.screens.address
 
 import android.app.Application
@@ -65,18 +67,20 @@ class AddressViewModel(application: Application) : AndroidViewModel(application)
         title = type,
         recipient = recipient,
         addressLine = addressLine,
+        district = district, // ĐÃ CẬP NHẬT
+        city = city,         // ĐÃ CẬP NHẬT
         phoneNumber = phoneNumber,
         type = if (type == "HOME") AddressType.HOME else AddressType.OFFICE,
         isSelected = isDefault
     )
 
     private fun AddressUiModel.toEntity(userId: Int) = AddressEntity(
-        id = if (id == 0) 0 else id,
+        id = id,
         userId = userId,
         recipient = recipient,
         addressLine = addressLine,
-        city = "Default City", // Có thể mở rộng form để lấy city sau
-        zipCode = "00000",
+        district = district, // ĐÃ CẬP NHẬT
+        city = city,         // ĐÃ CẬP NHẬT
         phoneNumber = phoneNumber,
         type = if (type == AddressType.HOME) "HOME" else "OFFICE",
         isDefault = isSelected

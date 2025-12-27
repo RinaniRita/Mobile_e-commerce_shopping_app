@@ -8,10 +8,10 @@ data class AddressEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val userId: Int,
     val recipient: String,
-    val addressLine: String,
-    val city: String,
-    val zipCode: String,
+    val addressLine: String, // Street, house number
+    val district: String,    // Quận/Huyện
+    val city: String,        // Tỉnh/Thành phố
     val phoneNumber: String,
-    val type: String, // "HOME" or "OFFICE"
+    val type: String,        // "HOME" or "OFFICE"
     val isDefault: Boolean = false
 )

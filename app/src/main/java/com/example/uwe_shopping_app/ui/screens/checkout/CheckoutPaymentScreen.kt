@@ -25,6 +25,9 @@ fun CheckoutPaymentScreen(
     productPrice: Double,
     shippingPrice: Double,
     shippingLabel: String,
+    address: String,
+    phone: String,
+    discount: Double,
     viewModel: CheckoutPaymentViewModel = viewModel()
 ) {
     var agreeTerms by remember { mutableStateOf(true) }
@@ -103,18 +106,18 @@ fun CheckoutPaymentScreen(
                         .fillMaxWidth()
                         .padding(16.dp)
                 ) {
-                    SummaryRow(label = "Product price", value = "$$productPrice")
+                    SummaryRow(label = "Product price", value = "$${"%.2f".format(productPrice)}")
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 8.dp),
                         color = Color(0xFFE0E0E0)
                     )
                     // HIỂN THỊ PHÍ SHIP VÀ TÊN PHƯƠNG THỨC GIAO HÀNG
-                    SummaryRow(label = "Shipping ($shippingLabel)", value = "$$shippingPrice")
+                    SummaryRow(label = "Shipping ($shippingLabel)", value = "$${"%.2f".format(shippingPrice)}")
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 8.dp),
                         color = Color(0xFFE0E0E0)
                     )
-                    SummaryRow(label = "Subtotal", value = "$$subtotal", isBold = true)
+                    SummaryRow(label = "Subtotal", value = "$${"%.2f".format(subtotal)}", isBold = true)
                 }
             }
 
@@ -148,10 +151,13 @@ fun CheckoutPaymentScreen(
             Button(
                 onClick = {
                     if (agreeTerms) {
-                        val subtotal = productPrice + shippingPrice
-
                         viewModel.placeOrder(
-                            totalPrice = subtotal
+                            totalPrice = subtotal,
+                            address = address,
+                            phoneNumber = phone,
+                            shippingMethod = shippingLabel,
+                            shippingFee = shippingPrice,
+                            discountAmount = discount
                         ) { orderId ->
                             navController.navigate("checkout_completed") {
                                 // Prevent going back to cart

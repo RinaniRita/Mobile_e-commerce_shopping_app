@@ -19,9 +19,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.uwe_shopping_app.data.local.session.SessionManager
 import com.example.uwe_shopping_app.ui.components.address.AddressType
 import com.example.uwe_shopping_app.ui.components.address.AddressUiModel
+import com.example.uwe_shopping_app.ui.components.address.SearchableDropdown
 import com.example.uwe_shopping_app.ui.components.checkout.CheckoutFormField
 
 @Composable
@@ -29,7 +31,8 @@ fun AddressControl(
     onBackClick: () -> Unit,
     onSaveClick: (AddressUiModel) -> Unit,
     onDeleteClick: (AddressUiModel) -> Unit = {},
-    addressToEdit: AddressUiModel? = null
+    addressToEdit: AddressUiModel? = null,
+    divisionViewModel: DivisionViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val session = remember { SessionManager(context) }
@@ -38,19 +41,23 @@ fun AddressControl(
     var firstName by remember { mutableStateOf(addressToEdit?.recipient?.split(" ")?.firstOrNull() ?: "") }
     var lastName by remember { mutableStateOf(if ((addressToEdit?.recipient?.split(" ")?.size ?: 0) > 1) addressToEdit?.recipient?.split(" ")?.drop(1)?.joinToString(" ") ?: "" else "") }
     var streetName by remember { mutableStateOf(addressToEdit?.addressLine ?: "") }
-    var city by remember { mutableStateOf("") }
-    var zipCode by remember { mutableStateOf("") }
-    
-    // Tự động lấy số điện thoại gốc nếu là thêm mới
+    var district by remember { mutableStateOf(addressToEdit?.district ?: "") }
+    var city by remember { mutableStateOf(addressToEdit?.city ?: "") }
     var phoneNumber by remember { mutableStateOf(addressToEdit?.phoneNumber ?: "") }
-    
+    var addressType by remember { mutableStateOf(addressToEdit?.type ?: AddressType.HOME) }
+
+    // Load districts if there's an initial city (when editing)
+    LaunchedEffect(Unit) {
+        if (city.isNotBlank()) {
+            divisionViewModel.loadDistricts(city)
+        }
+    }
+
     LaunchedEffect(defaultPhone) {
         if (addressToEdit == null && phoneNumber.isEmpty()) {
             phoneNumber = defaultPhone ?: ""
         }
     }
-
-    var addressType by remember { mutableStateOf(addressToEdit?.type ?: AddressType.HOME) }
 
     Scaffold(
         topBar = {
@@ -102,22 +109,42 @@ fun AddressControl(
             }
 
             CheckoutFormField(
-                label = "Street name",
+                label = "Country",
+                value = "Vietnam",
+                onValueChange = { },
+                enabled = false
+            )
+
+            // CHỌN TỈNH / THÀNH PHỐ
+            SearchableDropdown(
+                label = "City / Province",
+                selectedValue = city,
+                options = divisionViewModel.provinces.map { it.name },
+                isLoading = divisionViewModel.isLoadingProvinces,
+                onValueSelected = { selectedCity ->
+                    city = selectedCity
+                    district = "" // Reset quận huyện khi đổi tỉnh
+                    divisionViewModel.loadDistricts(selectedCity)
+                }
+            )
+
+            // CHỌN QUẬN / HUYỆN (Chỉ hiện khi đã chọn Tỉnh)
+            SearchableDropdown(
+                label = "District",
+                selectedValue = district,
+                options = divisionViewModel.districts.map { it.name },
+                isLoading = divisionViewModel.isLoadingDistricts,
+                enabled = city.isNotBlank(),
+                placeholder = if (city.isBlank()) "Select city first" else "Select district",
+                onValueSelected = { selectedDistrict ->
+                    district = selectedDistrict
+                }
+            )
+
+            CheckoutFormField(
+                label = "Street name / House number",
                 value = streetName,
                 onValueChange = { streetName = it }
-            )
-
-            CheckoutFormField(
-                label = "City",
-                value = city,
-                onValueChange = { city = it }
-            )
-
-            CheckoutFormField(
-                label = "Zip-code",
-                value = zipCode,
-                onValueChange = { zipCode = it },
-                keyboardType = KeyboardType.Number
             )
 
             CheckoutFormField(
@@ -146,16 +173,20 @@ fun AddressControl(
 
             Button(
                 onClick = {
-                    val newAddress = AddressUiModel(
-                        id = addressToEdit?.id ?: 0,
-                        title = if (addressType == AddressType.HOME) "HOME" else "OFFICE",
-                        recipient = "$firstName $lastName",
-                        addressLine = streetName,
-                        phoneNumber = phoneNumber,
-                        type = addressType,
-                        isSelected = addressToEdit?.isSelected ?: false
-                    )
-                    onSaveClick(newAddress)
+                    if (firstName.isNotBlank() && city.isNotBlank() && district.isNotBlank()) {
+                        val newAddress = AddressUiModel(
+                            id = addressToEdit?.id ?: 0,
+                            title = if (addressType == AddressType.HOME) "HOME" else "OFFICE",
+                            recipient = "$firstName $lastName",
+                            addressLine = streetName,
+                            district = district,
+                            city = city,
+                            phoneNumber = phoneNumber,
+                            type = addressType,
+                            isSelected = addressToEdit?.isSelected ?: false
+                        )
+                        onSaveClick(newAddress)
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()

@@ -22,14 +22,15 @@ fun CheckoutFormField(
     error: String? = null,
     keyboardType: KeyboardType = KeyboardType.Text,
     isDropdown: Boolean = false,
-    onDropdownClick: (() -> Unit)? = null
+    onDropdownClick: (() -> Unit)? = null,
+    enabled: Boolean = true // THÊM THAM SỐ NÀY
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         // Label
         Text(
             text = if (isRequired) "$label *" else label,
             fontSize = 14.sp,
-            color = Color.Black,
+            color = if (enabled) Color.Black else Color.Gray,
             fontWeight = MaterialTheme.typography.bodyMedium.fontWeight
         )
         
@@ -41,8 +42,9 @@ fun CheckoutFormField(
                 value = value,
                 onValueChange = onValueChange,
                 readOnly = true,
+                enabled = enabled, // SỬ DỤNG Ở ĐÂY
                 trailingIcon = {
-                    IconButton(onClick = { onDropdownClick?.invoke() }) {
+                    IconButton(onClick = { if (enabled) onDropdownClick?.invoke() }) {
                         Icon(
                             imageVector = Icons.Default.ArrowDropDown,
                             contentDescription = "Dropdown"
@@ -54,6 +56,7 @@ fun CheckoutFormField(
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = Color.White,
                     unfocusedContainerColor = Color.White,
+                    disabledContainerColor = Color(0xFFF5F5F5), // Màu khi bị disable
                     focusedBorderColor = if (error != null) Color.Red else Color(0xFFE0E0E0),
                     unfocusedBorderColor = if (error != null) Color.Red else Color(0xFFE0E0E0),
                     cursorColor = Color.Black
@@ -65,11 +68,13 @@ fun CheckoutFormField(
                 value = value,
                 onValueChange = onValueChange,
                 singleLine = true,
+                enabled = enabled, // SỬ DỤNG Ở ĐÂY
                 keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = Color.White,
                     unfocusedContainerColor = Color.White,
+                    disabledContainerColor = Color(0xFFF5F5F5), // Màu khi bị disable
                     focusedBorderColor = if (error != null) Color.Red else Color(0xFFE0E0E0),
                     unfocusedBorderColor = if (error != null) Color.Red else Color(0xFFE0E0E0),
                     cursorColor = Color.Black
@@ -89,4 +94,3 @@ fun CheckoutFormField(
         }
     }
 }
-
