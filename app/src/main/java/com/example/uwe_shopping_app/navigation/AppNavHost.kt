@@ -33,6 +33,9 @@ import com.example.uwe_shopping_app.ui.screens.address.AddressScreen
 import com.example.uwe_shopping_app.ui.screens.address.AddressViewModel
 import com.example.uwe_shopping_app.ui.screens.voucher.VoucherScreen
 import com.example.uwe_shopping_app.ui.screens.wishlist.WishlistScreen
+import com.example.uwe_shopping_app.ui.screens.payment.PaymentScreen
+import com.example.uwe_shopping_app.ui.screens.payment.AddNewCardScreen
+import com.example.uwe_shopping_app.ui.components.payment.CardType
 import com.example.uwe_shopping_app.ui.screens.auth.LoginScreen
 import com.example.uwe_shopping_app.ui.screens.auth.SignUpScreen
 import com.example.uwe_shopping_app.ui.screens.checkout.CheckoutViewModel
@@ -379,6 +382,42 @@ fun AppNavHost(
          composable("wishlist") {
              WishlistScreen(
                  navController = navController
+             )
+         }
+
+         // -------------- Payment --------------------------
+         composable("payment") {
+             PaymentScreen(
+                 navController = navController,
+                 onBackClick = { navController.popBackStack() }
+             )
+         }
+
+         // -------------- Add New Card --------------------------
+         composable(
+             route = "add_new_card?type={cardType}",
+             arguments = listOf(
+                 navArgument("cardType") {
+                     type = NavType.StringType
+                     defaultValue = ""
+                 }
+             )
+         ) { backStackEntry ->
+             val cardTypeString = backStackEntry.arguments?.getString("cardType") ?: ""
+             val initialCardType = try {
+                 if (cardTypeString.isNotEmpty()) {
+                     CardType.valueOf(cardTypeString)
+                 } else {
+                     null
+                 }
+             } catch (e: Exception) {
+                 null
+             }
+
+             AddNewCardScreen(
+                 navController = navController,
+                 initialCardType = initialCardType,
+                 onBackClick = { navController.popBackStack() }
              )
          }
 
