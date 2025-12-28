@@ -7,8 +7,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.uwe_shopping_app.data.local.entity.ProductEntity
 import com.example.uwe_shopping_app.data.local.repository.ProductRepository
-import com.example.uwe_shopping_app.ui.components.product.SearchFilterState
-import com.example.uwe_shopping_app.ui.components.product.SortOption
+import com.example.uwe_shopping_app.ui.components.search.SearchFilterState
+import com.example.uwe_shopping_app.ui.components.search.SortOption
 import kotlinx.coroutines.launch
 
 data class SearchUiState(
@@ -80,6 +80,8 @@ class SearchViewModel(
                 SortOption.OLDEST -> "createdAt" to "ASC"
                 SortOption.NAME_ASC -> "name" to "ASC"
                 SortOption.NAME_DESC -> "name" to "DESC"
+                SortOption.RATING_ASC,
+                SortOption.RATING_DESC -> "createdAt" to "DESC"
             }
 
             val products = repository.getProductsSorted(

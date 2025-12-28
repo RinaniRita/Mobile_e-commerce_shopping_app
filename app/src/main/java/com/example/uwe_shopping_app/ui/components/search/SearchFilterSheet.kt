@@ -1,4 +1,4 @@
-package com.example.uwe_shopping_app.ui.components.product
+package com.example.uwe_shopping_app.ui.components.search
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -10,7 +10,9 @@ enum class SortOption {
     NEWEST,
     OLDEST,
     NAME_ASC,
-    NAME_DESC
+    NAME_DESC,
+    RATING_ASC,
+    RATING_DESC,
 }
 
 data class SearchFilterState(
@@ -71,6 +73,18 @@ fun SearchFilterSheet(
         }
         SortOptionButton("Z → A", state.sortBy == SortOption.NAME_DESC) {
             onStateChange(state.copy(sortBy = SortOption.NAME_DESC))
+        }
+        SortOptionButton(
+            "Rating: High → Low",
+            state.sortBy == SortOption.RATING_DESC
+        ) {
+            onStateChange(state.copy(sortBy = SortOption.RATING_DESC))
+        }
+        SortOptionButton(
+            "Rating: Low → High",
+            state.sortBy == SortOption.RATING_ASC
+        ) {
+            onStateChange(state.copy(sortBy = SortOption.RATING_ASC))
         }
 
         Spacer(Modifier.height(24.dp))

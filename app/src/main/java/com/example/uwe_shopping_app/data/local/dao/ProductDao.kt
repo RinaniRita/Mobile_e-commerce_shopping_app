@@ -6,6 +6,7 @@ import androidx.room.Query
 import androidx.room.Update
 import androidx.room.OnConflictStrategy
 import com.example.uwe_shopping_app.data.local.entity.ProductEntity
+import com.example.uwe_shopping_app.data.local.model.ProductWithAvgRating
 
 @Dao
 interface ProductDao {
@@ -55,4 +56,23 @@ interface ProductDao {
 
     @Query("SELECT COUNT(*) FROM products")
     suspend fun getProductCount(): Int
+
+    @Query("""
+    SELECT 
+        p.*,
+        IFNULL(AVG(r.rating), 0) AS avgRating
+    FROM products p
+    LEFT JOIN product_reviews r 
+        ON p.id = r.productId
+    WHERE p.name LIKE '%' || :query || '%'
+       OR p.description LIKE '%' || :query || '%'
+    GROUP BY p.id
+    LIMIT :limit OFFSET :offset
+""")
+    suspend fun searchProductsWithAvgRating(
+        query: String,
+        limit: Int,
+        offset: Int
+    ): List<ProductWithAvgRating>
+
 }

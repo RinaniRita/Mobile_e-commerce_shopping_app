@@ -22,9 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.uwe_shopping_app.ui.components.common.BottomNavigationBar
-import com.example.uwe_shopping_app.ui.components.product.ProductFilterSidebar
+import com.example.uwe_shopping_app.ui.components.search.ProductFilterSidebar
 import com.example.uwe_shopping_app.ui.components.product.VerticalProductGrid
-import com.example.uwe_shopping_app.ui.components.product.SearchFilterState
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 

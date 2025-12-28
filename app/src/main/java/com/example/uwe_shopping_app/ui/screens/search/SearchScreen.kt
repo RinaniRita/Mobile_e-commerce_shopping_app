@@ -35,9 +35,8 @@ import com.example.uwe_shopping_app.navigation.navigateToResult
 import com.example.uwe_shopping_app.ui.components.common.BottomNavigationBar
 import com.example.uwe_shopping_app.ui.components.common.Sidebar
 import com.example.uwe_shopping_app.ui.components.common.TopAppBar
-import com.example.uwe_shopping_app.ui.components.product.ProductFilterSidebar
+import com.example.uwe_shopping_app.ui.components.search.ProductFilterSidebar
 import com.example.uwe_shopping_app.ui.screens.home.CategoryChipsRow
-import com.example.uwe_shopping_app.ui.components.product.SearchFilterState
 
 @Composable
 fun SearchScreen(

@@ -5,8 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.uwe_shopping_app.data.local.entity.ProductEntity
 import com.example.uwe_shopping_app.data.local.repository.ProductRepository
-import com.example.uwe_shopping_app.ui.components.product.SearchFilterState
-import com.example.uwe_shopping_app.ui.components.product.SortOption
+import com.example.uwe_shopping_app.ui.components.search.SearchFilterState
+import com.example.uwe_shopping_app.ui.components.search.SortOption
 import kotlinx.coroutines.launch
 
 /**
@@ -75,24 +75,39 @@ class ResultSearchViewModel(
         uiState = uiState.copy(isLoading = true)
 
         viewModelScope.launch {
-            val dbResults = repository.searchProducts(
+            val dbResults = repository.searchProductsWithAvgRating(
                 query = query,
                 offset = 0,
                 limit = 50
             )
 
-            val filtered = dbResults
-                .filter { it.price in filter.minPrice.toDouble()..filter.maxPrice.toDouble() }
+            val filtered = dbResults.filter {
+                it.product.price in
+                        filter.minPrice.toDouble()..filter.maxPrice.toDouble()
+            }
 
             val sorted = when (filter.sortBy) {
-                SortOption.NEWEST -> filtered.sortedByDescending { it.createdAt }
-                SortOption.OLDEST -> filtered.sortedBy { it.createdAt }
-                SortOption.NAME_ASC -> filtered.sortedBy { it.name }
-                SortOption.NAME_DESC -> filtered.sortedByDescending { it.name }
+                SortOption.NEWEST ->
+                    filtered.sortedByDescending { it.product.createdAt }
+
+                SortOption.OLDEST ->
+                    filtered.sortedBy { it.product.createdAt }
+
+                SortOption.NAME_ASC ->
+                    filtered.sortedBy { it.product.name }
+
+                SortOption.NAME_DESC ->
+                    filtered.sortedByDescending { it.product.name }
+
+                SortOption.RATING_ASC ->
+                    filtered.sortedBy { it.avgRating }
+
+                SortOption.RATING_DESC ->
+                    filtered.sortedByDescending { it.avgRating }
             }
 
             uiState = uiState.copy(
-                searchResults = sorted,
+                searchResults = sorted.map { it.product },
                 isLoading = false
             )
         }

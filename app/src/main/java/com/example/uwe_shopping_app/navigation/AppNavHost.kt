@@ -16,8 +16,7 @@ import androidx.navigation.NavType
 import com.example.uwe_shopping_app.data.local.session.SessionManager
 import com.example.uwe_shopping_app.ui.components.address.AddressUiModel
 import com.example.uwe_shopping_app.ui.components.common.ShopTab
-import com.example.uwe_shopping_app.ui.components.product.SearchFilterState
-import com.example.uwe_shopping_app.ui.components.product.SortOption
+import com.example.uwe_shopping_app.ui.components.search.SortOption
 import com.example.uwe_shopping_app.ui.screens.address.AddressControl
 import com.example.uwe_shopping_app.ui.screens.onboarding.WelcomeScreen
 import com.example.uwe_shopping_app.ui.screens.home.HomeScreen

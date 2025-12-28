@@ -1,4 +1,4 @@
-package com.example.uwe_shopping_app.ui.components.product
+package com.example.uwe_shopping_app.ui.components.search
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInHorizontally
@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+
 @Composable
 fun ProductFilterSidebar(
     visible: Boolean,

@@ -2,6 +2,7 @@ package com.example.uwe_shopping_app.data.local.repository
 
 import com.example.uwe_shopping_app.App
 import com.example.uwe_shopping_app.data.local.entity.ProductEntity
+import com.example.uwe_shopping_app.data.local.model.ProductWithAvgRating
 
 class ProductRepository {
 
@@ -48,4 +49,17 @@ class ProductRepository {
     suspend fun insertAll(products: List<ProductEntity>) {
         productDao.insertAll(products)
     }
+
+    suspend fun searchProductsWithAvgRating(
+        query: String,
+        offset: Int,
+        limit: Int
+    ): List<ProductWithAvgRating> {
+        return productDao.searchProductsWithAvgRating(
+            query = query,
+            limit = limit,
+            offset = offset
+        )
+    }
+
 }
