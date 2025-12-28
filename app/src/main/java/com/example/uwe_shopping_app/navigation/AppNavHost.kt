@@ -13,6 +13,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.NavType
+import com.example.uwe_shopping_app.data.chatbot.ChatRepository
+import com.example.uwe_shopping_app.data.local.database.AppDatabase
+import com.example.uwe_shopping_app.data.local.repository.ProductRepository
 import com.example.uwe_shopping_app.data.local.session.SessionManager
 import com.example.uwe_shopping_app.ui.components.address.AddressUiModel
 import com.example.uwe_shopping_app.ui.components.common.ShopTab
@@ -38,6 +41,8 @@ import com.example.uwe_shopping_app.ui.screens.payment.AddNewCardScreen
 import com.example.uwe_shopping_app.ui.components.payment.CardType
 import com.example.uwe_shopping_app.ui.screens.auth.LoginScreen
 import com.example.uwe_shopping_app.ui.screens.auth.SignUpScreen
+import com.example.uwe_shopping_app.ui.screens.chat.ChatScreen
+import com.example.uwe_shopping_app.ui.screens.chat.ChatViewModel
 import com.example.uwe_shopping_app.ui.screens.checkout.CheckoutViewModel
 import com.example.uwe_shopping_app.ui.screens.order.OrderScreen
 import com.example.uwe_shopping_app.ui.screens.orderInfo.OrderInfoScreen
@@ -118,6 +123,21 @@ fun AppNavHost(
                         popUpTo("home") { saveState = true }
                     }
                 }
+            )
+        }
+
+        // ---------------- Chat ----------------
+        composable("chat") {
+            val productRepo = ProductRepository()
+            val chatRepo = ChatRepository(
+                productRepository = productRepo,
+                isLoggedIn = isLoggedIn == true
+            )
+            val chatViewModel = remember { ChatViewModel(chatRepo) }
+
+            ChatScreen(
+                viewModel = chatViewModel,
+                onBack = { navController.popBackStack() }
             )
         }
 

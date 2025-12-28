@@ -39,6 +39,7 @@ sealed class SidebarItem(
     object Discover : SidebarItem("Discover", Icons.Default.Search, "search")
     object MyOrder : SidebarItem("My Order", Icons.Default.ShoppingBag, "cart")
     object MyProfile : SidebarItem("My profile", Icons.Default.Person, "profile")
+    object ChatSupport : SidebarItem("Support", Icons.Default.SupportAgent, "chat")
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -51,7 +52,9 @@ fun Sidebar(
 ) {
     val viewModel: ProfileViewModel = viewModel()
     val user by viewModel.user.collectAsState()
-    
+
+    val isGuest = user == null
+
     // Get the actual current route from navController
     val currentRoute = navController.currentBackStackEntry?.destination?.route ?: "home"
 
@@ -102,6 +105,18 @@ fun Sidebar(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .clickable {
+                            if (currentRoute != "profile") {
+                                navController.navigate("profile") {
+                                    launchSingleTop = true
+                                    restoreState = true
+                                    popUpTo("home") {
+                                        saveState = true
+                                    }
+                                }
+                            }
+                            onClose()
+                        }
                         .padding(bottom = 32.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -120,16 +135,21 @@ fun Sidebar(
                     // Name and Email
                     Column {
                         Text(
-                            text = user?.name ?: "User",
+                            text = if (isGuest) "Guest" else user!!.name,
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 18.sp
                             ),
                             color = Color.Black
                         )
+
                         Spacer(modifier = Modifier.height(4.dp))
+
                         Text(
-                            text = user?.email ?: "user@example.com",
+                            text = if (isGuest)
+                                "Sign in to access your account"
+                            else
+                                user!!.email,
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 fontSize = 14.sp
                             ),
@@ -143,7 +163,8 @@ fun Sidebar(
                     SidebarItem.Homepage,
                     SidebarItem.Discover,
                     SidebarItem.MyOrder,
-                    SidebarItem.MyProfile
+                    SidebarItem.MyProfile,
+                    SidebarItem.ChatSupport,
                 )
 
                 items.forEach { item ->
