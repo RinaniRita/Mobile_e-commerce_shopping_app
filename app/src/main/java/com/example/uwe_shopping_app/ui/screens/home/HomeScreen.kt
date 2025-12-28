@@ -73,9 +73,6 @@ fun HomeScreen(
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState())
                 ) {
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    CategoryChipsRow()
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -136,39 +133,6 @@ fun HomeScreen(
             navController = navController,
             modifier = Modifier.zIndex(10f)
         )
-    }
-}
-
-@Composable
-public fun CategoryChipsRow() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 55.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        val categories = listOf("Women", "Men", "Accessories")
-        categories.forEachIndexed { index, name ->
-            val isSelected = index == 0
-            Surface(
-                shape = RoundedCornerShape(24.dp),
-                color = if (isSelected) Color.Black else Color(0xFFF0F0F0)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = name,
-                        color = if (isSelected) Color.White else Color.Black,
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                        )
-                    )
-                }
-            }
-        }
     }
 }
 

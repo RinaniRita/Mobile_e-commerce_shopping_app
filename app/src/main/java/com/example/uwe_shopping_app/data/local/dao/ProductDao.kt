@@ -75,4 +75,20 @@ interface ProductDao {
         offset: Int
     ): List<ProductWithAvgRating>
 
+    @Query("""
+    SELECT p.*, 
+           IFNULL(AVG(r.rating), 0) AS avgRating
+    FROM products p
+    LEFT JOIN product_reviews r 
+        ON p.id = r.productId
+    WHERE p.category = :category
+    GROUP BY p.id
+    LIMIT :limit OFFSET :offset
+""")
+    suspend fun getProductsByCategoryWithAvgRating(
+        category: String,
+        limit: Int,
+        offset: Int
+    ): List<ProductWithAvgRating>
+
 }

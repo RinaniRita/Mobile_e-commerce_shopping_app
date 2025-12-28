@@ -62,4 +62,11 @@ class ProductRepository {
         )
     }
 
+    suspend fun getProductsByCategoryWithAvgRating(
+        category: String,
+        offset: Int
+    ): List<ProductWithAvgRating> {
+        return productDao.getProductsByCategoryWithAvgRating(category, 50, offset)
+    }
+
 }

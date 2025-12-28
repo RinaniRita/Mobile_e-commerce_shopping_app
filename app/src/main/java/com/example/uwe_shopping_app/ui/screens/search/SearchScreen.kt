@@ -36,7 +36,6 @@ import com.example.uwe_shopping_app.ui.components.common.BottomNavigationBar
 import com.example.uwe_shopping_app.ui.components.common.Sidebar
 import com.example.uwe_shopping_app.ui.components.common.TopAppBar
 import com.example.uwe_shopping_app.ui.components.search.ProductFilterSidebar
-import com.example.uwe_shopping_app.ui.screens.home.CategoryChipsRow
 
 @Composable
 fun SearchScreen(
@@ -129,10 +128,22 @@ fun SearchScreen(
                     .weight(1f)
                     .verticalScroll(rememberScrollState())
             ) {
-                Spacer(Modifier.height(8.dp))
-                CategoryChipsRow()
+
                 Spacer(Modifier.height(16.dp))
-                CategoryCardsSection()
+
+                CategoryCardsSection(
+                    onCategoryClick = { category ->
+                        viewModel.loadProductsByCategory(category)
+
+                        navController.navigateToResult(
+                            query = category,
+                            min = uiState.filterState.minPrice,
+                            max = uiState.filterState.maxPrice,
+                            sort = uiState.filterState.sortBy
+                        )
+                    }
+                )
+
                 Spacer(Modifier.height(80.dp))
             }
 
@@ -227,50 +238,58 @@ private fun SearchBar(
 
 
 @Composable
-private fun CategoryCardsSection() {
+private fun CategoryCardsSection(
+    onCategoryClick: (String) -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Card 1: Women's Collection (Light Olive Green/Sage)
+
         CategoryCard(
-            title = "Women's Collection",
-            subtitle = "New Arrivals",
-            backgroundColor = Color(0xFFB8C5A0), // Light olive green/sage
-            imageResId = R.drawable.welcome_img,
-            onClick = {}
+            title = "Electronics",
+            subtitle = "Latest gadgets",
+            backgroundColor = Color(0xFF5A7A8C),
+            imageResId = R.drawable.elec_phone,
+            onClick = { onCategoryClick("Electronics") }
         )
 
-        // Card 2: Accessories (Medium Gray/Taupe)
         CategoryCard(
-            title = "Accessories",
-            subtitle = "Trending Now",
-            backgroundColor = Color(0xFFB5A99F), // Medium gray/taupe
-            imageResId = R.drawable.welcome_img,
-            onClick = {}
+            title = "Fashion",
+            subtitle = "Trending styles",
+            backgroundColor = Color(0xFFB5A99F),
+            imageResId = R.drawable.fash_tshirt,
+            onClick = { onCategoryClick("Fashion") }
         )
 
-        // Card 3: Footwear (Dark Teal/Slate Blue)
         CategoryCard(
-            title = "Footwear",
-            subtitle = "Premium Collection",
-            backgroundColor = Color(0xFF5A7A8C), // Dark teal/slate blue
-            imageResId = R.drawable.welcome_img,
-            onClick = {}
+            title = "Home",
+            subtitle = "For your living space",
+            backgroundColor = Color(0xFFC4A8B8),
+            imageResId = R.drawable.home_lamp,
+            onClick = { onCategoryClick("Home") }
         )
 
-        // Card 4: Outerwear (Light Lavender/Mauve)
         CategoryCard(
-            title = "Outerwear",
-            subtitle = "Style & Comfort",
-            backgroundColor = Color(0xFFC4A8B8), // Light lavender/mauve
-            imageResId = R.drawable.welcome_img,
-            onClick = {}
+            title = "Beauty",
+            subtitle = "Care & cosmetics",
+            backgroundColor = Color(0xFFE2A6B5),
+            imageResId = R.drawable.beauty_serum,
+            onClick = { onCategoryClick("Beauty") }
+        )
+
+        CategoryCard(
+            title = "Sports",
+            subtitle = "Fitness essentials",
+            backgroundColor = Color(0xFF8FAFA0),
+            imageResId = R.drawable.sport_yoga,
+            onClick = { onCategoryClick("Sports") }
         )
     }
 }
+
 
 @Composable
 private fun CategoryCard(

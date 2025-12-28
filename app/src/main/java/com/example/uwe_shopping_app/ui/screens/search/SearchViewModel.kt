@@ -28,6 +28,21 @@ class SearchViewModel(
     var uiState by mutableStateOf(SearchUiState())
         private set
 
+    /* ---------------- Category ---------------- */
+    fun loadProductsByCategory(category: String) {
+        viewModelScope.launch {
+            val products = repository.getProductsByCategory(
+                category = category,
+                offset = 0
+            )
+
+            uiState = uiState.copy(
+                products = products
+            )
+        }
+    }
+
+
     /* ---------------- Search ---------------- */
     fun updateSearchQuery(query: String) {
         uiState = uiState.copy(searchQuery = query)

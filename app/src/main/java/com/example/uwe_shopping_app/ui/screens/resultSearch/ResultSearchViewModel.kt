@@ -4,6 +4,7 @@ import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.uwe_shopping_app.data.local.entity.ProductEntity
+import com.example.uwe_shopping_app.data.local.model.ProductWithAvgRating
 import com.example.uwe_shopping_app.data.local.repository.ProductRepository
 import com.example.uwe_shopping_app.ui.components.search.SearchFilterState
 import com.example.uwe_shopping_app.ui.components.search.SortOption
@@ -20,6 +21,16 @@ data class ResultSearchUiState(
     val filterState: SearchFilterState = SearchFilterState(),
     val showFilter: Boolean = false
 )
+
+private fun isCategory(query: String): Boolean {
+    return query in listOf(
+        "Electronics",
+        "Fashion",
+        "Home",
+        "Beauty",
+        "Sports"
+    )
+}
 
 /**
  * ViewModel responsible for:
@@ -75,15 +86,14 @@ class ResultSearchViewModel(
         uiState = uiState.copy(isLoading = true)
 
         viewModelScope.launch {
-            val dbResults = repository.searchProductsWithAvgRating(
-                query = query,
-                offset = 0,
-                limit = 50
-            )
+            val rawResults = if (isCategory(query)) {
+                repository.getProductsByCategoryWithAvgRating(query, 0)
+            } else {
+                repository.searchProductsWithAvgRating(query, 0, 50)
+            }
 
-            val filtered = dbResults.filter {
-                it.product.price in
-                        filter.minPrice.toDouble()..filter.maxPrice.toDouble()
+            val filtered = rawResults.filter {
+                it.product.price in filter.minPrice..filter.maxPrice
             }
 
             val sorted = when (filter.sortBy) {
