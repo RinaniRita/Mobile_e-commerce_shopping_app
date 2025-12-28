@@ -172,6 +172,7 @@ fun ProfileScreen(
                         .clickable {
                             when (text) {
                                 "Address" -> onNavigate("address")
+                                "Payment method" -> onNavigate("payment")
                                 "Voucher" -> onNavigate("voucher")
                                 "My Wishlist" -> onNavigate("wishlist")
                                 "Log out" -> {
