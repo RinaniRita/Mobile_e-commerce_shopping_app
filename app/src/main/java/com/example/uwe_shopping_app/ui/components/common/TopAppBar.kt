@@ -6,22 +6,38 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.example.uwe_shopping_app.data.local.session.SessionManager
 import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.uwe_shopping_app.ui.screens.notification.NotificationViewModel
+import kotlinx.coroutines.flow.flowOf
+
 
 @Composable
 fun TopAppBar(
     onMenuClick: () -> Unit = {},
-    onNotificationClick: () -> Unit = {},
-    hasNotifications: Boolean = true,
     title: String = "SiuStore",
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navController: NavController,
 ) {
+    val context = LocalContext.current
+    val sessionManager = remember { SessionManager(context) }
+
+    val isLoggedIn by sessionManager.isLoggedIn.collectAsState(initial = false)
+    val userId by sessionManager.userId.collectAsState(initial = null)
     Surface(
         modifier = modifier.fillMaxWidth(),
         color = Color.White,
@@ -54,53 +70,39 @@ fun TopAppBar(
             )
 
             // Notification bell icon with badge
-            Box {
-                IconButton(onClick = onNotificationClick) {
+            val notificationViewModel: NotificationViewModel = viewModel()
+
+            val unreadCount by remember(userId) {
+                userId?.let { notificationViewModel.getUnreadCount(it) }
+                    ?: flowOf(0)
+            }.collectAsState(initial = 0)
+
+            BadgedBox(
+                badge = {
+                    if (isLoggedIn && unreadCount > 0) {
+                        Badge(
+                            containerColor = Color.Red
+                        )
+                    }
+                }
+            ) {
+                IconButton(
+                    onClick = {
+                        if (isLoggedIn && userId != null) {
+                            navController.navigate("notification/$userId")
+                        } else {
+                            navController.navigate("profile")
+                        }
+                    }
+                ) {
                     Icon(
                         imageVector = Icons.Default.Notifications,
                         contentDescription = "Notifications",
                         tint = Color.Black
                     )
                 }
-                if (hasNotifications) {
-                    // Notification dot
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(top = 8.dp, end = 8.dp)
-                            .size(8.dp)
-                    ) {
-                        Surface(
-                            shape = MaterialTheme.shapes.small,
-                            color = Color(0xFFFF3B30) // Red notification dot
-                        ) {}
-                    }
-                }
             }
+
         }
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun TopAppBarPreview() {
-    Uwe_shopping_appTheme {
-        TopAppBar(
-            onMenuClick = {},
-            onNotificationClick = {},
-            hasNotifications = true
-        )
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun TopAppBarNoNotificationsPreview() {
-    Uwe_shopping_appTheme {
-        TopAppBar(
-            onMenuClick = {},
-            onNotificationClick = {},
-            hasNotifications = false
-        )
     }
 }

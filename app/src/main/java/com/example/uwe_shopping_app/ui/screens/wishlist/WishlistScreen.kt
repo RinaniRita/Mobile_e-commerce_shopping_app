@@ -62,8 +62,7 @@ fun WishlistScreen(
             // Top App Bar
             TopAppBar(
                 title = "My Wishlist",
-                onMenuClick = { isSidebarOpen = true },
-                onNotificationClick = {}
+                navController = navController
             )
 
             // Product Grid

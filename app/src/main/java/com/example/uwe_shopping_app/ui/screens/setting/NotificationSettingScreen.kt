@@ -14,12 +14,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.uwe_shopping_app.R
-import androidx.compose.ui.res.painterResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NotificationScreen(onBack: () -> Unit = {}) {
+fun NotificationSettingScreen(onBack: () -> Unit = {}) {
     // State for toggle switches
     var showNotifications by remember { mutableStateOf(true) }
     var notificationSounds by remember { mutableStateOf(true) }

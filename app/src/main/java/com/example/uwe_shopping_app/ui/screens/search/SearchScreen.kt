@@ -60,7 +60,7 @@ fun SearchScreen(
         ) {
             TopAppBar(
                 title = "Discover",
-                onMenuClick = { isSidebarOpen = true }
+                navController = navController
             )
 
             // ================= SEARCH BAR =================

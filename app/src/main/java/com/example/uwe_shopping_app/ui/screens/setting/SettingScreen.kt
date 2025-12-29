@@ -97,7 +97,7 @@ fun SettingScreen(
                         .fillMaxWidth()
                         .clickable {
                             when (text) {
-                                "Notification" -> navController.navigate("notification")
+                                "Notification" -> navController.navigate("notification_setting")
                                 "Terms of Use" -> navController.navigate("terms_of_use")
                                 "Privacy Policy" -> navController.navigate("privacy_policy")
                                 "Chat support" -> navController.navigate("chat")

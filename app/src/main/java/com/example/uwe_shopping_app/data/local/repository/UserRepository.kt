@@ -88,7 +88,16 @@ class UserRepository {
             )
         )
         voucherDao.insertVouchers(initialVouchers)
-        
+
+        val notificationRepo = NotificationRepository()
+
+        notificationRepo.notify(
+            userId = userId,
+            title = "Good morning! Get vouchers",
+            message = "You received ${initialVouchers.size} new vouchers. Use them before they expire!",
+            type = "VOUCHER"
+        )
+
         return RegisterResult.Success
     }
 

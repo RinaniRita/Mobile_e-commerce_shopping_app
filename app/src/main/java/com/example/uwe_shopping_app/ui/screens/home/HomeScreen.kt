@@ -60,7 +60,8 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxSize()
             ) {
                 TopAppBar(
-                    onMenuClick = { isSidebarOpen = true }
+                    onMenuClick = { isSidebarOpen = true },
+                    navController = navController
                 )
 
                 Box(

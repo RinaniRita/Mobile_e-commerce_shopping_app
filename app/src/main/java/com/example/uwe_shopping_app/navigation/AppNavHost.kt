@@ -34,7 +34,7 @@ import com.example.uwe_shopping_app.ui.screens.profile.ProfileScreen
 import com.example.uwe_shopping_app.ui.screens.profile.ProfileSetting
 import com.example.uwe_shopping_app.ui.screens.about.AboutUsScreen
 import com.example.uwe_shopping_app.ui.screens.setting.SettingScreen
-import com.example.uwe_shopping_app.ui.screens.setting.NotificationScreen
+import com.example.uwe_shopping_app.ui.screens.setting.NotificationSettingScreen
 import com.example.uwe_shopping_app.ui.screens.setting.TermsOfUseScreen
 import com.example.uwe_shopping_app.ui.screens.setting.PrivacyPolicyScreen
 import com.example.uwe_shopping_app.ui.screens.address.AddressScreen
@@ -49,6 +49,7 @@ import com.example.uwe_shopping_app.ui.screens.auth.SignUpScreen
 import com.example.uwe_shopping_app.ui.screens.chat.ChatScreen
 import com.example.uwe_shopping_app.ui.screens.chat.ChatViewModel
 import com.example.uwe_shopping_app.ui.screens.checkout.CheckoutViewModel
+import com.example.uwe_shopping_app.ui.screens.notification.NotificationScreen
 import com.example.uwe_shopping_app.ui.screens.order.OrderScreen
 import com.example.uwe_shopping_app.ui.screens.orderInfo.OrderInfoScreen
 import com.example.uwe_shopping_app.ui.screens.resultSearch.ResultSearchViewModel
@@ -410,9 +411,25 @@ fun AppNavHost(
         }
 
         // ---------------- Notification ----------------
-        composable("notification") {
-            NotificationScreen(onBack = { navController.popBackStack() })
+        composable(
+            route = "notification/{userId}",
+            arguments = listOf(
+                navArgument("userId") { type = NavType.IntType }
+            )
+        ) { backStackEntry ->
+            val userId = backStackEntry.arguments!!.getInt("userId")
+
+            NotificationScreen(
+                userId = userId,
+                onBack = { navController.popBackStack() }
+            )
         }
+
+        // ---------------- Notification Settings ----------------
+        composable("notification_setting") {
+            NotificationSettingScreen(onBack = { navController.popBackStack() })
+        }
+
 
         // ---------------- Terms of Use ----------------
         composable("terms_of_use") {
