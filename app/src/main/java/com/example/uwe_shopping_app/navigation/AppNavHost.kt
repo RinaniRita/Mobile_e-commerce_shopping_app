@@ -32,6 +32,11 @@ import com.example.uwe_shopping_app.ui.screens.checkout.CheckoutPaymentScreen
 import com.example.uwe_shopping_app.ui.screens.checkout.CheckoutCompletedScreen
 import com.example.uwe_shopping_app.ui.screens.profile.ProfileScreen
 import com.example.uwe_shopping_app.ui.screens.profile.ProfileSetting
+import com.example.uwe_shopping_app.ui.screens.about.AboutUsScreen
+import com.example.uwe_shopping_app.ui.screens.setting.SettingScreen
+import com.example.uwe_shopping_app.ui.screens.setting.NotificationScreen
+import com.example.uwe_shopping_app.ui.screens.setting.TermsOfUseScreen
+import com.example.uwe_shopping_app.ui.screens.setting.PrivacyPolicyScreen
 import com.example.uwe_shopping_app.ui.screens.address.AddressScreen
 import com.example.uwe_shopping_app.ui.screens.address.AddressViewModel
 import com.example.uwe_shopping_app.ui.screens.voucher.VoucherScreen
@@ -389,6 +394,34 @@ fun AppNavHost(
 //        ---------------- Profile Setting ----------------
         composable("profile_setting") {
             ProfileSetting(onBack = { navController.popBackStack() })
+        }
+
+        // ---------------- About Us ----------------
+        composable("about_us") {
+            AboutUsScreen(onBack = { navController.popBackStack() })
+        }
+
+        // ---------------- Setting (App Settings) ----------------
+        composable("setting") {
+            SettingScreen(
+                navController = navController,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        // ---------------- Notification ----------------
+        composable("notification") {
+            NotificationScreen(onBack = { navController.popBackStack() })
+        }
+
+        // ---------------- Terms of Use ----------------
+        composable("terms_of_use") {
+            TermsOfUseScreen(onBack = { navController.popBackStack() })
+        }
+
+        // ---------------- Privacy Policy ----------------
+        composable("privacy_policy") {
+            PrivacyPolicyScreen(onBack = { navController.popBackStack() })
         }
 
          // -------------- Voucher --------------------------

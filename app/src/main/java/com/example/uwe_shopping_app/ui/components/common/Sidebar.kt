@@ -39,7 +39,9 @@ sealed class SidebarItem(
     object Discover : SidebarItem("Discover", Icons.Default.Search, "search")
     object MyOrder : SidebarItem("My Order", Icons.Default.ShoppingBag, "cart")
     object MyProfile : SidebarItem("My profile", Icons.Default.Person, "profile")
-    object ChatSupport : SidebarItem("Support", Icons.Default.SupportAgent, "chat")
+    object Setting : SidebarItem("Setting", Icons.Default.Settings, "setting")
+    object Support : SidebarItem("Support", Icons.Default.Email, "chat")
+    object AboutUs : SidebarItem("About us", Icons.Default.Info, "about_us")
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -158,16 +160,15 @@ fun Sidebar(
                     }
                 }
 
-                // Navigation Items
-                val items = listOf(
+                // Main Navigation Items
+                val mainItems = listOf(
                     SidebarItem.Homepage,
                     SidebarItem.Discover,
                     SidebarItem.MyOrder,
-                    SidebarItem.MyProfile,
-                    SidebarItem.ChatSupport,
+                    SidebarItem.MyProfile
                 )
 
-                items.forEach { item ->
+                mainItems.forEach { item ->
                     val isSelected = currentRoute == item.route
                     
                     Row(
@@ -207,11 +208,67 @@ fun Sidebar(
                                                 }
                                             }
                                         }
-                                    } else {
-                                        // For wishlist and other sub-screens, navigate without popping
-                                        navController.navigate(item.route) {
-                                            launchSingleTop = true
-                                        }
+                                    }
+                                }
+                                onClose()
+                            }
+                            .padding(vertical = 12.dp, horizontal = 12.dp)
+                            .background(
+                                color = if (isSelected) Color(0xFFF5F5F5) else Color.Transparent,
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            .padding(vertical = 12.dp, horizontal = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = item.icon,
+                            contentDescription = item.title,
+                            tint = if (isSelected) Color.Black else Color(0xFF808080),
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(
+                            text = item.title,
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                                fontSize = 16.sp
+                            ),
+                            color = if (isSelected) Color.Black else Color(0xFF808080)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // "OTHER" Section Label
+                Text(
+                    text = "OTHER",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium
+                    ),
+                    color = Color(0xFF808080),
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                )
+
+                // Other Navigation Items
+                val otherItems = listOf(
+                    SidebarItem.Setting,
+                    SidebarItem.Support,
+                    SidebarItem.AboutUs
+                )
+
+                otherItems.forEach { item ->
+                    val isSelected = currentRoute == item.route
+                    
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                if (item.route != currentRoute) {
+                                    // For sub-screens (setting, support, about_us), navigate normally
+                                    navController.navigate(item.route) {
+                                        launchSingleTop = true
                                     }
                                 }
                                 onClose()

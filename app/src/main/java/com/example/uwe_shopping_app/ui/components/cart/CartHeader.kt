@@ -36,14 +36,14 @@ fun CartHeader(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Back button - Tăng size vùng bấm lên 48dp chuẩn Google
-            Box(modifier = Modifier.size(48.dp), contentAlignment = Alignment.Center) {
-                IconButton(
-                    onClick = { onBackClick() },
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(Color.White)
-                ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFFF5F5F5)),
+                contentAlignment = Alignment.Center
+            ) {
+                IconButton(onClick = { onBackClick() }) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back",
