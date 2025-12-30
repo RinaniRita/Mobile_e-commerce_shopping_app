@@ -1,7 +1,6 @@
 package com.example.uwe_shopping_app.ui.screens.payment
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -20,26 +19,28 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.uwe_shopping_app.ui.components.payment.CardPreview
 import com.example.uwe_shopping_app.ui.components.payment.CardType
 import com.example.uwe_shopping_app.ui.components.payment.PaymentCardData
-import com.example.uwe_shopping_app.ui.screens.payment.PaymentViewModelHolder
+import androidx.compose.foundation.clickable
 
 @Composable
 fun AddNewCardScreen(
     navController: NavController,
+    viewModel: PaymentViewModel = viewModel(),
     initialCardType: CardType? = null,
     onBackClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val viewModel = PaymentViewModelHolder.getInstance()
-    var cardholderName by remember { mutableStateOf("Sunie Pham") }
-    var cardNumber by remember { mutableStateOf("5412363272837284") }
-    var expiryMonth by remember { mutableStateOf("03") }
-    var expiryYear by remember { mutableStateOf("23") }
-    var cvv by remember { mutableStateOf("999") }
+    var cardholderName by remember { mutableStateOf("") }
+    var cardNumber by remember { mutableStateOf("") }
+    var expiryMonth by remember { mutableStateOf("") }
+    var expiryYear by remember { mutableStateOf("") }
+    var cvv by remember { mutableStateOf("") }
     var selectedCardType by remember { mutableStateOf(initialCardType ?: CardType.VISA) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     Column(
         modifier = modifier
@@ -91,13 +92,22 @@ fun AddNewCardScreen(
             // Card Preview
             CardPreview(
                 cardNumber = cardNumber,
-                cardholderName = cardholderName,
-                expiryMonth = expiryMonth,
-                expiryYear = expiryYear,
+                cardholderName = cardholderName.ifBlank { "YOUR NAME" },
+                expiryMonth = expiryMonth.ifBlank { "MM" },
+                expiryYear = expiryYear.ifBlank { "YY" },
                 cardType = selectedCardType
             )
 
             Spacer(modifier = Modifier.height(32.dp))
+
+            if (errorMessage != null) {
+                Text(
+                    text = errorMessage!!,
+                    color = Color.Red,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+            }
 
             // Card Type Selection
             Text(
@@ -143,7 +153,6 @@ fun AddNewCardScreen(
                 label = "Card Number",
                 value = cardNumber,
                 onValueChange = { newValue ->
-                    // Only allow digits and format as user types
                     val digitsOnly = newValue.filter { it.isDigit() }
                     if (digitsOnly.length <= 16) {
                         cardNumber = digitsOnly.chunked(4).joinToString(" ")
@@ -162,22 +171,19 @@ fun AddNewCardScreen(
             ) {
                 PaymentTextField(
                     label = "Expires",
-                    value = if (expiryMonth.isNotEmpty() && expiryYear.isNotEmpty()) {
-                        "$expiryMonth/$expiryYear"
+                    value = if (expiryMonth.isNotEmpty() || expiryYear.isNotEmpty()) {
+                        if (expiryYear.isNotEmpty()) "$expiryMonth/$expiryYear" else expiryMonth
                     } else {
                         ""
                     },
                     onValueChange = { newValue ->
                         val cleaned = newValue.filter { it.isDigit() }
-                        when {
-                            cleaned.length <= 2 -> {
-                                expiryMonth = cleaned
-                                expiryYear = ""
-                            }
-                            cleaned.length <= 4 -> {
-                                expiryMonth = cleaned.take(2)
-                                expiryYear = cleaned.drop(2)
-                            }
+                        if (cleaned.length <= 2) {
+                            expiryMonth = cleaned
+                            expiryYear = ""
+                        } else if (cleaned.length <= 4) {
+                            expiryMonth = cleaned.take(2)
+                            expiryYear = cleaned.drop(2)
                         }
                     },
                     placeholder = "MM/YY",
@@ -204,22 +210,15 @@ fun AddNewCardScreen(
             // Add Card Button
             Button(
                 onClick = {
-                    // Add card to ViewModel
-                    val fullYear = if (expiryYear.length == 2) {
-                        "20$expiryYear"
-                    } else {
-                        expiryYear
-                    }
-                    val newCard = PaymentCardData(
-                        id = 0, // Will be assigned by ViewModel
-                        cardNumber = cardNumber.replace(" ", ""),
+                    viewModel.addCard(
                         cardholderName = cardholderName,
-                        expiryMonth = expiryMonth.padStart(2, '0'),
-                        expiryYear = fullYear,
-                        cardType = selectedCardType
+                        cardNumber = cardNumber,
+                        expiryMonth = expiryMonth,
+                        expiryYear = expiryYear,
+                        cardType = selectedCardType,
+                        onSuccess = { navController.popBackStack() },
+                        onError = { errorMessage = it }
                     )
-                    viewModel.addCard(newCard)
-                    navController.popBackStack()
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -315,4 +314,3 @@ private fun CardTypeOption(
         }
     }
 }
-

@@ -19,11 +19,12 @@ import com.example.uwe_shopping_app.data.local.entity.*
         CartItemEntity::class,
         AddressEntity::class,
         VoucherEntity::class,
+        PaymentCardEntity::class,
         ProductReviewEntity::class,
         WishlistEntity::class,
         NotificationEntity::class,
     ],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 
@@ -41,6 +42,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun productReviewDao(): ProductReviewDao
     abstract fun wishlistDao(): WishlistDao
     abstract fun notificationDao(): NotificationDao
+    abstract fun paymentCardDao(): PaymentCardDao
 
     companion object {
         @Volatile

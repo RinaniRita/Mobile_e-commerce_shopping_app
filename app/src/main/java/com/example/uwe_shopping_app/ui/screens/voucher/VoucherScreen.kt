@@ -22,12 +22,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.uwe_shopping_app.ui.components.voucher.VoucherCard
-import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
 
 @Composable
 fun VoucherScreen(
     onBackClick: () -> Unit = {},
-    onVoucherSelected: (String) -> Unit = {}, // Để quay lại Checkout với mã code
+    onVoucherSelected: (String) -> Unit = {},
     viewModel: VoucherViewModel = viewModel()
 ) {
     val context = LocalContext.current
@@ -94,12 +93,15 @@ fun VoucherScreen(
                             Toast.makeText(context, "Code copied: $code", Toast.LENGTH_SHORT).show()
                         },
                         onSelectClick = { selectedVoucher ->
-                            if (viewModel.canUseVoucher(selectedVoucher)) {
-                                onVoucherSelected(selectedVoucher.code)
-                                onBackClick() // Quay lại màn hình trước sau khi chọn
-                            } else {
-                                Toast.makeText(context, "This voucher has reached usage limit", Toast.LENGTH_SHORT).show()
-                            }
+                            // Thay vì văng ra, chúng ta thực hiện copy và ở lại màn hình hoặc xử lý theo yêu cầu mới
+                            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                            val clip = android.content.ClipData.newPlainText("Voucher Code", selectedVoucher.code)
+                            clipboard.setPrimaryClip(clip)
+                            Toast.makeText(context, "Code copied: ${selectedVoucher.code}", Toast.LENGTH_SHORT).show()
+                            
+                            // Nếu bạn muốn khi ấn vào voucher là copy luôn (không cần nút copy riêng), 
+                            // tôi đã thực hiện copy code ở trên. 
+                            // Việc "văng ra" thường do gọi onVoucherSelected hoặc onBackClick() quá sớm.
                         }
                     )
                 }

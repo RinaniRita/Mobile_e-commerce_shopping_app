@@ -1,6 +1,7 @@
 package com.example.uwe_shopping_app.ui.screens.payment
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
@@ -22,19 +23,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.uwe_shopping_app.ui.components.payment.CardType
 import com.example.uwe_shopping_app.ui.components.payment.PaymentCard
 import com.example.uwe_shopping_app.ui.components.payment.PaymentMethodOption
-import com.example.uwe_shopping_app.ui.screens.payment.PaymentViewModelHolder
 
 @Composable
 fun PaymentScreen(
     navController: NavController,
+    modifier: Modifier = Modifier,
     onBackClick: () -> Unit = {},
-    modifier: Modifier = Modifier
+    viewModel: PaymentViewModel = viewModel()
 ) {
-    val viewModel = PaymentViewModelHolder.getInstance()
     val cards by viewModel.cards.collectAsState()
 
     Column(
@@ -46,6 +47,7 @@ fun PaymentScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .statusBarsPadding()
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -149,7 +151,10 @@ fun PaymentScreen(
                         items = cards,
                         key = { card -> card.id }
                     ) { card ->
-                        PaymentCard(card = card)
+                        PaymentCard(
+                            card = card,
+                            onDeleteClick = { viewModel.removeCard(card.id) }
+                        )
                     }
                 }
             }
@@ -192,7 +197,31 @@ fun PaymentScreen(
             }
 
             Spacer(modifier = Modifier.height(32.dp))
+
+            // Terms and Conditions Link
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "By continuing, you agree to our",
+                    color = Color.Gray,
+                    fontSize = 12.sp
+                )
+                Text(
+                    text = "Terms and Conditions",
+                    color = Color(0xFF2196F3),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.clickable {
+                        navController.navigate("terms_of_use")
+                    }
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
-

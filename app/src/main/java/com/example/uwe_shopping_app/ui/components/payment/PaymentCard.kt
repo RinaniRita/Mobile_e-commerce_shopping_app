@@ -2,7 +2,12 @@ package com.example.uwe_shopping_app.ui.components.payment
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -31,6 +36,7 @@ data class PaymentCardData(
 @Composable
 fun PaymentCard(
     card: PaymentCardData,
+    onDeleteClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val cardColor = when (card.cardType) {
@@ -53,8 +59,7 @@ fun PaymentCard(
             .width(320.dp)
             .height(200.dp)
             .clip(RoundedCornerShape(16.dp))
-            .background(cardColor),
-        contentAlignment = Alignment.Center
+            .background(cardColor)
     ) {
         Column(
             modifier = Modifier
@@ -62,11 +67,31 @@ fun PaymentCard(
                 .padding(20.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Top section - Card brand
+            // Top section - Card brand and Delete Button
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
+                if (onDeleteClick != null) {
+                    IconButton(
+                        onClick = onDeleteClick,
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(CircleShape)
+                            .background(Color.White.copy(alpha = 0.2f))
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete Card",
+                            tint = Color.White,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                } else {
+                    Spacer(modifier = Modifier.size(32.dp))
+                }
+
                 Text(
                     text = card.cardType.name,
                     color = Color.White,
@@ -135,4 +160,3 @@ private fun formatCardNumber(cardNumber: String): String {
     val cleaned = cardNumber.replace(" ", "")
     return cleaned.chunked(4).joinToString(" ")
 }
-
