@@ -1,12 +1,15 @@
 package com.example.uwe_shopping_app.ui.screens.review
 
+import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.uwe_shopping_app.data.local.repository.OrderRepository
 import com.example.uwe_shopping_app.data.local.repository.ProductReviewRepository
+import com.example.uwe_shopping_app.data.local.session.SessionManager
 import kotlinx.coroutines.launch
 
 data class ReviewUiState(
@@ -28,10 +31,12 @@ data class ProductReviewUi(
 )
 
 
-class ReviewViewModel : ViewModel() {
-
+class ReviewViewModel(
+    application: Application
+) : AndroidViewModel(application) {
+    private val sessionManager = SessionManager(application)
     private val reviewRepo = ProductReviewRepository()
-    private val orderRepo = OrderRepository()
+    private val orderRepo = OrderRepository(sessionManager)
 
     var items by mutableStateOf<List<ProductReviewUi>>(emptyList())
         private set

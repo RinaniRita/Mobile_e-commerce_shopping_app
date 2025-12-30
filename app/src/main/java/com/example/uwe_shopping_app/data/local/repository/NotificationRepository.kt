@@ -2,8 +2,12 @@ package com.example.uwe_shopping_app.data.local.repository
 
 import com.example.uwe_shopping_app.App
 import com.example.uwe_shopping_app.data.local.entity.NotificationEntity
+import com.example.uwe_shopping_app.data.local.session.SessionManager
+import kotlinx.coroutines.flow.first
 
-class NotificationRepository {
+class NotificationRepository(
+    private val sessionManager: SessionManager
+) {
 
     private val notificationDao = App.db.notificationDao()
 
@@ -19,6 +23,11 @@ class NotificationRepository {
         message: String,
         type: String
     ) {
+        val enabled = sessionManager.notificationsEnabled.first()
+
+//        BLOCK NOTIFICATION
+        if (!enabled) return
+
         notificationDao.insert(
             NotificationEntity(
                 userId = userId,

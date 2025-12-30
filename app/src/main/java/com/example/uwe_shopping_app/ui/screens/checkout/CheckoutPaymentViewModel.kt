@@ -9,11 +9,13 @@ import com.example.uwe_shopping_app.data.local.session.SessionManager
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-class CheckoutPaymentViewModel(application: Application) : AndroidViewModel(application) {
+class CheckoutPaymentViewModel(
+    application: Application,
+) : AndroidViewModel(application) {
 
     private val sessionManager = SessionManager(application)
     private val cartRepository = CartRepository()
-    private val orderRepository = OrderRepository()
+    private val orderRepository = OrderRepository(sessionManager)
 
     fun placeOrder(
         totalPrice: Double,

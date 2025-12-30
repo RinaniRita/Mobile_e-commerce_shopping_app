@@ -32,6 +32,10 @@ fun TopAppBar(
     title: String = "SiuStore",
     modifier: Modifier = Modifier,
     navController: NavController,
+    isLoggedIn: Boolean,
+    unreadCount: Int,
+    notificationsEnabled: Boolean,
+    userId: Int?,
 ) {
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
@@ -79,30 +83,29 @@ fun TopAppBar(
 
             BadgedBox(
                 badge = {
-                    if (isLoggedIn && unreadCount > 0) {
-                        Badge(
-                            containerColor = Color.Red
-                        )
+                    if (isLoggedIn && notificationsEnabled && unreadCount > 0) {
+                        Badge(containerColor = Color.Red)
                     }
                 }
             ) {
                 IconButton(
                     onClick = {
-                        if (isLoggedIn && userId != null) {
-                            navController.navigate("notification/$userId")
-                        } else {
-                            navController.navigate("profile")
+                        when {
+                            !isLoggedIn || userId == null -> {
+                                navController.navigate("profile")
+                            }
+                            else -> {
+                                navController.navigate("notification/$userId")
+                            }
                         }
                     }
                 ) {
                     Icon(
                         imageVector = Icons.Default.Notifications,
-                        contentDescription = "Notifications",
-                        tint = Color.Black
+                        contentDescription = "Notifications"
                     )
                 }
             }
-
         }
     }
 }

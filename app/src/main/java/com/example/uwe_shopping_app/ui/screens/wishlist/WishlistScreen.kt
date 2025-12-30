@@ -21,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -29,12 +30,15 @@ import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.uwe_shopping_app.R
+import com.example.uwe_shopping_app.data.local.session.SessionManager
 import com.example.uwe_shopping_app.ui.components.common.BottomNavigationBar
 import com.example.uwe_shopping_app.ui.components.common.Sidebar
 import com.example.uwe_shopping_app.ui.components.common.TopAppBar
 import com.example.uwe_shopping_app.ui.components.wishlist.WishlistProduct
 import com.example.uwe_shopping_app.ui.components.wishlist.WishlistProductCard
+import com.example.uwe_shopping_app.ui.screens.notification.NotificationViewModel
 import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
+import kotlinx.coroutines.flow.flowOf
 
 @Composable
 fun WishlistScreen(
@@ -45,6 +49,19 @@ fun WishlistScreen(
 
     val viewModel: WishlistViewModel = viewModel()
     val products by viewModel.products.collectAsState()
+
+    val context = LocalContext.current
+    val sessionManager = remember { SessionManager(context) }
+    val notificationViewModel: NotificationViewModel = viewModel()
+
+    val isLoggedIn by sessionManager.isLoggedIn.collectAsState(initial = false)
+    val notificationsEnabled by sessionManager.notificationsEnabled.collectAsState(initial = true)
+    val userId by sessionManager.userId.collectAsState(initial = null)
+
+    val unreadCount by remember(userId) {
+        userId?.let { notificationViewModel.getUnreadCount(it) }
+            ?: flowOf(0)
+    }.collectAsState(initial = 0)
 
     LaunchedEffect(Unit) {
         viewModel.loadWishlist()
@@ -62,8 +79,14 @@ fun WishlistScreen(
             // Top App Bar
             TopAppBar(
                 title = "My Wishlist",
-                navController = navController
+                navController = navController,
+                onMenuClick = { isSidebarOpen = true },
+                isLoggedIn = isLoggedIn,
+                notificationsEnabled = notificationsEnabled,
+                unreadCount = unreadCount,
+                userId = userId
             )
+
 
             // Product Grid
             LazyVerticalGrid(

@@ -11,17 +11,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.uwe_shopping_app.data.local.session.SessionManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NotificationSettingScreen(onBack: () -> Unit = {}) {
-    // State for toggle switches
-    var showNotifications by remember { mutableStateOf(true) }
-    var notificationSounds by remember { mutableStateOf(true) }
-    var lockScreenNotifications by remember { mutableStateOf(false) }
+fun NotificationSettingScreen(
+    onBack: () -> Unit = {},
+    viewModel: NotificationSettingViewModel = viewModel()
+) {
+    // Single source of truth
+    val notificationsEnabled by viewModel
+        .notificationsEnabled
+        .collectAsState(initial = true)
 
     Scaffold(
         topBar = {
@@ -32,7 +38,6 @@ fun NotificationSettingScreen(onBack: () -> Unit = {}) {
                     .padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Back button
                 Box(
                     modifier = Modifier
                         .size(48.dp)
@@ -51,7 +56,6 @@ fun NotificationSettingScreen(onBack: () -> Unit = {}) {
 
                 Spacer(modifier = Modifier.width(12.dp))
 
-                // Title
                 Text(
                     text = "Notification",
                     fontSize = 20.sp,
@@ -67,42 +71,24 @@ fun NotificationSettingScreen(onBack: () -> Unit = {}) {
                 .fillMaxSize()
                 .background(Color.White)
         ) {
-            // Notification Settings
             NotificationSettingItem(
                 title = "Show notifications",
-                description = "Receive push notifications for new messages",
-                isEnabled = showNotifications,
-                onToggle = { showNotifications = !showNotifications }
+                description = "Receive updates for orders and vouchers",
+                isEnabled = notificationsEnabled,
+                onToggle = {
+                    viewModel.setNotificationsEnabled(!notificationsEnabled)
+                }
             )
 
             HorizontalDivider(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 color = Color(0xFFE0E0E0),
                 thickness = 1.dp
-            )
-
-            NotificationSettingItem(
-                title = "Notification sounds",
-                description = "Play sound for new messages",
-                isEnabled = notificationSounds,
-                onToggle = { notificationSounds = !notificationSounds }
-            )
-
-            HorizontalDivider(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                color = Color(0xFFE0E0E0),
-                thickness = 1.dp
-            )
-
-            NotificationSettingItem(
-                title = "Lock screen notifications",
-                description = "Allow notification on the lock screen",
-                isEnabled = lockScreenNotifications,
-                onToggle = { lockScreenNotifications = !lockScreenNotifications }
             )
         }
     }
 }
+
 
 @Composable
 fun NotificationSettingItem(

@@ -36,7 +36,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.uwe_shopping_app.ui.components.common.BottomNavigationBar
 import com.example.uwe_shopping_app.ui.components.common.Sidebar
-import com.example.uwe_shopping_app.ui.components.common.TopAppBar
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

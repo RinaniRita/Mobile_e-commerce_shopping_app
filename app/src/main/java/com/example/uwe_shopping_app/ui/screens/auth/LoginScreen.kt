@@ -34,8 +34,8 @@ fun LoginScreen(
     var isLoading by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
-    val repo = remember { UserRepository() }
     val session = remember { SessionManager(context) }
+    val repo = remember { UserRepository(session) }
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 

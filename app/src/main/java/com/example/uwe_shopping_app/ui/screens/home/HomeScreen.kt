@@ -10,6 +10,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -20,6 +21,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -35,6 +37,9 @@ import com.example.uwe_shopping_app.ui.components.common.TopAppBar
 import com.example.uwe_shopping_app.ui.components.product.ProductGrid
 import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
 import androidx.navigation.NavHostController
+import com.example.uwe_shopping_app.data.local.session.SessionManager
+import com.example.uwe_shopping_app.ui.screens.notification.NotificationViewModel
+import kotlinx.coroutines.flow.flowOf
 
 
 @Composable
@@ -46,6 +51,17 @@ fun HomeScreen(
 ) {
     val uiState = viewModel.uiState
     var isSidebarOpen by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val sessionManager = remember { SessionManager(context) }
+    val notificationViewModel: NotificationViewModel = viewModel()
+
+    val isLoggedIn by sessionManager.isLoggedIn.collectAsState(initial = false)
+    val notificationsEnabled by sessionManager.notificationsEnabled.collectAsState(initial = true)
+    val userId by sessionManager.userId.collectAsState(initial = null)
+    val unreadCount by remember(userId) {
+        userId?.let { notificationViewModel.getUnreadCount(it) }
+            ?: flowOf(0)
+    }.collectAsState(initial = 0)
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -61,7 +77,11 @@ fun HomeScreen(
             ) {
                 TopAppBar(
                     onMenuClick = { isSidebarOpen = true },
-                    navController = navController
+                    navController = navController,
+                    isLoggedIn = isLoggedIn,
+                    notificationsEnabled = notificationsEnabled,
+                    unreadCount = unreadCount,
+                    userId = userId
                 )
 
                 Box(

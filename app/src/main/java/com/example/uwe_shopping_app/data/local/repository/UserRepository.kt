@@ -3,11 +3,15 @@ package com.example.uwe_shopping_app.data.local.repository
 import com.example.uwe_shopping_app.App
 import com.example.uwe_shopping_app.data.local.entity.UserEntity
 import com.example.uwe_shopping_app.data.local.entity.VoucherEntity
+import com.example.uwe_shopping_app.data.local.session.SessionManager
 
-class UserRepository {
+class UserRepository(
+    private val sessionManager: SessionManager
+) {
 
     private val userDao = App.db.userDao()
     private val voucherDao = App.db.voucherDao()
+    private val notificationRepo = NotificationRepository(sessionManager)
 
     sealed class RegisterResult {
         object Success : RegisterResult()
@@ -88,8 +92,6 @@ class UserRepository {
             )
         )
         voucherDao.insertVouchers(initialVouchers)
-
-        val notificationRepo = NotificationRepository()
 
         notificationRepo.notify(
             userId = userId,

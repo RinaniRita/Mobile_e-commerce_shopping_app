@@ -4,13 +4,17 @@ import com.example.uwe_shopping_app.App
 import com.example.uwe_shopping_app.data.local.entity.OrderEntity
 import com.example.uwe_shopping_app.data.local.entity.OrderItemEntity
 import com.example.uwe_shopping_app.data.local.relation.OrderItemWithProduct
+import com.example.uwe_shopping_app.data.local.session.SessionManager
 
-class OrderRepository {
+class OrderRepository(
+    private val sessionManager: SessionManager
+) {
 
     private val orderDao = App.db.orderDao()
     private val orderItemDao = App.db.orderItemDao()
     private val productDao = App.db.productDao()
     private val cartItemDao = App.db.cartItemDao()
+    private val notificationRepo = NotificationRepository(sessionManager)
 
     suspend fun createOrder(
         userId: Int,
@@ -101,7 +105,6 @@ class OrderRepository {
 
         orderDao.updateOrderStatus(orderId, newStatus)
 
-        val notificationRepo = NotificationRepository()
 
         when (newStatus) {
             "on_the_way" -> {

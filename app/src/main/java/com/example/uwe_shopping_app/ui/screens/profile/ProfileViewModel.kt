@@ -11,8 +11,8 @@ import kotlinx.coroutines.launch
 
 class ProfileViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val userRepository = UserRepository()
     private val sessionManager = SessionManager(application)
+    private val userRepository = UserRepository(sessionManager)
 
     // ---------------- AUTH STATE ----------------
     val isLoggedIn: StateFlow<Boolean> =

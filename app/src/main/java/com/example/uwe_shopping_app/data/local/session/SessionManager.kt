@@ -17,6 +17,8 @@ class SessionManager(private val context: Context) {
     private val KEY_USER_EMAIL = stringPreferencesKey("user_email")
     private val KEY_USER_ID = intPreferencesKey("user_id")
     private val KEY_USER_PHONE = stringPreferencesKey("user_phone")
+    private val KEY_NOTIFICATIONS_ENABLED =
+        booleanPreferencesKey("notifications_enabled")
 
     val isLoggedIn: Flow<Boolean> =
         context.dataStore.data.map { prefs -> prefs[KEY_LOGGED_IN] ?: false }
@@ -29,6 +31,11 @@ class SessionManager(private val context: Context) {
     
     val userPhone: Flow<String?> =
         context.dataStore.data.map { prefs -> prefs[KEY_USER_PHONE] }
+
+    val notificationsEnabled: Flow<Boolean> =
+        context.dataStore.data.map {
+            it[KEY_NOTIFICATIONS_ENABLED] ?: true
+        }
 
     suspend fun saveUserSession(id: Int, email: String, phone: String?) {
         context.dataStore.edit { prefs ->
@@ -45,6 +52,12 @@ class SessionManager(private val context: Context) {
             prefs.remove(KEY_USER_EMAIL)
             prefs.remove(KEY_USER_ID)
             prefs.remove(KEY_USER_PHONE)
+        }
+    }
+
+    suspend fun setNotificationsEnabled(enabled: Boolean) {
+        context.dataStore.edit {
+            it[KEY_NOTIFICATIONS_ENABLED] = enabled
         }
     }
 }

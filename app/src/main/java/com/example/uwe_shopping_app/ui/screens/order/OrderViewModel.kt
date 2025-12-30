@@ -19,7 +19,7 @@ class OrderViewModel(
 ) : AndroidViewModel(application) {
 
     private val sessionManager = SessionManager(application)
-    private val repository = OrderRepository()
+    private val repository = OrderRepository(sessionManager)
 
     val isLoggedIn = sessionManager.isLoggedIn
 

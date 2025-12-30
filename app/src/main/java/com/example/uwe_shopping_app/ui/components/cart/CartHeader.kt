@@ -62,14 +62,5 @@ fun CartHeader(
                 color = Color.Black
             )
         }
-
-        // Menu button
-        IconButton(onClick = onMenuClick) {
-            Icon(
-                imageVector = Icons.Default.Menu,
-                contentDescription = "Menu",
-                tint = Color.Black
-            )
-        }
     }
 }
