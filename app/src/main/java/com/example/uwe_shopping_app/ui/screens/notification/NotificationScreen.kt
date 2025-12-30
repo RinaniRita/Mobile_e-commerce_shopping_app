@@ -17,7 +17,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.uwe_shopping_app.data.local.entity.NotificationEntity
+import com.example.uwe_shopping_app.ui.components.common.ShopTab
 
 
 data class NotificationUi(
@@ -30,7 +32,8 @@ data class NotificationUi(
 fun NotificationScreen(
     userId: Int,
     onBack: () -> Unit,
-    viewModel: NotificationViewModel = viewModel()
+    viewModel: NotificationViewModel = viewModel(),
+    navController: NavController
 ) {
     val notifications by viewModel
         .getNotifications(userId)
@@ -75,8 +78,28 @@ fun NotificationScreen(
                         if (!notification.isRead) {
                             viewModel.markAsRead(notification.id)
                         }
+
+                        when (notification.type) {
+                            "VOUCHER" -> {
+                                navController.navigate("voucher")
+                            }
+
+                            "SHIPPING" -> {
+                                // Go to Orders → On the way
+                                navController.navigate(
+                                    "orders?status=${ShopTab.ON_THE_WAY.name}"
+                                )
+                            }
+
+                            "ORDER" -> {
+                                notification.referenceId?.let {
+                                    navController.navigate("orderInfo/$it")
+                                }
+                            }
+                        }
                     }
                 )
+
             }
         }
     }

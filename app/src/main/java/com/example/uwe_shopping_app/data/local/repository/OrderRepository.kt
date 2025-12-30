@@ -97,12 +97,24 @@ class OrderRepository {
     }
 
     suspend fun updateOrderStatus(orderId: Int, newStatus: String) {
-        orderDao.updateOrderStatus(
-            orderId = orderId,
-            status = newStatus
-        )
-    }
+        val order = orderDao.getOrderById(orderId) ?: return
 
+        orderDao.updateOrderStatus(orderId, newStatus)
+
+        val notificationRepo = NotificationRepository()
+
+        when (newStatus) {
+            "on_the_way" -> {
+                notificationRepo.notifyOrderOnTheWay(order.userId, orderId)
+            }
+            "delivered" -> {
+                notificationRepo.notifyOrderDelivered(order.userId, orderId)
+            }
+            "cancelled" -> {
+                notificationRepo.notifyOrderCancelled(order.userId, orderId)
+            }
+        }
+    }
 
     suspend fun cancelOrder(orderId: Int) {
         val order = orderDao.getOrderById(orderId) ?: return

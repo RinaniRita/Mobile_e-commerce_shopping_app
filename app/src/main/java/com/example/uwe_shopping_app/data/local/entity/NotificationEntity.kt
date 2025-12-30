@@ -10,6 +10,7 @@ data class NotificationEntity(
     val title: String,
     val message: String,
     val type: String, // VOUCHER, ORDER, SHIPPING
+    val referenceId: Int? = null,
     val createdAt: Long = System.currentTimeMillis(),
     val isRead: Boolean = false
 )

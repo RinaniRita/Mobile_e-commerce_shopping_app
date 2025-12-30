@@ -29,6 +29,43 @@ class NotificationRepository {
         )
     }
 
+    suspend fun notifyOrderOnTheWay(userId: Int, orderId: Int) {
+        notificationDao.insert(
+            NotificationEntity(
+                userId = userId,
+                title = "Order is on the way",
+                message = "Your order #$orderId is being delivered",
+                type = "SHIPPING",
+                referenceId = orderId
+            )
+        )
+    }
+
+    suspend fun notifyOrderDelivered(userId: Int, orderId: Int) {
+        notificationDao.insert(
+            NotificationEntity(
+                userId = userId,
+                title = "Order delivered",
+                message = "Your order #$orderId has arrived",
+                type = "ORDER",
+                referenceId = orderId
+            )
+        )
+    }
+
+    suspend fun notifyOrderCancelled(userId: Int, orderId: Int) {
+        notificationDao.insert(
+            NotificationEntity(
+                userId = userId,
+                title = "Order cancelled",
+                message = "Order #$orderId has been cancelled",
+                type = "ORDER",
+                referenceId = orderId
+            )
+        )
+    }
+
+
     suspend fun markAsRead(notificationId: Int) {
         notificationDao.markAsRead(notificationId)
     }

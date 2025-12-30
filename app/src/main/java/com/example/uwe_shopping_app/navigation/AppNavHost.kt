@@ -421,6 +421,7 @@ fun AppNavHost(
 
             NotificationScreen(
                 userId = userId,
+                navController = navController,
                 onBack = { navController.popBackStack() }
             )
         }
