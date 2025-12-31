@@ -80,9 +80,12 @@ fun OrderCard(
                 ) {
                     Button(
                         onClick = onConfirmDelivered,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Black
+                        )
                     ) {
-                        Text("Confirm Delivered")
+                        Text("Confirm Delivered", color = Color.White)
                     }
 
                     OutlinedButton(

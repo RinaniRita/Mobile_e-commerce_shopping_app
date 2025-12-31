@@ -170,10 +170,10 @@ fun CheckoutPaymentScreen(
                 },
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).height(56.dp),
                 shape = RoundedCornerShape(28.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF333333)),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
                 enabled = agreeTerms
             ) {
-                Text(text = "Place my order", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(text = "Place my order", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
             }
 
             Spacer(modifier = Modifier.height(32.dp))

@@ -226,7 +226,7 @@ fun CheckoutScreen(
                     .height(56.dp),
                 enabled = uiState.distanceKm != null,
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF424242))
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
             ) {
                 Text("Continue to payment", fontWeight = FontWeight.Bold, color = Color.White)
             }

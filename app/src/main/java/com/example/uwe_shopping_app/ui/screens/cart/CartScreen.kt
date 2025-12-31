@@ -103,9 +103,15 @@ fun CartScreen(
 
                         Button(
                             onClick = { navController.navigate("login") },
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.Black
+                            )
                         ) {
-                            Text("Log in / Sign up")
+                            Text(
+                                text = "Log in / Sign up",
+                                color = Color.White
+                            )
                         }
                     }
                 }
@@ -134,8 +140,16 @@ fun CartScreen(
                                 color = MaterialTheme.colorScheme.error
                             )
                             Spacer(modifier = Modifier.height(8.dp))
-                            Button(onClick = { viewModel.loadCart() }) {
-                                Text("Retry")
+                            Button(
+                                onClick = { viewModel.loadCart() },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color.Black
+                                )
+                            ) {
+                                Text(
+                                    text = "Retry",
+                                    color = Color.White
+                                )
                             }
                         }
                     }
@@ -195,7 +209,7 @@ fun CartScreen(
                                 .height(56.dp),
                             shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF424242)
+                                containerColor = Color.Black
                             )
                         ) {
                             Text(

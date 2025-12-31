@@ -105,7 +105,7 @@ fun CheckoutCompletedScreen(
                     .padding(horizontal = 16.dp)
                     .height(56.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF333333)
+                    containerColor = Color.Black
                 )
             ) {
                 Text(

@@ -119,9 +119,12 @@ fun OrderInfoScreen(
                                     navController.navigate("review/${state.orderId}/$userId")
 
                                 }
-                            }
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.Black
+                            )
                         ) {
-                            Text("Rate products")
+                            Text("Rate products", color = Color.White)
                         }
                     }
                 }
@@ -129,9 +132,12 @@ fun OrderInfoScreen(
                 else -> {
                     Button(
                         modifier = Modifier.fillMaxWidth(),
-                        onClick = { navController.navigate("home") }
+                        onClick = { navController.navigate("home") },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Black
+                        )
                     ) {
-                        Text("Return home")
+                        Text("Return home", color = Color.White)
                     }
                 }
             }
