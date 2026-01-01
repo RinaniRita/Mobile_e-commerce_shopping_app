@@ -3,9 +3,12 @@ package com.example.uwe_shopping_app.ui.screens.profile
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.uwe_shopping_app.App
 import com.example.uwe_shopping_app.data.local.entity.UserEntity
 import com.example.uwe_shopping_app.data.local.repository.UserRepository
 import com.example.uwe_shopping_app.data.local.session.SessionManager
+import com.example.uwe_shopping_app.ui.components.payment.CardType
+import com.example.uwe_shopping_app.ui.components.payment.PaymentCardData
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -13,6 +16,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
 
     private val sessionManager = SessionManager(application)
     private val userRepository = UserRepository(sessionManager)
+    private val paymentCardDao = App.db.paymentCardDao()
 
     // ---------------- AUTH STATE ----------------
     val isLoggedIn: StateFlow<Boolean> =
@@ -26,6 +30,28 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     // ---------------- USER STATE ----------------
     private val _user = MutableStateFlow<UserEntity?>(null)
     val user: StateFlow<UserEntity?> = _user.asStateFlow()
+
+    // ---------------- PAYMENT CARD STATE ----------------
+    val defaultCard: StateFlow<PaymentCardData?> = sessionManager.userId
+        .flatMapLatest { userId ->
+            if (userId != null) {
+                paymentCardDao.getCardsByUser(userId).map { entities ->
+                    entities.find { it.isDefault }?.let { entity ->
+                        PaymentCardData(
+                            id = entity.id,
+                            cardNumber = entity.cardNumber,
+                            cardholderName = entity.cardholderName,
+                            expiryMonth = entity.expiryDate.split("/").firstOrNull() ?: "",
+                            expiryYear = entity.expiryDate.split("/").lastOrNull() ?: "",
+                            cardType = if (entity.cardType == "VISA") CardType.VISA else CardType.MASTERCARD
+                        )
+                    }
+                }
+            } else {
+                flowOf(null)
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     init {
         observeLoginState()

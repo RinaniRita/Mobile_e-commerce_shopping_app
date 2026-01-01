@@ -23,8 +23,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.uwe_shopping_app.ui.components.payment.CardPreview
 import com.example.uwe_shopping_app.ui.components.payment.CardType
-import com.example.uwe_shopping_app.ui.components.payment.PaymentCardData
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.VisualTransformation
 
 @Composable
 fun AddNewCardScreen(
@@ -155,9 +158,10 @@ fun AddNewCardScreen(
                 onValueChange = { newValue ->
                     val digitsOnly = newValue.filter { it.isDigit() }
                     if (digitsOnly.length <= 16) {
-                        cardNumber = digitsOnly.chunked(4).joinToString(" ")
+                        cardNumber = digitsOnly
                     }
                 },
+                visualTransformation = CardNumberTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth()
             )
@@ -171,22 +175,21 @@ fun AddNewCardScreen(
             ) {
                 PaymentTextField(
                     label = "Expires",
-                    value = if (expiryMonth.isNotEmpty() || expiryYear.isNotEmpty()) {
-                        if (expiryYear.isNotEmpty()) "$expiryMonth/$expiryYear" else expiryMonth
-                    } else {
-                        ""
-                    },
+                    value = expiryMonth + expiryYear,
                     onValueChange = { newValue ->
                         val cleaned = newValue.filter { it.isDigit() }
-                        if (cleaned.length <= 2) {
-                            expiryMonth = cleaned
-                            expiryYear = ""
-                        } else if (cleaned.length <= 4) {
-                            expiryMonth = cleaned.take(2)
-                            expiryYear = cleaned.drop(2)
+                        if (cleaned.length <= 4) {
+                            if (cleaned.length <= 2) {
+                                expiryMonth = cleaned
+                                expiryYear = ""
+                            } else {
+                                expiryMonth = cleaned.take(2)
+                                expiryYear = cleaned.drop(2)
+                            }
                         }
                     },
                     placeholder = "MM/YY",
+                    visualTransformation = ExpiryDateTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.weight(1f)
                 )
@@ -248,6 +251,7 @@ private fun PaymentTextField(
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     placeholder: String = "",
+    visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default
 ) {
     Column(modifier = modifier) {
@@ -271,6 +275,7 @@ private fun PaymentTextField(
             },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
+            visualTransformation = visualTransformation,
             keyboardOptions = keyboardOptions,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color(0xFFE0E0E0),
@@ -312,5 +317,69 @@ private fun CardTypeOption(
                 color = if (isSelected) Color(0xFF2196F3) else Color.Black
             )
         }
+    }
+}
+
+/**
+ * VisualTransformation for MM/YY format
+ */
+class ExpiryDateTransformation : VisualTransformation {
+    override fun filter(text: AnnotatedString): TransformedText {
+        val trimmed = if (text.text.length >= 4) text.text.substring(0..3) else text.text
+        var out = ""
+        for (i in trimmed.indices) {
+            out += trimmed[i]
+            if (i == 1) out += "/"
+        }
+
+        val offsetMapping = object : OffsetMapping {
+            override fun originalToTransformed(offset: Int): Int {
+                if (offset <= 1) return offset
+                if (offset <= 4) return offset + 1
+                return 5
+            }
+
+            override fun transformedToOriginal(offset: Int): Int {
+                if (offset <= 2) return offset
+                if (offset <= 5) return offset - 1
+                return 4
+            }
+        }
+
+        return TransformedText(AnnotatedString(out), offsetMapping)
+    }
+}
+
+/**
+ * VisualTransformation for Card Number format (adds space every 4 digits)
+ */
+class CardNumberTransformation : VisualTransformation {
+    override fun filter(text: AnnotatedString): TransformedText {
+        val trimmed = if (text.text.length >= 16) text.text.substring(0..15) else text.text
+        var out = ""
+        for (i in trimmed.indices) {
+            out += trimmed[i]
+            if (i % 4 == 3 && i != 15) out += " "
+        }
+
+        val offsetMapping = object : OffsetMapping {
+            override fun originalToTransformed(offset: Int): Int {
+                if (offset <= 3) return offset
+                if (offset <= 7) return offset + 1
+                if (offset <= 11) return offset + 2
+                if (offset <= 15) return offset + 3
+                return 19
+            }
+
+            override fun transformedToOriginal(offset: Int): Int {
+                if (offset <= 4) return offset
+                if (offset <= 9) return offset - 1
+                if (offset <= 14) return offset - 2
+                if (offset <= 19) return offset - 3
+                return 16
+            }
+        }
+
+        return TransformedText(AnnotatedString(out), offsetMapping)
     }
 }

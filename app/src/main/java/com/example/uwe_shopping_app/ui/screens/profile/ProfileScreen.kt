@@ -14,9 +14,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,16 +23,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.uwe_shopping_app.R
-import com.example.uwe_shopping_app.ui.theme.Uwe_shopping_appTheme
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.uwe_shopping_app.ui.components.common.BottomNavigationBar
-import com.example.uwe_shopping_app.ui.components.common.Sidebar
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,6 +40,7 @@ fun ProfileScreen(
     val viewModel: ProfileViewModel = viewModel()
     val isLoggedIn by viewModel.isLoggedIn.collectAsState()
     val user by viewModel.user.collectAsState()
+    val defaultCard by viewModel.defaultCard.collectAsState()
 
     Scaffold(
         bottomBar = {
@@ -157,15 +150,14 @@ fun ProfileScreen(
 
             // ---------- MENU ----------
             val menuItems = listOf(
-                "Address" to Icons.Default.LocationOn,
-                "Payment method" to Icons.Default.Payment,
-                "Voucher" to Icons.Default.LocalOffer,
-                "My Wishlist" to Icons.Outlined.FavoriteBorder,
-                "Rate this app" to Icons.Outlined.StarBorder,
-                "Log out" to Icons.AutoMirrored.Filled.ExitToApp
+                Triple("Address", Icons.Default.LocationOn, ""),
+                Triple("Payment method", Icons.Default.Payment, defaultCard?.let { "**** **** **** ${it.cardNumber.takeLast(4)}" } ?: "Add a card"),
+                Triple("Voucher", Icons.Default.LocalOffer, ""),
+                Triple("My Wishlist", Icons.Outlined.FavoriteBorder, ""),
+                Triple("Log out", Icons.AutoMirrored.Filled.ExitToApp, "")
             )
 
-            menuItems.forEach { (text, icon) ->
+            menuItems.forEach { (text, icon, subtitle) ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -193,11 +185,20 @@ fun ProfileScreen(
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(Modifier.width(16.dp))
-                    Text(
-                        text = text,
-                        fontSize = 16.sp,
-                        color = Color(0xFF808080)
-                    )
+                    Column {
+                        Text(
+                            text = text,
+                            fontSize = 16.sp,
+                            color = Color(0xFF808080)
+                        )
+                        if (subtitle.isNotEmpty()) {
+                            Text(
+                                text = subtitle,
+                                fontSize = 12.sp,
+                                color = Color(0xFFB0B0B0)
+                            )
+                        }
+                    }
                     Spacer(Modifier.weight(1f))
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
