@@ -47,19 +47,19 @@ fun ProductScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current // Lấy context để hiển thị Toast
 
-    // Load sản phẩm khi vào màn hình
+    // Load products
     LaunchedEffect(productId) {
         viewModel.loadProduct(productId)
     }
 
-    // --- LẮNG NGHE SỰ KIỆN THÊM THÀNH CÔNG ---
+    // Add to cart success
     LaunchedEffect(uiState.isAddToCartSuccess) {
         if (uiState.isAddToCartSuccess) {
             Toast.makeText(context, "Added to cart successfully!", Toast.LENGTH_SHORT).show()
         }
     }
 
-    // Lắng nghe lỗi (ví dụ: chưa login, lỗi DB...)
+    // Error
     LaunchedEffect(uiState.error) {
         when (uiState.error) {
             LOGIN_REQUIRED -> {
@@ -464,6 +464,7 @@ fun AddToCartBar(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .navigationBarsPadding()
                 .padding(16.dp)
         ) {
             Button(
