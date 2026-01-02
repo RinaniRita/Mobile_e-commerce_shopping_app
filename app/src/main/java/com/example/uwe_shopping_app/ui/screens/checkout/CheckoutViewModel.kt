@@ -35,25 +35,25 @@ data class CheckoutUiState(
     val selectedShippingMethod: String = "free",
     val shippingLabel: String = "Free shipping",
     
-    // Tiền ship gốc (phương thức)
+    // Base shipping price (method)
     val methodPrice: Double = 0.0,
-    // Tiền ship phát sinh (khoảng cách)
+    // Distance shipping price
     val distancePrice: Double = 0.0,
     
     val productPrice: Double = 0.0,
     val couponCode: String = "",
     val copyBillingAddress: Boolean = false,
     
-    // States cho Voucher
+    // Voucher states
     val appliedVoucher: VoucherEntity? = null,
     val voucherError: String? = null,
     
-    // States cho API tính phí ship
+    // States cho API to calculate shipping
     val isCalculating: Boolean = false,
     val distanceKm: Double? = null,
     val calculationError: String? = null
 ) {
-    // CÔNG THỨC TÍNH TOÁN THEO YÊU CẦU
+    // CALCULATING PRICE
     
     val itemDiscount: Double
         get() {
@@ -126,7 +126,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
             district = address.district,
             city = address.city,
             phoneNumber = address.phoneNumber,
-            distanceKm = null // Reset để bắt Verify lại
+            distanceKm = null // Reset to re verify
         )
     }
 

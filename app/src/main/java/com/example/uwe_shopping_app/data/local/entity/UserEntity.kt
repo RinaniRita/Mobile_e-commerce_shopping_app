@@ -8,7 +8,7 @@ data class UserEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val name: String,
     val email: String,
-    val password: String,  // hashed in real apps
+    val password: String,
     val phone: String? = null,
     val createdAt: Long = System.currentTimeMillis()
 )

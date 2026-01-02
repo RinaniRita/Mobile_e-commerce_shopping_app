@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.util.Locale
 
-// Model UI (Giữ nguyên)
+// Model UI
 data class CartItemUiModel(
     val id: Int,
     val productId: Int,
@@ -42,7 +42,7 @@ fun CartItemCard(
     onToggleSelection: (Int) -> Unit,
     onQuantityDecrease: (Int) -> Unit,
     onQuantityIncrease: (Int) -> Unit,
-    onRemoveClick: (Int) -> Unit // Nhận hàm xóa
+    onRemoveClick: (Int) -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -52,17 +52,14 @@ fun CartItemCard(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        // 1. Dùng Box để có thể đặt nút X đè lên góc trên trái
         Box(modifier = Modifier.fillMaxSize()) {
-
-            // --- Nội dung chính của thẻ (Ảnh, Tên, Giá, Checkbox) ---
             Row(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(12.dp), // Padding tổng thể
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Ảnh sản phẩm
+                // Product Image
                 Image(
                     painter = painterResource(id = item.imageResId),
                     contentDescription = item.name,
@@ -75,7 +72,7 @@ fun CartItemCard(
 
                 Spacer(modifier = Modifier.width(16.dp))
 
-                // Thông tin ở giữa
+                // Item
                 Column(
                     modifier = Modifier
                         .weight(1f)
@@ -104,7 +101,7 @@ fun CartItemCard(
                         )
                     }
 
-                    // Tăng giảm số lượng
+                    // Quantity Selector
                     CartQuantitySelector(
                         quantity = item.quantity,
                         onDecrease = { onQuantityDecrease(item.id) },
@@ -123,16 +120,15 @@ fun CartItemCard(
                 )
             }
 
-            // 2. --- NÚT X (XÓA) Ở GÓC TRÊN TRÁI ---
-            // Đặt ở cuối Box để nó nổi lên trên cùng
+            // Delete item from cart
             IconButton(
                 onClick = { onRemoveClick(item.id) },
                 modifier = Modifier
-                    .align(Alignment.TopStart) // Căn góc trên bên TRÁI
-                    .offset(x = (-4).dp, y = (-4).dp) // Nhích ra sát mép một chút cho đẹp
-                    .size(48.dp) // Vùng bấm lớn hơn để dễ nhấn
+                    .align(Alignment.TopStart)
+                    .offset(x = (-4).dp, y = (-4).dp)
+                    .size(48.dp)
             ) {
-                // Làm nền tròn màu trắng mờ hoặc đỏ nhạt để nút X dễ nhìn hơn trên ảnh
+                // blur bg for delete button
                 Box(
                     modifier = Modifier
                         .size(32.dp)
@@ -152,7 +148,7 @@ fun CartItemCard(
     }
 }
 
-// Component tăng giảm số lượng (giữ nguyên)
+// Quantity Selector
 @Composable
 fun CartQuantitySelector(
     quantity: Int,

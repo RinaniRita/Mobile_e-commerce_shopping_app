@@ -42,7 +42,7 @@ fun CheckoutFormField(
                 value = value,
                 onValueChange = onValueChange,
                 readOnly = true,
-                enabled = enabled, // SỬ DỤNG Ở ĐÂY
+                enabled = enabled,
                 trailingIcon = {
                     IconButton(onClick = { if (enabled) onDropdownClick?.invoke() }) {
                         Icon(

@@ -115,7 +115,7 @@ fun AddressControl(
                 enabled = false
             )
 
-            // CHỌN TỈNH / THÀNH PHỐ
+            // Choose city/province
             SearchableDropdown(
                 label = "City / Province",
                 selectedValue = city,
@@ -128,7 +128,7 @@ fun AddressControl(
                 }
             )
 
-            // CHỌN QUẬN / HUYỆN (Chỉ hiện khi đã chọn Tỉnh)
+            // Choose district
             SearchableDropdown(
                 label = "District",
                 selectedValue = district,

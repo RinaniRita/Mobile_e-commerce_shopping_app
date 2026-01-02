@@ -18,10 +18,9 @@ class AddressViewModel(application: Application) : AndroidViewModel(application)
     private val addressDao = App.db.addressDao()
     private val sessionManager = SessionManager(application)
 
-    // Lấy userId hiện tại từ Session
     private val currentUserId = sessionManager.userId
 
-    // Quan sát danh sách địa chỉ từ Database theo userId
+    // Get address list from databse with userId
     val addresses: StateFlow<List<AddressUiModel>> = currentUserId
         .flatMapLatest { userId ->
             if (userId != null) {
@@ -67,8 +66,8 @@ class AddressViewModel(application: Application) : AndroidViewModel(application)
         title = type,
         recipient = recipient,
         addressLine = addressLine,
-        district = district, // ĐÃ CẬP NHẬT
-        city = city,         // ĐÃ CẬP NHẬT
+        district = district,
+        city = city,
         phoneNumber = phoneNumber,
         type = if (type == "HOME") AddressType.HOME else AddressType.OFFICE,
         isSelected = isDefault
@@ -79,8 +78,8 @@ class AddressViewModel(application: Application) : AndroidViewModel(application)
         userId = userId,
         recipient = recipient,
         addressLine = addressLine,
-        district = district, // ĐÃ CẬP NHẬT
-        city = city,         // ĐÃ CẬP NHẬT
+        district = district,
+        city = city,
         phoneNumber = phoneNumber,
         type = if (type == AddressType.HOME) "HOME" else "OFFICE",
         isDefault = isSelected

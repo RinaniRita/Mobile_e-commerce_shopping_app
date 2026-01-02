@@ -27,9 +27,8 @@ fun CheckoutHeader(
         modifier = modifier
             .fillMaxWidth()
             .background(Color(0xFFF5F5F5))
-            .statusBarsPadding() // Tránh bị đè bởi status bar
+            .statusBarsPadding()
     ) {
-        // Thanh tiêu đề chuẩn
         CenterAlignedTopAppBar(
             title = {
                 Text(

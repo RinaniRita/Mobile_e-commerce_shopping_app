@@ -119,14 +119,4 @@ fun CheckoutCompletedScreen(
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-private fun CheckoutCompletedScreenPreview() {
-    Uwe_shopping_appTheme {
-        CheckoutCompletedScreen(
-            navController = rememberNavController()
-        )
-    }
-}
-
 

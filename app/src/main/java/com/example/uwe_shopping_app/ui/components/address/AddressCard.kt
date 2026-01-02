@@ -26,8 +26,8 @@ data class AddressUiModel(
     val title: String,
     val recipient: String,
     val addressLine: String,
-    val district: String, // MỚI
-    val city: String,     // MỚI
+    val district: String,
+    val city: String,
     val phoneNumber: String,
     val type: AddressType,
     val isSelected: Boolean = false
@@ -133,24 +133,3 @@ fun AddressIcon(type: AddressType) {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-private fun AddressCardPreview() {
-    Uwe_shopping_appTheme {
-        AddressCard(
-            address = AddressUiModel(
-                id = 1,
-                title = "SEND TO",
-                recipient = "My Office",
-                addressLine = "SBI Building, street 3",
-                district = "Nam Tu Liem",
-                city = "Hanoi",
-                phoneNumber = "0123456789",
-                type = AddressType.OFFICE,
-                isSelected = true
-            ),
-            onSelect = {},
-            onEdit = {}
-        )
-    }
-}

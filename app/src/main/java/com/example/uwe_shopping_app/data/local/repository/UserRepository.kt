@@ -43,7 +43,7 @@ class UserRepository(
 
         val userId = userDao.insertUser(user).toInt()
         
-        // TỰ ĐỘNG TẶNG 4 VOUCHER KHI ĐĂNG KÝ THÀNH CÔNG
+        // AUTO CREATE 4 VOUCHERS WHEN LOGGED IN
         val initialVouchers = listOf(
             VoucherEntity(
                 userId = userId,

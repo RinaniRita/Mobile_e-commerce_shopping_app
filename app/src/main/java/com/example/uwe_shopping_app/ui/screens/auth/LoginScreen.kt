@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.uwe_shopping_app.data.local.repository.UserRepository
 import com.example.uwe_shopping_app.data.local.session.SessionManager
+import com.example.uwe_shopping_app.ui.components.auth.UnderlinedTextField
 import com.example.uwe_shopping_app.util.isValidEmail
 import com.example.uwe_shopping_app.util.isValidPassword
 import kotlinx.coroutines.launch

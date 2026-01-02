@@ -9,8 +9,8 @@ data class AddressEntity(
     val userId: Int,
     val recipient: String,
     val addressLine: String, // Street, house number
-    val district: String,    // Quận/Huyện
-    val city: String,        // Tỉnh/Thành phố
+    val district: String,    // District
+    val city: String,        // City
     val phoneNumber: String,
     val type: String,        // "HOME" or "OFFICE"
     val isDefault: Boolean = false

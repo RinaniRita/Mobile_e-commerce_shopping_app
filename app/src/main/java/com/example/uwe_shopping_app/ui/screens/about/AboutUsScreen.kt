@@ -122,6 +122,15 @@ fun AboutUsScreen(onBack: () -> Unit = {}) {
             )
             
             Spacer(Modifier.height(24.dp))
+
+            Text(
+                text = "Our team consists of Tran Duy Anh, Nguyen Duc Trung, Nguyen Nhat Minh",
+                fontSize = 14.sp,
+                color = Color(0xFF666666),
+                lineHeight = 22.sp
+            )
+
+            Spacer(Modifier.height(24.dp))
             
             Text(
                 text = "Thank you for choosing UWE Shopping App!",

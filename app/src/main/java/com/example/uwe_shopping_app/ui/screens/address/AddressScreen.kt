@@ -34,7 +34,6 @@ fun AddressScreen(
 
     Scaffold(
         topBar = {
-            // SỬ DỤNG TOPAPPBAR CHUẨN CỦA MATERIAL 3 ĐỂ TRÁNH LỖI VÙNG BẤM
             CenterAlignedTopAppBar(
                 title = {
                     Text(
@@ -46,7 +45,6 @@ fun AddressScreen(
                     )
                 },
                 navigationIcon = {
-                    // NÚT BACK ĐƯỢC ĐẶT TRONG NAVIGATION ICON CHUẨN
                     IconButton(
                         onClick = onBackClick,
                         modifier = Modifier.size(48.dp) 
@@ -61,7 +59,6 @@ fun AddressScreen(
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = Color(0xFFF3F3F3)
                 ),
-                // Tự động xử lý khoảng cách an toàn với Status Bar
                 modifier = Modifier.statusBarsPadding() 
             )
         },
@@ -83,7 +80,7 @@ fun AddressScreen(
                     AddressCard(
                         address = address,
                         onSelect = { 
-                            // CHỈ GỌI CALLBACK, KHÔNG GỌI VIEWMODEL TRỰC TIẾP TẠI ĐÂY ĐỂ TRÁNH LAG
+                            // CALLBACK INSTEAD OF VIEWMODEL FOR LESS LAG
                             onAddressSelected(address) 
                         },
                         onEdit = { onEditClick(address) }

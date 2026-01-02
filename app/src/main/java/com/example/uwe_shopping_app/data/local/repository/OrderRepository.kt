@@ -48,11 +48,11 @@ class OrderRepository(
         discountAmount: Double,
         status: String = "pending"
     ): Long {
-        // 1. Lấy items trong giỏ
+        // Get items by cart
         val cartItems = cartItemDao.getCartItemsByCart(cartId)
         if (cartItems.isEmpty()) return 0L
 
-        // 2. Tạo order với đầy đủ thông tin
+        // Create order entity
         val order = OrderEntity(
             userId = userId,
             totalPrice = totalPrice,
@@ -65,7 +65,7 @@ class OrderRepository(
         )
         val orderId = orderDao.insertOrder(order)
 
-        // 3. Chuyển từng item → order_item + giảm stock
+        // move item → order_item + reduce stock
         cartItems.forEach { cartItem ->
             val product = productDao.getProductById(cartItem.productId) ?: return 0L
 
@@ -77,12 +77,12 @@ class OrderRepository(
             )
             orderItemDao.insertOrderItem(orderItem)
 
-            // Giảm tồn kho
+            // reduce stock
             val updatedProduct = product.copy(stock = product.stock - cartItem.quantity)
             productDao.updateProduct(updatedProduct)
         }
 
-        // 4. Xóa sạch giỏ hàng
+        // delete cart
         cartItems.forEach { cartItemDao.deleteCartItemById(it.id) }
 
         return orderId
@@ -129,7 +129,7 @@ class OrderRepository(
         )
 
 
-        // Hoàn lại stock
+        // return stock
         val items = orderItemDao.getOrderItemsByOrder(orderId)
         items.forEach { item ->
             val product = productDao.getProductById(item.productId) ?: return@forEach

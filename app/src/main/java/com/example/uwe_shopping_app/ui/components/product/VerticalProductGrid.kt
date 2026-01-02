@@ -35,32 +35,3 @@ fun VerticalProductGrid(
         }
     }
 }
-
-@Preview(showBackground = true, widthDp = 360, heightDp = 640)
-@Composable
-private fun VerticalProductGridPreview() {
-    Uwe_shopping_appTheme {
-        VerticalProductGrid(
-            products = listOf(
-                ProductEntity(
-                    id = 1,
-                    name = "Linen Dress",
-                    description = "Light dress",
-                    price = 52.00,
-                    imageResId = android.R.drawable.ic_menu_gallery,
-                    stock = 10,
-                    category = "Dress"
-                ),
-                ProductEntity(
-                    id = 2,
-                    name = "Maxi Dress",
-                    description = "Long dress",
-                    price = 68.00,
-                    imageResId = android.R.drawable.ic_menu_gallery,
-                    stock = 5,
-                    category = "Dress"
-                )
-            )
-        )
-    }
-}

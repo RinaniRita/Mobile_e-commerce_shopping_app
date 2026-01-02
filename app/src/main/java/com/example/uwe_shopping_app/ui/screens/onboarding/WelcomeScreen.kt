@@ -85,11 +85,3 @@ fun WelcomeScreen(onGetStarted: () -> Unit) {
         }
     }
 }
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun WelcomeScreenPreview() {
-    MaterialTheme {
-        WelcomeScreen(onGetStarted = {})
-    }
-}
