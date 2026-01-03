@@ -20,9 +20,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.uwe_shopping_app.ui.components.cart.CartHeader
 import com.example.uwe_shopping_app.ui.components.order.OrderStatus
-import com.example.uwe_shopping_app.ui.components.order.ReviewDialog
-import com.example.uwe_shopping_app.ui.components.product.StarRating
-import com.example.uwe_shopping_app.ui.components.order.ReviewDialog
 
 @Composable
 fun OrderInfoScreen(
