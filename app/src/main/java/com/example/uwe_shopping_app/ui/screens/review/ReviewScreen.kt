@@ -102,11 +102,15 @@ fun ReviewScreen(
                             userId = userId,
                             orderId = orderId
                         )
-                    }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Black
+                    )
                 ) {
                     Text(
                         if (item.alreadyReviewed) "Reviewed"
-                        else "Submit Review"
+                        else "Submit Review",
+                        color = Color.White
                     )
                 }
 
