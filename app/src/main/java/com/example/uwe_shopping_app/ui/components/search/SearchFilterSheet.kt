@@ -3,6 +3,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
@@ -47,7 +48,11 @@ fun SearchFilterSheet(
                         maxPrice = it.endInclusive
                     )
                 )
-            }
+            },
+            colors = SliderDefaults.colors(
+                activeTrackColor = Color.Black,
+                thumbColor = Color.Black
+            )
         )
 
         Row(
@@ -94,7 +99,14 @@ fun SearchFilterSheet(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             TextButton(onClick = onReset) { Text("Reset") }
-            Button(onClick = onApply) { Text("Apply") }
+            Button(
+                onClick = onApply,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Black
+                )
+            ) {
+                Text("Apply", color = Color.White)
+            }
         }
     }
 }
@@ -108,13 +120,18 @@ private fun SortOptionButton(
     Button(
         onClick = onClick,
         colors = if (selected)
-            ButtonDefaults.buttonColors()
+            ButtonDefaults.buttonColors(
+                containerColor = Color.Black
+            )
         else
             ButtonDefaults.outlinedButtonColors(),
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
     ) {
-        Text(label)
+        Text(
+            label,
+            color = if (selected) Color.White else Color.Unspecified
+        )
     }
 }
