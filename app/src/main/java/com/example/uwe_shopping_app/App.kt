@@ -20,10 +20,10 @@ class App : Application() {
         db = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java,
-            "uwe_shopping_db" // ⚠ MUST MATCH AppDatabase
+            "uwe_shopping_db" //  MUST MATCH AppDatabase
         ).build()
 
-        // ✅ Populate database once
+        // Populate database once
         CoroutineScope(Dispatchers.IO).launch {
             val count = db.productDao().getProductCount()
             if (count == 0) {
