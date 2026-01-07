@@ -5,7 +5,7 @@ Instructions to open and run the Android app in Android Studio on an API 36.1 em
 ### Prerequisites
 
 - Android Studio (latest stable; bundled JDK is fine)
-- Android SDK Platform 36 (Android 15) + Google Play/Google APIs image
+- Android SDK Platform 36 (Android 16) + Google Play/Google APIs image
 - Android SDK Build-Tools for API 36
 - Gradle wrapper is included; no manual install needed
 
@@ -15,11 +15,11 @@ Instructions to open and run the Android app in Android Studio on an API 36.1 em
 2. `File` → `Open…` and select the project folder `mobile_shopping_app`.
 3. Let Gradle sync finish (internet required to download dependencies).
 
-### Create an emulator (API 36.1, medium phone)
+### Create an emulator (API 36, medium phone)
 
 1. Open **Device Manager** → **Create device**.
 2. Choose a medium phone (e.g., Pixel 7/7a class).
-3. Select the **Android 15 (API 36.1)** system image (Google APIs/Play).
+3. Select the **Android 16 (API 36)** system image (Google APIs/Play).
 4. Finish and ensure the new device appears in the device list.
 
 ### Run the app from Android Studio
