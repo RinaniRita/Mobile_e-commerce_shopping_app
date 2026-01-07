@@ -12,10 +12,8 @@ Instructions to open and run the Android app in Android Studio on an API 36.1 em
 ### Open the project
 
 1. Start Android Studio.
-
-   2. `File` → `Open…` and select the project folder `mobile_shopping_app`.
-
-2. Let Gradle sync finish (internet required to download dependencies).
+2. `File` → `Open…` and select the project folder `mobile_shopping_app`.
+3. Let Gradle sync finish (internet required to download dependencies).
 
 ### Create an emulator (API 36.1, medium phone)
 
